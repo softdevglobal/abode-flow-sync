@@ -1,17 +1,62 @@
 import { Header, MobileNav } from '@/components/layout/MobileNav';
 import { PropertyCard } from '@/components/property/PropertyCard';
+import { PropertyListingForm } from '@/components/property/PropertyListingForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { Plus, Search } from 'lucide-react';
 import { mockProperties } from '@/data/mockData';
 import { useState } from 'react';
+import { Property } from '@/types';
+import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function AgentProperties() {
   const [search, setSearch] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingProperty, setEditingProperty] = useState<Property | undefined>();
+  const isMobile = useIsMobile();
 
   const filteredProperties = mockProperties.filter(property =>
     property.title.toLowerCase().includes(search.toLowerCase()) ||
     property.suburb.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleCreateProperty = (data: Partial<Property>) => {
+    // In production, this would save to the database
+    console.log('Creating property:', data);
+    toast.success('Property listing created successfully');
+    setIsFormOpen(false);
+    setEditingProperty(undefined);
+  };
+
+  const handleOpenForm = (property?: Property) => {
+    setEditingProperty(property);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingProperty(undefined);
+  };
+
+  const FormContent = (
+    <PropertyListingForm
+      property={editingProperty}
+      onSubmit={handleCreateProperty}
+      onCancel={handleCloseForm}
+    />
   );
 
   return (
@@ -28,7 +73,7 @@ export default function AgentProperties() {
               {mockProperties.length} listings
             </p>
           </div>
-          <Button variant="gold">
+          <Button variant="gold" onClick={() => handleOpenForm()}>
             <Plus className="w-4 h-4 mr-2" />
             Add New
           </Button>
@@ -52,6 +97,31 @@ export default function AgentProperties() {
           ))}
         </div>
       </main>
+
+      {/* Mobile: Sheet from bottom, Desktop: Dialog */}
+      {isMobile ? (
+        <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+            <SheetHeader className="mb-4">
+              <SheetTitle className="font-display">
+                {editingProperty ? 'Edit Property' : 'New Property Listing'}
+              </SheetTitle>
+            </SheetHeader>
+            {FormContent}
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="font-display text-xl">
+                {editingProperty ? 'Edit Property' : 'New Property Listing'}
+              </DialogTitle>
+            </DialogHeader>
+            {FormContent}
+          </DialogContent>
+        </Dialog>
+      )}
 
       <MobileNav userRole="agent" />
     </div>
