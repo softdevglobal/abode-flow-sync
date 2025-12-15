@@ -47,6 +47,85 @@ export type Database = {
         }
         Relationships: []
       }
+      auctions: {
+        Row: {
+          created_at: string
+          current_bid: number | null
+          end_time: string
+          id: string
+          min_increment: number
+          property_id: string
+          reserve_price: number | null
+          start_time: string
+          status: Database["public"]["Enums"]["auction_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_bid?: number | null
+          end_time: string
+          id?: string
+          min_increment?: number
+          property_id: string
+          reserve_price?: number | null
+          start_time: string
+          status?: Database["public"]["Enums"]["auction_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_bid?: number | null
+          end_time?: string
+          id?: string
+          min_increment?: number
+          property_id?: string
+          reserve_price?: number | null
+          start_time?: string
+          status?: Database["public"]["Enums"]["auction_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auctions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: true
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bids: {
+        Row: {
+          amount: number
+          auction_id: string
+          bidder_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          amount: number
+          auction_id: string
+          bidder_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          amount?: number
+          auction_id?: string
+          bidder_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bids_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           created_at: string
@@ -383,6 +462,7 @@ export type Database = {
     }
     Enums: {
       app_role: "agent" | "customer"
+      auction_status: "pending" | "live" | "paused" | "sold" | "passed_in"
       booking_status:
         | "pending"
         | "confirmed"
@@ -533,6 +613,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["agent", "customer"],
+      auction_status: ["pending", "live", "paused", "sold", "passed_in"],
       booking_status: [
         "pending",
         "confirmed",
