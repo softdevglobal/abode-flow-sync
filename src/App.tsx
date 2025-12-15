@@ -13,6 +13,7 @@ import PropertyDetail from "./pages/PropertyDetail";
 import CalculatorPage from "./pages/CalculatorPage";
 import CheckIn from "./pages/CheckIn";
 import MyViewings from "./pages/MyViewings";
+import Auth from "./pages/Auth";
 
 // Buyer Pages
 import LiveAuction from "./pages/buyer/LiveAuction";
@@ -49,6 +50,7 @@ const App = () => (
             <Routes>
               {/* Landing / Home */}
               <Route path="/" element={<Landing />} />
+              <Route path="/auth" element={<Auth />} />
 
               {/* Buyer View Routes */}
               <Route path="/browse" element={<Browse />} />
