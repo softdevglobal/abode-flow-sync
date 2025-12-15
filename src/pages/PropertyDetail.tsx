@@ -1,22 +1,24 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Header, MobileNav } from '@/components/layout/MobileNav';
+import { MobileNav } from '@/components/layout/MobileNav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ArrowLeft, Bed, Bath, Car, Ruler, Heart, Share2, 
-  MapPin, Calendar, Check, Phone, Mail, User
+  MapPin, Calendar, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { mockProperties, mockAgent, mockInspections } from '@/data/mockData';
-import { format } from 'date-fns';
 import { toast } from 'sonner';
+import { PropertyImageGallery } from '@/components/property/PropertyImageGallery';
+import { AgentEnquiryCard } from '@/components/property/AgentEnquiryCard';
+import { PropertyFeaturesGrid } from '@/components/property/PropertyFeaturesGrid';
+import { InspectionTimes } from '@/components/property/InspectionTimes';
 
 export default function PropertyDetail() {
   const { id } = useParams();
   const property = mockProperties.find(p => p.id === id);
-  const [currentImage, setCurrentImage] = useState(0);
   const [isSaved, setIsSaved] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const inspections = mockInspections.filter(i => i.propertyId === id);
 
@@ -38,213 +40,221 @@ export default function PropertyDetail() {
     toast.success(isSaved ? 'Removed from saved' : 'Saved to your list');
   };
 
-  const handleRequestViewing = () => {
-    toast.success('Viewing request sent! The agent will respond shortly.');
+  const handleShare = async () => {
+    if (navigator.share) {
+      await navigator.share({
+        title: property.title,
+        text: `Check out this property: ${property.title}`,
+        url: window.location.href,
+      });
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success('Link copied to clipboard');
+    }
   };
 
-  const statusLabel = {
-    available: 'Available',
+  const handleRequestInspection = () => {
+    toast.success('Inspection request sent! The agent will respond shortly.');
+  };
+
+  const statusLabel: Record<string, string> = {
+    available: 'For Sale',
     under_offer: 'Under Offer',
     sold: 'Sold',
     leased: 'Leased',
     off_market: 'Off Market',
   };
 
+  const propertyTypeLabel: Record<string, string> = {
+    house: 'House',
+    apartment: 'Apartment',
+    townhouse: 'Townhouse',
+    land: 'Land',
+    commercial: 'Commercial',
+  };
+
+  const shouldTruncate = property.description.length > 300;
+  const displayDescription = isDescriptionExpanded 
+    ? property.description 
+    : property.description.slice(0, 300);
+
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-0">
+    <div className="min-h-screen bg-background pb-24 lg:pb-0">
+      {/* Back Navigation - Fixed on mobile */}
+      <div className="fixed top-4 left-4 z-50 lg:hidden">
+        <Link to="/browse">
+          <Button variant="secondary" size="icon" className="shadow-lg">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        </Link>
+      </div>
+
+      {/* Save & Share - Fixed on mobile */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2 lg:hidden">
+        <Button 
+          variant="secondary" 
+          size="icon" 
+          className="shadow-lg"
+          onClick={handleSave}
+        >
+          <Heart className={`w-5 h-5 ${isSaved ? 'fill-destructive text-destructive' : ''}`} />
+        </Button>
+        <Button variant="secondary" size="icon" className="shadow-lg" onClick={handleShare}>
+          <Share2 className="w-5 h-5" />
+        </Button>
+      </div>
+
       {/* Image Gallery */}
-      <div className="relative">
-        <div className="aspect-[4/3] md:aspect-[16/9] overflow-hidden bg-secondary">
-          <img
-            src={property.images[currentImage]}
-            alt={property.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
+      <div className="group">
+        <PropertyImageGallery images={property.images} title={property.title} />
+      </div>
 
-        {/* Navigation */}
-        <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-          <Link to="/browse">
-            <Button variant="secondary" size="icon" className="shadow-lg">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+      {/* Main Content */}
+      <div className="container px-4 lg:px-8 py-6 lg:py-10">
+        {/* Desktop Back Button */}
+        <div className="hidden lg:block mb-6">
+          <Link to="/browse" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm">Back to search results</span>
           </Link>
-          <div className="flex gap-2">
-            <Button 
-              variant="secondary" 
-              size="icon" 
-              className="shadow-lg"
-              onClick={handleSave}
-            >
-              <Heart className={`w-5 h-5 ${isSaved ? 'fill-destructive text-destructive' : ''}`} />
-            </Button>
-            <Button variant="secondary" size="icon" className="shadow-lg">
-              <Share2 className="w-5 h-5" />
-            </Button>
-          </div>
         </div>
 
-        {/* Image Dots */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-          {property.images.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentImage(index)}
-              className={`w-2 h-2 rounded-full transition-all ${
-                currentImage === index ? 'bg-primary-foreground w-6' : 'bg-primary-foreground/50'
-              }`}
-            />
-          ))}
+        <div className="lg:grid lg:grid-cols-3 lg:gap-10">
+          {/* Left Column - Property Details */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Header Section */}
+            <div>
+              {/* Price - Prominent */}
+              <p className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-2">
+                {property.priceDisplay}
+              </p>
+
+              {/* Address */}
+              <h1 className="font-display text-xl lg:text-2xl font-semibold text-foreground mb-1">
+                {property.address}
+              </h1>
+              <div className="flex items-center gap-1 text-muted-foreground mb-4">
+                <MapPin className="w-4 h-4" />
+                <span>{property.suburb}, {property.state} {property.postcode}</span>
+              </div>
+
+              {/* Badges */}
+              <div className="flex flex-wrap items-center gap-2 mb-6">
+                <Badge variant={property.status === 'available' ? 'success' : 'warning'}>
+                  {property.listingType === 'rent' ? 'For Rent' : statusLabel[property.status]}
+                </Badge>
+                <Badge variant="outline">
+                  {propertyTypeLabel[property.propertyType]}
+                </Badge>
+              </div>
+
+              {/* Quick Stats - Horizontal */}
+              <div className="flex items-center gap-6 py-4 border-y border-border">
+                <div className="flex items-center gap-2">
+                  <Bed className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-semibold">{property.bedrooms}</span>
+                  <span className="text-muted-foreground text-sm hidden sm:inline">Beds</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Bath className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-semibold">{property.bathrooms}</span>
+                  <span className="text-muted-foreground text-sm hidden sm:inline">Baths</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Car className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-semibold">{property.parking}</span>
+                  <span className="text-muted-foreground text-sm hidden sm:inline">Parking</span>
+                </div>
+                {(property.landSize || property.buildingSize) && (
+                  <div className="flex items-center gap-2">
+                    <Ruler className="w-5 h-5 text-muted-foreground" />
+                    <span className="font-semibold">{property.landSize || property.buildingSize}</span>
+                    <span className="text-muted-foreground text-sm">m²</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Action Buttons */}
+              <div className="hidden lg:flex items-center gap-3 mt-6">
+                <Button
+                  variant={isSaved ? 'outline' : 'ghost'}
+                  onClick={handleSave}
+                  className="gap-2"
+                >
+                  <Heart className={`w-5 h-5 ${isSaved ? 'fill-destructive text-destructive' : ''}`} />
+                  {isSaved ? 'Saved' : 'Save'}
+                </Button>
+                <Button variant="ghost" onClick={handleShare} className="gap-2">
+                  <Share2 className="w-5 h-5" />
+                  Share
+                </Button>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-3">
+              <h2 className="font-display text-xl font-semibold">Description</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                {displayDescription}
+                {shouldTruncate && !isDescriptionExpanded && '...'}
+              </p>
+              {shouldTruncate && (
+                <Button
+                  variant="link"
+                  className="px-0 h-auto text-accent"
+                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                >
+                  {isDescriptionExpanded ? (
+                    <>
+                      Read less <ChevronUp className="w-4 h-4 ml-1" />
+                    </>
+                  ) : (
+                    <>
+                      Read more <ChevronDown className="w-4 h-4 ml-1" />
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+
+            {/* Features */}
+            <PropertyFeaturesGrid features={property.features} />
+
+            {/* Inspection Times */}
+            <InspectionTimes inspections={inspections} />
+
+            {/* Mobile Agent Card */}
+            <div className="lg:hidden">
+              <h2 className="font-display text-xl font-semibold mb-4">Listed by</h2>
+              <AgentEnquiryCard agent={mockAgent} propertyTitle={property.title} />
+            </div>
+          </div>
+
+          {/* Right Column - Sticky Agent Card (Desktop) */}
+          <div className="hidden lg:block">
+            <div className="sticky top-6">
+              <AgentEnquiryCard agent={mockAgent} propertyTitle={property.title} />
+              
+              {/* Request Inspection Button - Desktop */}
+              <Button
+                variant="gold"
+                size="lg"
+                className="w-full mt-4"
+                onClick={handleRequestInspection}
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                Request an Inspection
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Content */}
-      <main className="container px-4 py-6">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant={property.status === 'available' ? 'success' : 'warning'}>
-              {statusLabel[property.status]}
-            </Badge>
-            {property.listingType === 'rent' && (
-              <Badge variant="info">For Rent</Badge>
-            )}
-          </div>
-          <h1 className="font-display text-2xl font-bold text-foreground mb-1">
-            {property.title}
-          </h1>
-          <div className="flex items-center gap-1 text-muted-foreground">
-            <MapPin className="w-4 h-4" />
-            <span className="text-sm">{property.address}, {property.suburb} {property.state} {property.postcode}</span>
-          </div>
-        </div>
-
-        {/* Price */}
-        <div className="mb-6">
-          <p className="font-display text-3xl font-bold text-accent">
-            {property.priceDisplay}
-          </p>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-3 mb-6">
-          <div className="bg-secondary rounded-lg p-3 text-center">
-            <Bed className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
-            <p className="text-lg font-semibold">{property.bedrooms}</p>
-            <p className="text-xs text-muted-foreground">Beds</p>
-          </div>
-          <div className="bg-secondary rounded-lg p-3 text-center">
-            <Bath className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
-            <p className="text-lg font-semibold">{property.bathrooms}</p>
-            <p className="text-xs text-muted-foreground">Baths</p>
-          </div>
-          <div className="bg-secondary rounded-lg p-3 text-center">
-            <Car className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
-            <p className="text-lg font-semibold">{property.parking}</p>
-            <p className="text-xs text-muted-foreground">Parking</p>
-          </div>
-          <div className="bg-secondary rounded-lg p-3 text-center">
-            <Ruler className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
-            <p className="text-lg font-semibold">{property.landSize || property.buildingSize}</p>
-            <p className="text-xs text-muted-foreground">m²</p>
-          </div>
-        </div>
-
-        {/* Description */}
-        <Card variant="flat" className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">About this property</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              {property.description}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Features */}
-        <Card variant="flat" className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Features</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {property.features.map((feature) => (
-                <div key={feature} className="flex items-center gap-1.5 bg-secondary px-3 py-1.5 rounded-full">
-                  <Check className="w-3.5 h-3.5 text-success" />
-                  <span className="text-sm">{feature}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Inspections */}
-        {inspections.length > 0 && (
-          <Card variant="elevated" className="mb-6">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-accent" />
-                Upcoming Inspections
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {inspections.map((inspection) => (
-                  <div 
-                    key={inspection.id} 
-                    className="flex items-center justify-between bg-secondary rounded-lg p-3"
-                  >
-                    <div>
-                      <p className="font-medium">{format(inspection.date, 'EEEE, MMMM d')}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {inspection.startTime} - {inspection.endTime}
-                      </p>
-                    </div>
-                    <Badge variant={inspection.isPrivate ? 'outline' : 'success'}>
-                      {inspection.isPrivate ? 'Private' : 'Open'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Agent Card */}
-        <Card variant="glass" className="mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Listed by</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center">
-                <User className="w-7 h-7 text-primary-foreground" />
-              </div>
-              <div className="flex-1">
-                <p className="font-display font-semibold">{mockAgent.name}</p>
-                <p className="text-sm text-muted-foreground">{mockAgent.company}</p>
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button variant="outline" className="flex-1" size="sm">
-                <Phone className="w-4 h-4 mr-2" />
-                Call
-              </Button>
-              <Button variant="outline" className="flex-1" size="sm">
-                <Mail className="w-4 h-4 mr-2" />
-                Email
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </main>
-
-      {/* Fixed Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 md:hidden">
-        <Button variant="gold" size="lg" className="w-full" onClick={handleRequestViewing}>
+      {/* Fixed Bottom CTA - Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 lg:hidden z-40">
+        <Button variant="gold" size="lg" className="w-full" onClick={handleRequestInspection}>
           <Calendar className="w-5 h-5 mr-2" />
-          Request a Viewing
+          Request an Inspection
         </Button>
       </div>
 
