@@ -42,8 +42,11 @@ import {
   Tag,
   X,
   Check,
+  Flame,
+  ArrowUpDown,
+  TrendingUp,
 } from 'lucide-react';
-import { useAgentCRM, useCustomerDetails, CRMCustomer, CRMNote, CRMTag } from '@/hooks/useAgentCRM';
+import { useAgentCRM, useCustomerDetails, CRMCustomer, CRMNote, CRMTag, getLeadScoreLabel } from '@/hooks/useAgentCRM';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -87,6 +90,7 @@ export default function CRM() {
   const [selectedCustomer, setSelectedCustomer] = useState<CRMCustomer | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [filterTag, setFilterTag] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'score' | 'recent' | 'name'>('score');
 
   // Get agent ID
   const { data: agentData } = useQuery({
@@ -116,23 +120,41 @@ export default function CRM() {
     deleteTag,
   } = useAgentCRM(agentId);
 
-  const filteredCustomers = customers.filter(customer => {
-    const searchLower = searchQuery.toLowerCase();
-    const fullName = `${customer.first_name || ''} ${customer.last_name || ''}`.toLowerCase();
-    const matchesSearch = (
-      fullName.includes(searchLower) ||
-      customer.email.toLowerCase().includes(searchLower) ||
-      customer.phone?.toLowerCase().includes(searchLower)
-    );
-    
-    // Filter by tag if selected
-    if (filterTag) {
-      const customerTags = customerTagsMap.get(customer.id) || [];
-      return matchesSearch && customerTags.includes(filterTag);
-    }
-    
-    return matchesSearch;
-  });
+  const filteredCustomers = customers
+    .filter(customer => {
+      const searchLower = searchQuery.toLowerCase();
+      const fullName = `${customer.first_name || ''} ${customer.last_name || ''}`.toLowerCase();
+      const matchesSearch = (
+        fullName.includes(searchLower) ||
+        customer.email.toLowerCase().includes(searchLower) ||
+        customer.phone?.toLowerCase().includes(searchLower)
+      );
+      
+      // Filter by tag if selected
+      if (filterTag) {
+        const customerTags = customerTagsMap.get(customer.id) || [];
+        return matchesSearch && customerTags.includes(filterTag);
+      }
+      
+      return matchesSearch;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'score':
+          return b.lead_score - a.lead_score;
+        case 'recent':
+          if (!a.last_interaction && !b.last_interaction) return 0;
+          if (!a.last_interaction) return 1;
+          if (!b.last_interaction) return -1;
+          return new Date(b.last_interaction).getTime() - new Date(a.last_interaction).getTime();
+        case 'name':
+          const nameA = `${a.first_name || ''} ${a.last_name || ''}`.trim().toLowerCase();
+          const nameB = `${b.first_name || ''} ${b.last_name || ''}`.trim().toLowerCase();
+          return nameA.localeCompare(nameB);
+        default:
+          return 0;
+      }
+    });
 
   const handleCustomerClick = (customer: CRMCustomer) => {
     setSelectedCustomer(customer);
@@ -206,6 +228,32 @@ export default function CRM() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+            <SelectTrigger className="w-full sm:w-[160px]">
+              <ArrowUpDown className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="score">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-orange-500" />
+                  Lead Score
+                </div>
+              </SelectItem>
+              <SelectItem value="recent">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  Most Recent
+                </div>
+              </SelectItem>
+              <SelectItem value="name">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Name
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Customer List */}
@@ -240,14 +288,25 @@ export default function CRM() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredCustomers.map((customer) => {
               const customerTags = getCustomerTags(customer.id);
+              const scoreInfo = getLeadScoreLabel(customer.lead_score);
               return (
                 <Card
                   key={customer.id}
-                  className="cursor-pointer hover:bg-accent/50 transition-colors"
+                  className="cursor-pointer hover:bg-accent/50 transition-colors relative"
                   onClick={() => handleCustomerClick(customer)}
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
+                    {/* Lead Score Badge */}
+                    <div 
+                      className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold text-white"
+                      style={{ backgroundColor: scoreInfo.color }}
+                    >
+                      <Flame className="w-3 h-3" />
+                      {scoreInfo.label}
+                      <span className="opacity-80">({customer.lead_score})</span>
+                    </div>
+
+                    <div className="flex items-start gap-3 pr-20">
                       <Avatar className="w-12 h-12">
                         <AvatarImage src={customer.avatar_url || undefined} />
                         <AvatarFallback className="bg-primary text-primary-foreground">
@@ -660,6 +719,44 @@ function CustomerDetailPanel({
           )}
         </div>
       </div>
+
+      {/* Lead Score */}
+      {(() => {
+        const scoreInfo = getLeadScoreLabel(customer.lead_score);
+        return (
+          <Card className="border-2" style={{ borderColor: scoreInfo.color }}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: scoreInfo.color }}
+                  >
+                    <Flame className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Lead Score</p>
+                    <p className="text-2xl font-bold">{customer.lead_score}</p>
+                  </div>
+                </div>
+                <Badge 
+                  className="text-sm font-semibold text-white"
+                  style={{ backgroundColor: scoreInfo.color }}
+                >
+                  {scoreInfo.label} Lead
+                </Badge>
+              </div>
+              <div className="mt-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-4">
+                  <span><TrendingUp className="w-3 h-3 inline mr-1" />Bids: +{customer.bid_count * 30}</span>
+                  <span>Viewings: +{customer.viewing_count * 15}</span>
+                  <span>Inspections: +{customer.inspection_count * 10}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-3">

@@ -13,6 +13,51 @@ export interface CRMCustomer {
   viewing_count: number;
   bid_count: number;
   last_interaction: string | null;
+  lead_score: number;
+}
+
+// Lead scoring weights
+const LEAD_SCORE_WEIGHTS = {
+  bid: 30,           // Highest buying intent
+  viewing: 15,       // Medium intent
+  inspection: 10,    // Initial interest
+  recency_7_days: 20,  // Very recent activity bonus
+  recency_30_days: 10, // Recent activity bonus
+};
+
+export function calculateLeadScore(
+  inspectionCount: number,
+  viewingCount: number,
+  bidCount: number,
+  lastInteraction: string | null
+): number {
+  let score = 0;
+  
+  // Activity scores
+  score += bidCount * LEAD_SCORE_WEIGHTS.bid;
+  score += viewingCount * LEAD_SCORE_WEIGHTS.viewing;
+  score += inspectionCount * LEAD_SCORE_WEIGHTS.inspection;
+  
+  // Recency bonus
+  if (lastInteraction) {
+    const daysSinceInteraction = Math.floor(
+      (Date.now() - new Date(lastInteraction).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    if (daysSinceInteraction <= 7) {
+      score += LEAD_SCORE_WEIGHTS.recency_7_days;
+    } else if (daysSinceInteraction <= 30) {
+      score += LEAD_SCORE_WEIGHTS.recency_30_days;
+    }
+  }
+  
+  return score;
+}
+
+export function getLeadScoreLabel(score: number): { label: string; color: string } {
+  if (score >= 60) return { label: 'Hot', color: '#ef4444' };
+  if (score >= 30) return { label: 'Warm', color: '#f97316' };
+  if (score >= 10) return { label: 'Cool', color: '#3b82f6' };
+  return { label: 'New', color: '#6b7280' };
 }
 
 export interface CRMNote {
@@ -150,18 +195,26 @@ export function useAgentCRM(agentId: string | undefined) {
         }
       }
 
-      return profiles.map(profile => ({
-        id: profile.id,
-        email: profile.email,
-        first_name: profile.first_name,
-        last_name: profile.last_name,
-        phone: profile.phone,
-        avatar_url: profile.avatar_url,
-        inspection_count: inspectionCounts.get(profile.id) || 0,
-        viewing_count: viewingCounts.get(profile.id) || 0,
-        bid_count: bidCounts.get(profile.id) || 0,
-        last_interaction: lastInteractions.get(profile.id) || null,
-      }));
+      return profiles.map(profile => {
+        const inspections = inspectionCounts.get(profile.id) || 0;
+        const viewings = viewingCounts.get(profile.id) || 0;
+        const bids = bidCounts.get(profile.id) || 0;
+        const lastInt = lastInteractions.get(profile.id) || null;
+        
+        return {
+          id: profile.id,
+          email: profile.email,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          phone: profile.phone,
+          avatar_url: profile.avatar_url,
+          inspection_count: inspections,
+          viewing_count: viewings,
+          bid_count: bids,
+          last_interaction: lastInt,
+          lead_score: calculateLeadScore(inspections, viewings, bids, lastInt),
+        };
+      });
     },
     enabled: !!agentId,
   });
