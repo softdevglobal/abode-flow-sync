@@ -28,7 +28,7 @@ export function InspectionQRDialog({
   if (!inspection) return null;
 
   // Generate the check-in URL/deep link
-  const checkInUrl = `${window.location.origin}/check-in?inspectionId=${inspection.id}&propertyId=${inspection.property_id}`;
+  const checkInUrl = `${window.location.origin}/checkin?inspectionId=${inspection.id}`;
   
   // Also generate a JSON payload for flexibility
   const qrPayload = JSON.stringify({
