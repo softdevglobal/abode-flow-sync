@@ -136,34 +136,49 @@ export function useAuctionControls(auctionId: string | undefined) {
   const queryClient = useQueryClient();
 
   const updateAuctionStatus = useMutation({
-    mutationFn: async ({ status, currentBid }: { status: string; currentBid?: number }) => {
+    mutationFn: async ({ status, currentBid }: { status: 'pending' | 'live' | 'paused' | 'sold' | 'passed_in'; currentBid?: number }) => {
       if (!auctionId) throw new Error('No auction ID');
 
-      const updateData: any = { status };
+      const updateData: { status: 'pending' | 'live' | 'paused' | 'sold' | 'passed_in'; current_bid?: number } = { status };
       if (currentBid !== undefined) {
         updateData.current_bid = currentBid;
       }
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('auctions')
         .update(updateData)
-        .eq('id', auctionId);
+        .eq('id', auctionId)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Failed to update auction status:', error);
+        throw error;
+      }
+      
+      console.log('Auction status updated:', data);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['auction', auctionId] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-auctions'] });
     },
   });
 
   const updatePropertyStatus = useMutation({
     mutationFn: async ({ propertyId, status }: { propertyId: string; status: 'active' | 'pending' | 'sold' | 'off_market' }) => {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('properties')
         .update({ status })
-        .eq('id', propertyId);
+        .eq('id', propertyId)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Failed to update property status:', error);
+        throw error;
+      }
+      
+      console.log('Property status updated:', data);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agent-properties'] });
