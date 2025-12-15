@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -11,6 +13,7 @@ import PropertyDetail from "./pages/PropertyDetail";
 import CalculatorPage from "./pages/CalculatorPage";
 import CheckIn from "./pages/CheckIn";
 import MyViewings from "./pages/MyViewings";
+import Auth from "./pages/Auth";
 
 // Agent Pages
 import AgentDashboard from "./pages/agent/Dashboard";
@@ -29,28 +32,90 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          {/* Public / Landing */}
-          <Route path="/" element={<Landing />} />
+        <AuthProvider>
+          <Routes>
+            {/* Public / Landing */}
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={<Auth />} />
 
-          {/* Customer Routes */}
-          <Route path="/browse" element={<Browse />} />
-          <Route path="/property/:id" element={<PropertyDetail />} />
-          <Route path="/calculator" element={<CalculatorPage />} />
-          <Route path="/checkin" element={<CheckIn />} />
-          <Route path="/viewings" element={<MyViewings />} />
+            {/* Public Routes */}
+            <Route path="/browse" element={<Browse />} />
+            <Route path="/property/:id" element={<PropertyDetail />} />
+            <Route path="/calculator" element={<CalculatorPage />} />
+            <Route path="/checkin" element={<CheckIn />} />
 
-          {/* Agent Routes */}
-          <Route path="/agent" element={<AgentDashboard />} />
-          <Route path="/agent/properties" element={<AgentProperties />} />
-          <Route path="/agent/property/:id" element={<PropertyDetail />} />
-          <Route path="/agent/requests" element={<AgentRequests />} />
-          <Route path="/agent/inspections" element={<AgentInspections />} />
-          <Route path="/agent/appraisals" element={<AgentAppraisals />} />
+            {/* Customer Protected Routes */}
+            <Route
+              path="/viewings"
+              element={
+                <ProtectedRoute requiredRole="customer">
+                  <MyViewings />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Catch-all */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            {/* Agent Protected Routes */}
+            <Route
+              path="/agent"
+              element={
+                <ProtectedRoute requiredRole="agent">
+                  <AgentDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/agent/dashboard"
+              element={
+                <ProtectedRoute requiredRole="agent">
+                  <AgentDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/agent/properties"
+              element={
+                <ProtectedRoute requiredRole="agent">
+                  <AgentProperties />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/agent/property/:id"
+              element={
+                <ProtectedRoute requiredRole="agent">
+                  <PropertyDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/agent/requests"
+              element={
+                <ProtectedRoute requiredRole="agent">
+                  <AgentRequests />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/agent/inspections"
+              element={
+                <ProtectedRoute requiredRole="agent">
+                  <AgentInspections />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/agent/appraisals"
+              element={
+                <ProtectedRoute requiredRole="agent">
+                  <AgentAppraisals />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Catch-all */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
