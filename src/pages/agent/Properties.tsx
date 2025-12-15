@@ -1,6 +1,7 @@
-import { Header, MobileNav } from '@/components/layout/MobileNav';
-import { PropertyCard } from '@/components/property/PropertyCard';
-import { PropertyListingForm } from '@/components/property/PropertyListingForm';
+import { useState } from 'react';
+import { AgentLayout } from '@/components/layout/AgentLayout';
+import { AgentPropertyCard } from '@/components/property/AgentPropertyCard';
+import { PropertyListingFormDB } from '@/components/property/PropertyListingFormDB';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -8,6 +9,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Sheet,
@@ -15,94 +18,171 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { Plus, Search } from 'lucide-react';
-import { mockProperties } from '@/data/mockData';
-import { useState } from 'react';
-import { Property } from '@/types';
-import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Plus, Search, Loader2, Building2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAgentProperties } from '@/hooks/useAgentProperties';
+import type { Tables, TablesInsert } from '@/integrations/supabase/types';
+
+type Property = Tables<'properties'>;
+type PropertyStatus = 'all' | 'active' | 'pending' | 'sold' | 'off_market';
 
 export default function AgentProperties() {
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<PropertyStatus>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingProperty, setEditingProperty] = useState<Property | undefined>();
+  const [editingProperty, setEditingProperty] = useState<Property | null>(null);
+  const [deleteProperty, setDeleteProperty] = useState<Property | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const isMobile = useIsMobile();
 
-  const filteredProperties = mockProperties.filter(property =>
-    property.title.toLowerCase().includes(search.toLowerCase()) ||
-    property.suburb.toLowerCase().includes(search.toLowerCase())
-  );
+  const { properties, loading, createProperty, updateProperty, deleteProperty: deletePropertyFn } = useAgentProperties();
 
-  const handleCreateProperty = (data: Partial<Property>) => {
-    // In production, this would save to the database
-    console.log('Creating property:', data);
-    toast.success('Property listing created successfully');
+  // Filter properties
+  const filteredProperties = properties.filter((property) => {
+    const matchesSearch =
+      property.title.toLowerCase().includes(search.toLowerCase()) ||
+      property.address.toLowerCase().includes(search.toLowerCase()) ||
+      property.suburb.toLowerCase().includes(search.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || property.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const handleCreateProperty = async (data: Omit<TablesInsert<'properties'>, 'agent_id'>) => {
+    await createProperty(data);
     setIsFormOpen(false);
-    setEditingProperty(undefined);
+    setEditingProperty(null);
+  };
+
+  const handleUpdateProperty = async (data: Omit<TablesInsert<'properties'>, 'agent_id'>) => {
+    if (editingProperty) {
+      await updateProperty(editingProperty.id, data);
+      setIsFormOpen(false);
+      setEditingProperty(null);
+    }
   };
 
   const handleOpenForm = (property?: Property) => {
-    setEditingProperty(property);
+    setEditingProperty(property || null);
     setIsFormOpen(true);
   };
 
   const handleCloseForm = () => {
     setIsFormOpen(false);
-    setEditingProperty(undefined);
+    setEditingProperty(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteProperty) return;
+    setIsDeleting(true);
+    await deletePropertyFn(deleteProperty.id);
+    setIsDeleting(false);
+    setDeleteProperty(null);
   };
 
   const FormContent = (
-    <PropertyListingForm
+    <PropertyListingFormDB
       property={editingProperty}
-      onSubmit={handleCreateProperty}
+      onSubmit={editingProperty ? handleUpdateProperty : handleCreateProperty}
       onCancel={handleCloseForm}
     />
   );
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <Header userRole="agent" />
-
-      <main className="container px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
+    <AgentLayout>
+      <div className="container px-4 py-6">
+        {/* Page Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground mb-1">
-              Your Properties
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
+              Your Listings
             </h1>
-            <p className="text-muted-foreground text-sm">
-              {mockProperties.length} listings
+            <p className="text-muted-foreground">
+              {properties.length} {properties.length === 1 ? 'property' : 'properties'}
             </p>
           </div>
-          <Button variant="gold" onClick={() => handleOpenForm()}>
+          <Button variant="gold" onClick={() => handleOpenForm()} className="w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
-            Add New
+            Add New Listing
           </Button>
         </div>
 
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            placeholder="Search your listings..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 h-12"
-          />
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              placeholder="Search by address or suburb..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10 h-11"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as PropertyStatus)}>
+            <SelectTrigger className="w-full sm:w-[180px] h-11">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="sold">Sold</SelectItem>
+              <SelectItem value="off_market">Off Market</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredProperties.map((property, index) => (
-            <div key={property.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-              <PropertyCard 
-                property={property} 
-                linkPrefix="/agent/property" 
-                onEdit={handleOpenForm}
-              />
+        {/* Properties Grid */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : filteredProperties.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Building2 className="w-8 h-8 text-muted-foreground" />
             </div>
-          ))}
-        </div>
-      </main>
+            <h3 className="font-display text-lg font-semibold mb-1">No properties found</h3>
+            <p className="text-muted-foreground mb-4">
+              {search || statusFilter !== 'all'
+                ? 'Try adjusting your filters'
+                : 'Create your first listing to get started'}
+            </p>
+            {!search && statusFilter === 'all' && (
+              <Button variant="gold" onClick={() => handleOpenForm()}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Listing
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredProperties.map((property, index) => (
+              <div 
+                key={property.id} 
+                className="animate-fade-in" 
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
+                <AgentPropertyCard
+                  property={property}
+                  onEdit={handleOpenForm}
+                  onDelete={setDeleteProperty}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-      {/* Mobile: Sheet from bottom, Desktop: Dialog */}
+      {/* Add/Edit Property Form - Mobile: Sheet, Desktop: Dialog */}
       {isMobile ? (
         <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
           <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
@@ -127,7 +207,26 @@ export default function AgentProperties() {
         </Dialog>
       )}
 
-      <MobileNav userRole="agent" />
-    </div>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteProperty} onOpenChange={() => setDeleteProperty(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-display">Delete Property</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{deleteProperty?.title}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDeleteProperty(null)} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting}>
+              {isDeleting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </AgentLayout>
   );
 }
