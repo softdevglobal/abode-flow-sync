@@ -117,3 +117,27 @@ export interface AffordabilityResult {
   totalAmountPaid: number;
   loanToValueRatio: number;
 }
+
+// Auction Types
+export type AuctionStatus = 'pending' | 'live' | 'paused' | 'sold' | 'passed_in';
+
+export interface Auction {
+  id: string;
+  propertyId: string;
+  startTime: Date;
+  endTime: Date;
+  minIncrement: number;
+  reservePrice?: number;
+  currentBid: number;
+  status: AuctionStatus;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Bid {
+  id: string;
+  auctionId: string;
+  bidderId: string;
+  amount: number;
+  createdAt: Date;
+}
