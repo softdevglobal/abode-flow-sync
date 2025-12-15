@@ -81,17 +81,20 @@ export default function MyInspections() {
 
   const cancelMutation = useMutation({
     mutationFn: async (bookingId: string) => {
+      if (!user?.id) throw new Error('Not authenticated');
       const { error } = await supabase
         .from('inspection_bookings')
         .update({ status: 'cancelled' })
-        .eq('id', bookingId);
+        .eq('id', bookingId)
+        .eq('customer_id', user.id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-inspection-bookings'] });
       toast.success('RSVP cancelled');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Cancel RSVP error:', error);
       toast.error('Failed to cancel RSVP');
     },
   });
