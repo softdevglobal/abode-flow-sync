@@ -46,7 +46,14 @@ export default function Auth() {
 
   useEffect(() => {
     if (!loading && user) {
-      navigate('/');
+      // Check if there's a redirect destination stored
+      const redirectPath = sessionStorage.getItem('redirectAfterAuth');
+      if (redirectPath) {
+        sessionStorage.removeItem('redirectAfterAuth');
+        navigate(redirectPath);
+      } else {
+        navigate('/');
+      }
     }
   }, [user, loading, navigate]);
 
@@ -84,7 +91,7 @@ export default function Auth() {
     }
 
     toast.success('Welcome back!');
-    navigate('/');
+    // Redirect will be handled by the useEffect
   };
 
   const handleSignup = async (data: SignupFormData) => {
@@ -108,7 +115,7 @@ export default function Auth() {
     }
 
     toast.success('Account created successfully!');
-    navigate('/');
+    // Redirect will be handled by the useEffect
   };
 
   if (loading) {
