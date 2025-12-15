@@ -13,6 +13,9 @@ import CalculatorPage from "./pages/CalculatorPage";
 import CheckIn from "./pages/CheckIn";
 import MyViewings from "./pages/MyViewings";
 
+// Buyer Pages
+import LiveAuction from "./pages/buyer/LiveAuction";
+
 // Agent Pages
 import AgentDashboard from "./pages/agent/Dashboard";
 import AgentProperties from "./pages/agent/Properties";
@@ -43,6 +46,7 @@ const App = () => (
             <Route path="/calculator" element={<CalculatorPage />} />
             <Route path="/checkin" element={<CheckIn />} />
             <Route path="/viewings" element={<MyViewings />} />
+            <Route path="/auction/live/:id" element={<LiveAuction />} />
 
             {/* Agent View Routes */}
             <Route path="/agent" element={<AgentDashboard />} />
