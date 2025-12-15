@@ -1,18 +1,28 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MobileNav } from '@/components/layout/MobileNav';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { 
   Gavel, TrendingUp, Clock, Search, Bed, Bath, Car, 
-  MapPin, ArrowRight, Loader2 
+  MapPin, ArrowRight, Loader2, LogIn, UserCheck
 } from 'lucide-react';
 import { format, isPast, differenceInSeconds } from 'date-fns';
+import { toast } from 'sonner';
 
 type AuctionStatus = 'all' | 'live' | 'pending';
 
@@ -63,8 +73,34 @@ function CountdownTimer({ targetDate }: { targetDate: Date }) {
 }
 
 export default function Auctions() {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [statusFilter, setStatusFilter] = useState<AuctionStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
+  const [selectedAuctionId, setSelectedAuctionId] = useState<string | null>(null);
+
+  const handleRegisterToBid = (auctionId: string, isLive: boolean) => {
+    if (!user) {
+      setSelectedAuctionId(auctionId);
+      setShowRegisterDialog(true);
+    } else {
+      // User is authenticated, navigate to auction
+      if (isLive) {
+        toast.success('You are registered to bid!');
+      }
+      navigate(`/auction/live/${auctionId}`);
+    }
+  };
+
+  const handleSignInClick = () => {
+    // Store the intended auction destination
+    if (selectedAuctionId) {
+      sessionStorage.setItem('redirectAfterAuth', `/auction/live/${selectedAuctionId}`);
+    }
+    setShowRegisterDialog(false);
+    navigate('/auth');
+  };
 
   const { data: auctions = [], isLoading } = useQuery({
     queryKey: ['public-auctions', statusFilter],
@@ -333,17 +369,27 @@ export default function Auctions() {
                       </div>
                     </div>
 
-                    {/* CTA Button */}
-                    <Link to={`/auction/live/${auction.id}`}>
+                    {/* CTA Buttons */}
+                    <div className="space-y-2">
                       <Button 
                         className={`w-full ${isLive ? 'bg-red-500 hover:bg-red-600' : ''}`}
                         variant={isLive ? 'default' : 'outline'}
+                        onClick={() => handleRegisterToBid(auction.id, isLive)}
                       >
-                        <Gavel className="w-4 h-4 mr-2" />
-                        {isLive ? 'Join Live Auction' : 'View Auction'}
-                        <ArrowRight className="w-4 h-4 ml-2" />
+                        {user ? (
+                          <>
+                            <Gavel className="w-4 h-4 mr-2" />
+                            {isLive ? 'Join Live Auction' : 'View Auction'}
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="w-4 h-4 mr-2" />
+                            Register to Bid
+                          </>
+                        )}
                       </Button>
-                    </Link>
+                    </div>
                   </CardContent>
                 </Card>
               );
@@ -351,6 +397,43 @@ export default function Auctions() {
           </div>
         )}
       </main>
+
+      {/* Register to Bid Dialog */}
+      <Dialog open={showRegisterDialog} onOpenChange={setShowRegisterDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gavel className="w-5 h-5 text-primary" />
+              Register to Bid
+            </DialogTitle>
+            <DialogDescription>
+              Sign in or create an account to participate in live auctions and place bids on properties.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="flex items-start gap-3 p-3 bg-muted rounded-lg mb-4">
+              <UserCheck className="w-5 h-5 text-primary mt-0.5" />
+              <div>
+                <p className="font-medium text-sm">Why register?</p>
+                <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                  <li>• Place bids in real-time auctions</li>
+                  <li>• Track your bid history</li>
+                  <li>• Receive notifications on auction updates</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setShowRegisterDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSignInClick} className="gap-2">
+              <LogIn className="w-4 h-4" />
+              Sign In to Bid
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <MobileNav userRole="customer" />
     </div>
