@@ -45,6 +45,8 @@ import {
   Flame,
   ArrowUpDown,
   TrendingUp,
+  LayoutDashboard,
+  UserSearch,
 } from 'lucide-react';
 import { useAgentCRM, useCustomerDetails, CRMCustomer, CRMNote, CRMTag, getLeadScoreLabel } from '@/hooks/useAgentCRM';
 import { useAuth } from '@/hooks/useAuth';
@@ -56,6 +58,7 @@ import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { CRMDashboard } from '@/components/crm/CRMDashboard';
 
 const NOTE_TYPE_CONFIG = {
   call: { label: 'Call', icon: Phone, color: 'bg-blue-500' },
@@ -91,6 +94,7 @@ export default function CRM() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [filterTag, setFilterTag] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'score' | 'recent' | 'name'>('score');
+  const [activeView, setActiveView] = useState<'dashboard' | 'customers'>('dashboard');
 
   // Get agent ID
   const { data: agentData } = useQuery({
@@ -196,6 +200,33 @@ export default function CRM() {
             />
           </div>
         </div>
+
+        {/* View Tabs */}
+        <div className="flex items-center gap-2 border-b">
+          <Button
+            variant={activeView === 'dashboard' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveView('dashboard')}
+            className="rounded-b-none"
+          >
+            <LayoutDashboard className="w-4 h-4 mr-2" />
+            Dashboard
+          </Button>
+          <Button
+            variant={activeView === 'customers' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveView('customers')}
+            className="rounded-b-none"
+          >
+            <UserSearch className="w-4 h-4 mr-2" />
+            Customers
+          </Button>
+        </div>
+
+        {activeView === 'dashboard' ? (
+          <CRMDashboard customers={customers} isLoading={customersLoading} />
+        ) : (
+          <>
 
         {/* Search and Filter */}
         <div className="flex flex-col sm:flex-row gap-3">
@@ -372,6 +403,8 @@ export default function CRM() {
               );
             })}
           </div>
+        )}
+        </>
         )}
 
         {/* Customer Detail Sheet */}
