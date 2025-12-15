@@ -1,11 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 import { addDays, startOfDay, endOfDay } from 'date-fns';
 
-export function useAgentDashboard() {
-  const { agentId } = useAuth();
+// Demo agent ID for prototype mode (per project memories)
+const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 
+async function fetchAgentId(): Promise<string> {
+  const { data, error } = await supabase.from('agents').select('id').limit(1).single();
+  if (error || !data) return DEMO_AGENT_ID;
+  return data.id;
+}
+
+export function useAgentDashboard() {
+  // Fetch agent ID (uses first agent in DB or demo fallback)
+  const { data: agentId } = useQuery({
+    queryKey: ['dashboard-agent-id'],
+    queryFn: fetchAgentId,
+  });
   // Fetch active properties count
   const { data: activeCount = 0, isLoading: activeLoading } = useQuery({
     queryKey: ['dashboard-active-properties', agentId],
@@ -154,25 +165,35 @@ export function useAgentDashboard() {
   };
 }
 
-// Fetch recent notifications for agent
+// Fetch recent notifications for agent (uses agent's user_id)
 export function useAgentNotifications(limit: number = 5) {
-  const { user } = useAuth();
+  // For prototype, we get the agent's user_id from the agents table
+  const { data: agentData } = useQuery({
+    queryKey: ['dashboard-agent-user'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('agents').select('user_id').limit(1).single();
+      if (error || !data) return null;
+      return data;
+    },
+  });
+
+  const userId = agentData?.user_id;
 
   return useQuery({
-    queryKey: ['agent-notifications', user?.id, limit],
+    queryKey: ['agent-notifications', userId, limit],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!userId) return [];
       
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(limit);
       
       if (error) throw error;
       return data || [];
     },
-    enabled: !!user?.id,
+    enabled: !!userId,
   });
 }
