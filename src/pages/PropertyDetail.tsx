@@ -13,6 +13,7 @@ import { PropertyImageGallery } from '@/components/property/PropertyImageGallery
 import { AgentEnquiryCard } from '@/components/property/AgentEnquiryCard';
 import { PropertyFeaturesGrid } from '@/components/property/PropertyFeaturesGrid';
 import { InspectionTimes } from '@/components/property/InspectionTimes';
+import { PropertyMap } from '@/components/property/PropertyMap';
 
 export default function PropertyDetail() {
   const { id } = useParams();
@@ -222,6 +223,14 @@ export default function PropertyDetail() {
 
             {/* Inspection Times */}
             <InspectionTimes inspections={inspections} />
+
+            {/* Map */}
+            <PropertyMap
+              address={property.address}
+              suburb={property.suburb}
+              state={property.state}
+              postcode={property.postcode}
+            />
 
             {/* Mobile Agent Card */}
             <div className="lg:hidden">
