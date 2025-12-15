@@ -19,8 +19,7 @@ const agentNavItems = [
 const customerNavItems = [
   { icon: Home, label: 'Browse', path: '/browse' },
   { icon: Gavel, label: 'Auctions', path: '/auctions' },
-  { icon: Calendar, label: 'Viewings', path: '/viewings' },
-  { icon: Calculator, label: 'Calculator', path: '/calculator' },
+  { icon: Calendar, label: 'Inspections', path: '/inspections' },
   { icon: User, label: 'Profile', path: '/profile' },
 ];
 
