@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AgencyThemeProvider } from "@/contexts/AgencyThemeContext";
 import { AuthProvider } from "@/hooks/useAuth";
 
@@ -32,6 +32,12 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Redirect component that preserves query params
+const CheckInRedirect = () => {
+  const location = useLocation();
+  return <Navigate to={`/checkin${location.search}`} replace />;
+};
+
 const App = () => (
   <AgencyThemeProvider>
     <QueryClientProvider client={queryClient}>
@@ -49,6 +55,7 @@ const App = () => (
               <Route path="/property/:id" element={<PropertyDetail />} />
               <Route path="/calculator" element={<CalculatorPage />} />
               <Route path="/checkin" element={<CheckIn />} />
+              <Route path="/check-in" element={<CheckInRedirect />} />
               <Route path="/viewings" element={<MyViewings />} />
               <Route path="/auctions" element={<Auctions />} />
               <Route path="/auction/live/:id" element={<LiveAuction />} />
