@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAgencyTheme } from '@/contexts/AgencyThemeContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -39,6 +40,7 @@ import heroImage from '@/assets/hero-home.jpg';
 
 export default function Landing() {
   const navigate = useNavigate();
+  const config = useAgencyTheme();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showFloatingCheckIn, setShowFloatingCheckIn] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -173,15 +175,19 @@ export default function Landing() {
       >
         <div className="container flex items-center justify-between h-16 md:h-20">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-lg gradient-hero flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-primary-foreground" />
-            </div>
+            {config.logoUrl ? (
+              <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" />
+            ) : (
+              <div className="w-9 h-9 rounded-lg gradient-hero flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-primary-foreground" />
+              </div>
+            )}
             <span
               className={`font-display text-xl font-semibold transition-colors ${
                 isScrolled ? 'text-foreground' : 'text-primary-foreground'
               }`}
             >
-              Abode Flow Sync
+              {config.agencyName}
             </span>
           </Link>
 
@@ -467,7 +473,7 @@ export default function Landing() {
               How It Works
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Finding your perfect home is easy with Abode Flow Sync
+              Finding your perfect home is easy with {config.agencyName}
             </p>
           </div>
 
@@ -608,7 +614,7 @@ export default function Landing() {
                 Ready to Find Your Perfect Home?
               </h2>
               <p className="text-accent-foreground/80 mb-8 max-w-xl mx-auto">
-                Join thousands of buyers who have found their dream property with Abode Flow Sync.
+                Join thousands of buyers who have found their dream property with {config.agencyName}.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/browse">
@@ -634,11 +640,15 @@ export default function Landing() {
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-9 h-9 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
-                  <Building2 className="w-5 h-5 text-primary-foreground" />
-                </div>
+                {config.logoUrl ? (
+                  <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" />
+                ) : (
+                  <div className="w-9 h-9 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                )}
                 <span className="font-display text-xl font-semibold text-primary-foreground">
-                  Abode Flow Sync
+                  {config.agencyName}
                 </span>
               </div>
               <p className="text-primary-foreground/70 max-w-sm mb-6">
@@ -709,7 +719,7 @@ export default function Landing() {
 
           <div className="border-t border-primary-foreground/20 pt-8">
             <p className="text-center text-primary-foreground/60 text-sm">
-              © {new Date().getFullYear()} Abode Flow Sync. All rights reserved.
+              © {new Date().getFullYear()} {config.agencyName}. All rights reserved.
             </p>
           </div>
         </div>
