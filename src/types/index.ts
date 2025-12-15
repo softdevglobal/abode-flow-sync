@@ -22,8 +22,8 @@ export interface Customer extends User {
   savedListings: string[];
 }
 
-export type PropertyType = 'house' | 'apartment' | 'townhouse' | 'land' | 'commercial';
-export type PropertyStatus = 'available' | 'under_offer' | 'sold' | 'leased' | 'off_market';
+export type PropertyType = 'house' | 'apartment' | 'townhouse' | 'land' | 'commercial' | 'rural';
+export type PropertyStatus = 'available' | 'under_offer' | 'sold' | 'leased' | 'off_market' | 'active' | 'pending';
 export type ListingType = 'sale' | 'rent';
 
 export interface Property {
