@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuction, useRealtimeBids, useAuctionControls } from '@/hooks/useRealtimeAuction';
+import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,17 +10,18 @@ import { Slider } from '@/components/ui/slider';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { ArrowLeft, Gavel, TrendingUp, Users, Clock, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Gavel, TrendingUp, Users, Clock, CheckCircle2, LogIn } from 'lucide-react';
 import { format } from 'date-fns';
-
-const DEMO_BIDDER_ID = 'buyer-demo-user-001';
 
 export default function LiveAuction() {
   const { id: auctionId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const { data: auction, isLoading: auctionLoading, refetch: refetchAuction } = useAuction(auctionId);
   const { bids, highestBid, bidCount, isSubscribed, latestBidId } = useRealtimeBids(auctionId);
   const { placeBid } = useAuctionControls(auctionId);
+
+  const bidderId = user?.id || null;
 
   const [bidAmount, setBidAmount] = useState<number>(0);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -30,7 +32,7 @@ export default function LiveAuction() {
   const minBid = currentBid + minIncrement;
   const maxBid = currentBid + (minIncrement * 50);
 
-  const isHighestBidder = highestBid?.bidder_id === DEMO_BIDDER_ID;
+  const isHighestBidder = bidderId ? highestBid?.bidder_id === bidderId : false;
   const isSold = auction?.status === 'sold';
   const isPassedIn = auction?.status === 'passed_in';
   const isLive = auction?.status === 'live';
@@ -77,14 +79,15 @@ export default function LiveAuction() {
 
   // Trigger confetti when our bid becomes highest
   useEffect(() => {
-    if (latestBidId && highestBid?.id === latestBidId && highestBid?.bidder_id === DEMO_BIDDER_ID) {
+    if (!bidderId) return;
+    if (latestBidId && highestBid?.id === latestBidId && highestBid?.bidder_id === bidderId) {
       setLastBidWasMine(true);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
-    } else if (latestBidId && highestBid?.bidder_id !== DEMO_BIDDER_ID) {
+    } else if (latestBidId && highestBid?.bidder_id !== bidderId) {
       setLastBidWasMine(false);
     }
-  }, [latestBidId, highestBid]);
+  }, [latestBidId, highestBid, bidderId]);
 
   // Update min bid when current bid changes
   useEffect(() => {
@@ -94,19 +97,23 @@ export default function LiveAuction() {
   }, [currentBid, minIncrement]);
 
   const handlePlaceBid = useCallback(async () => {
+    if (!bidderId) {
+      toast.error('Please sign in to place a bid');
+      return;
+    }
     if (!auctionId || bidAmount < minBid) {
       toast.error(`Minimum bid is $${minBid.toLocaleString()}`);
       return;
     }
 
     try {
-      await placeBid.mutateAsync({ amount: bidAmount, bidderId: DEMO_BIDDER_ID });
+      await placeBid.mutateAsync({ amount: bidAmount, bidderId });
       toast.success(`Bid of $${bidAmount.toLocaleString()} placed!`);
     } catch (error) {
       console.error('Failed to place bid:', error);
       toast.error('Failed to place bid');
     }
-  }, [auctionId, bidAmount, minBid, placeBid]);
+  }, [auctionId, bidAmount, minBid, placeBid, bidderId]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-AU', {
@@ -117,7 +124,7 @@ export default function LiveAuction() {
     }).format(amount);
   };
 
-  if (auctionLoading) {
+  if (auctionLoading || authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading auction...</div>
@@ -307,6 +314,23 @@ export default function LiveAuction() {
               </p>
             </CardContent>
           </Card>
+        ) : !user ? (
+          /* Sign in prompt for unauthenticated users */
+          <Card>
+            <CardContent className="py-8 text-center">
+              <LogIn className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Sign in to Place Bids</h3>
+              <p className="text-muted-foreground mb-6">
+                Create an account or sign in to participate in this live auction.
+              </p>
+              <Button asChild size="lg">
+                <Link to="/auth">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In to Bid
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <Card>
             <CardContent className="py-6">
@@ -408,10 +432,10 @@ export default function LiveAuction() {
                   key={bid.id}
                   className={`flex justify-between items-center p-2 rounded ${
                     index === 0 ? 'bg-primary/10' : 'bg-muted/50'
-                  } ${bid.bidder_id === DEMO_BIDDER_ID ? 'ring-1 ring-primary' : ''}`}
+                  } ${bidderId && bid.bidder_id === bidderId ? 'ring-1 ring-primary' : ''}`}
                 >
                   <span className="text-sm">
-                    {bid.bidder_id === DEMO_BIDDER_ID ? 'You' : `Bidder ${bid.bidder_id.slice(-4)}`}
+                    {bidderId && bid.bidder_id === bidderId ? 'You' : `Bidder ${bid.bidder_id.slice(-4)}`}
                   </span>
                   <span className="font-semibold">{formatCurrency(bid.amount)}</span>
                 </div>
