@@ -224,7 +224,7 @@ export default function CRM() {
         </div>
 
         {activeView === 'dashboard' ? (
-          <CRMDashboard customers={customers} isLoading={customersLoading} />
+          <CRMDashboard customers={customers} isLoading={customersLoading} agentId={agentId} />
         ) : (
           <>
 

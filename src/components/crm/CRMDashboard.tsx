@@ -1,64 +1,81 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { 
   Users, 
   Calendar, 
   Eye, 
   Gavel, 
   TrendingUp, 
-  TrendingDown,
   ArrowRight,
   Flame,
   Target,
   BarChart3,
+  CalendarDays,
 } from 'lucide-react';
 import { CRMCustomer, getLeadScoreLabel } from '@/hooks/useAgentCRM';
+import { 
+  useCRMMetrics, 
+  calculateMetricsFromActivities, 
+  getDateRangeFromPreset,
+  DateRangePreset 
+} from '@/hooks/useCRMMetrics';
+import { format } from 'date-fns';
 
 interface CRMDashboardProps {
   customers: CRMCustomer[];
   isLoading: boolean;
+  agentId: string | undefined;
 }
 
-export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
-  // Calculate funnel metrics
-  const totalCustomers = customers.length;
-  const customersWithInspections = customers.filter(c => c.inspection_count > 0).length;
-  const customersWithViewings = customers.filter(c => c.viewing_count > 0).length;
-  const customersWithBids = customers.filter(c => c.bid_count > 0).length;
-  
-  // Multiple engagement (customers who did more than one type of action)
-  const customersWithMultipleEngagements = customers.filter(
-    c => (c.inspection_count > 0 ? 1 : 0) + (c.viewing_count > 0 ? 1 : 0) + (c.bid_count > 0 ? 1 : 0) >= 2
-  ).length;
+const DATE_PRESETS: { value: DateRangePreset; label: string }[] = [
+  { value: 'all', label: 'All Time' },
+  { value: '7d', label: 'Last 7 Days' },
+  { value: '30d', label: 'Last 30 Days' },
+  { value: '90d', label: 'Last 90 Days' },
+  { value: 'this_month', label: 'This Month' },
+  { value: 'last_month', label: 'Last Month' },
+];
 
-  // Lead score distribution
+export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProps) {
+  const [datePreset, setDatePreset] = useState<DateRangePreset>('all');
+  const dateRange = getDateRangeFromPreset(datePreset);
+  
+  const { data: metricsData, isLoading: metricsLoading } = useCRMMetrics(agentId, dateRange);
+  
+  // Calculate metrics from filtered activities
+  const metrics = metricsData 
+    ? calculateMetricsFromActivities(metricsData.activities, metricsData.customerIds)
+    : null;
+
+  // Lead score distribution (from all customers - not date filtered)
   const hotLeads = customers.filter(c => c.lead_score >= 60).length;
   const warmLeads = customers.filter(c => c.lead_score >= 30 && c.lead_score < 60).length;
   const coolLeads = customers.filter(c => c.lead_score >= 10 && c.lead_score < 30).length;
   const newLeads = customers.filter(c => c.lead_score < 10).length;
-
-  // Conversion rates
-  const inspectionToViewingRate = customersWithInspections > 0 
-    ? Math.round((customersWithViewings / customersWithInspections) * 100) 
-    : 0;
-  const viewingToBidRate = customersWithViewings > 0 
-    ? Math.round((customersWithBids / customersWithViewings) * 100) 
-    : 0;
-  const inspectionToBidRate = customersWithInspections > 0
-    ? Math.round((customersWithBids / customersWithInspections) * 100)
-    : 0;
-
-  // Total activities
-  const totalInspections = customers.reduce((sum, c) => sum + c.inspection_count, 0);
-  const totalViewings = customers.reduce((sum, c) => sum + c.viewing_count, 0);
-  const totalBids = customers.reduce((sum, c) => sum + c.bid_count, 0);
+  const totalCustomers = customers.length;
 
   // Average lead score
   const avgLeadScore = totalCustomers > 0 
     ? Math.round(customers.reduce((sum, c) => sum + c.lead_score, 0) / totalCustomers)
     : 0;
 
-  if (isLoading) {
+  // Multiple engagement
+  const customersWithMultipleEngagements = customers.filter(
+    c => (c.inspection_count > 0 ? 1 : 0) + (c.viewing_count > 0 ? 1 : 0) + (c.bid_count > 0 ? 1 : 0) >= 2
+  ).length;
+
+  const loading = isLoading || metricsLoading;
+
+  if (loading) {
     return (
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-4">
@@ -76,14 +93,47 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
 
   return (
     <div className="space-y-6">
+      {/* Date Range Filter */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="w-5 h-5 text-muted-foreground" />
+              <span className="text-sm font-medium">Time Period:</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DateRangePreset)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DATE_PRESETS.map(preset => (
+                    <SelectItem key={preset.value} value={preset.value}>
+                      {preset.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {dateRange && (
+                <Badge variant="secondary" className="text-xs">
+                  {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d, yyyy')}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Leads</p>
-                <p className="text-3xl font-bold">{totalCustomers}</p>
+                <p className="text-sm text-muted-foreground">
+                  {datePreset === 'all' ? 'Total Leads' : 'Active Leads'}
+                </p>
+                <p className="text-3xl font-bold">{metrics?.totalLeads ?? 0}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                 <Users className="w-6 h-6 text-primary" />
@@ -141,6 +191,11 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5" />
             Lead Funnel
+            {datePreset !== 'all' && (
+              <Badge variant="outline" className="ml-2 text-xs font-normal">
+                {DATE_PRESETS.find(p => p.value === datePreset)?.label}
+              </Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -154,9 +209,9 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
                   style={{ minHeight: '120px' }}
                 >
                   <Calendar className="w-8 h-8 mx-auto text-blue-500 mb-2" />
-                  <p className="text-3xl font-bold text-blue-600">{customersWithInspections}</p>
+                  <p className="text-3xl font-bold text-blue-600">{metrics?.customersWithInspections ?? 0}</p>
                   <p className="text-sm text-muted-foreground">Inspections</p>
-                  <p className="text-xs text-muted-foreground mt-1">{totalInspections} total</p>
+                  <p className="text-xs text-muted-foreground mt-1">{metrics?.totalInspections ?? 0} total</p>
                 </div>
               </div>
 
@@ -164,7 +219,7 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
               <div className="flex flex-col items-center gap-1 px-2">
                 <ArrowRight className="w-6 h-6 text-muted-foreground" />
                 <Badge variant="outline" className="text-xs">
-                  {inspectionToViewingRate}%
+                  {metrics?.inspectionToViewingRate ?? 0}%
                 </Badge>
               </div>
 
@@ -175,9 +230,9 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
                   style={{ minHeight: '120px' }}
                 >
                   <Eye className="w-8 h-8 mx-auto text-green-500 mb-2" />
-                  <p className="text-3xl font-bold text-green-600">{customersWithViewings}</p>
+                  <p className="text-3xl font-bold text-green-600">{metrics?.customersWithViewings ?? 0}</p>
                   <p className="text-sm text-muted-foreground">Viewings</p>
-                  <p className="text-xs text-muted-foreground mt-1">{totalViewings} total</p>
+                  <p className="text-xs text-muted-foreground mt-1">{metrics?.totalViewings ?? 0} total</p>
                 </div>
               </div>
 
@@ -185,7 +240,7 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
               <div className="flex flex-col items-center gap-1 px-2">
                 <ArrowRight className="w-6 h-6 text-muted-foreground" />
                 <Badge variant="outline" className="text-xs">
-                  {viewingToBidRate}%
+                  {metrics?.viewingToBidRate ?? 0}%
                 </Badge>
               </div>
 
@@ -196,9 +251,9 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
                   style={{ minHeight: '120px' }}
                 >
                   <Gavel className="w-8 h-8 mx-auto text-purple-500 mb-2" />
-                  <p className="text-3xl font-bold text-purple-600">{customersWithBids}</p>
+                  <p className="text-3xl font-bold text-purple-600">{metrics?.customersWithBids ?? 0}</p>
                   <p className="text-sm text-muted-foreground">Bidders</p>
-                  <p className="text-xs text-muted-foreground mt-1">{totalBids} total</p>
+                  <p className="text-xs text-muted-foreground mt-1">{metrics?.totalBids ?? 0} total</p>
                 </div>
               </div>
             </div>
@@ -206,15 +261,15 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
             {/* Conversion Summary */}
             <div className="grid grid-cols-3 gap-4 pt-4 border-t">
               <div className="text-center">
-                <p className="text-2xl font-bold text-blue-600">{inspectionToViewingRate}%</p>
+                <p className="text-2xl font-bold text-blue-600">{metrics?.inspectionToViewingRate ?? 0}%</p>
                 <p className="text-xs text-muted-foreground">Inspection → Viewing</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-green-600">{viewingToBidRate}%</p>
+                <p className="text-2xl font-bold text-green-600">{metrics?.viewingToBidRate ?? 0}%</p>
                 <p className="text-xs text-muted-foreground">Viewing → Bid</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-purple-600">{inspectionToBidRate}%</p>
+                <p className="text-2xl font-bold text-purple-600">{metrics?.inspectionToBidRate ?? 0}%</p>
                 <p className="text-xs text-muted-foreground">Inspection → Bid</p>
               </div>
             </div>
@@ -310,6 +365,11 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5" />
               Activity Summary
+              {datePreset !== 'all' && (
+                <Badge variant="outline" className="ml-2 text-xs font-normal">
+                  {DATE_PRESETS.find(p => p.value === datePreset)?.label}
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -319,10 +379,10 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
                   <Calendar className="w-5 h-5 text-blue-500" />
                   <div>
                     <p className="font-medium">Inspections</p>
-                    <p className="text-xs text-muted-foreground">{customersWithInspections} customers</p>
+                    <p className="text-xs text-muted-foreground">{metrics?.customersWithInspections ?? 0} customers</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-blue-600">{totalInspections}</p>
+                <p className="text-2xl font-bold text-blue-600">{metrics?.totalInspections ?? 0}</p>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg">
@@ -330,10 +390,10 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
                   <Eye className="w-5 h-5 text-green-500" />
                   <div>
                     <p className="font-medium">Viewing Requests</p>
-                    <p className="text-xs text-muted-foreground">{customersWithViewings} customers</p>
+                    <p className="text-xs text-muted-foreground">{metrics?.customersWithViewings ?? 0} customers</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-green-600">{totalViewings}</p>
+                <p className="text-2xl font-bold text-green-600">{metrics?.totalViewings ?? 0}</p>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg">
@@ -341,10 +401,10 @@ export function CRMDashboard({ customers, isLoading }: CRMDashboardProps) {
                   <Gavel className="w-5 h-5 text-purple-500" />
                   <div>
                     <p className="font-medium">Bids Placed</p>
-                    <p className="text-xs text-muted-foreground">{customersWithBids} customers</p>
+                    <p className="text-xs text-muted-foreground">{metrics?.customersWithBids ?? 0} customers</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-purple-600">{totalBids}</p>
+                <p className="text-2xl font-bold text-purple-600">{metrics?.totalBids ?? 0}</p>
               </div>
             </div>
           </CardContent>
