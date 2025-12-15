@@ -233,6 +233,14 @@ export default function Landing() {
             >
               Browse Properties
             </Link>
+            <Link
+              to="/auctions"
+              className={`text-sm font-medium transition-colors hover:text-accent ${
+                isScrolled ? 'text-foreground' : 'text-primary-foreground'
+              }`}
+            >
+              Live Auctions
+            </Link>
             <a
               href="#how-it-works"
               className={`text-sm font-medium transition-colors hover:text-accent ${
@@ -289,6 +297,13 @@ export default function Landing() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Browse Properties
+              </Link>
+              <Link
+                to="/auctions"
+                className="text-foreground font-medium py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Live Auctions
               </Link>
               <a
                 href="#how-it-works"
