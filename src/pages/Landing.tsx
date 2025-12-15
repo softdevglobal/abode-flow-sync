@@ -35,6 +35,8 @@ import {
   Linkedin,
   QrCode,
   Camera,
+  Gavel,
+  TrendingUp,
 } from 'lucide-react';
 import heroImage from '@/assets/hero-home.jpg';
 
@@ -89,6 +91,36 @@ export default function Landing() {
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(6);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Fetch live auctions
+  const { data: liveAuctions } = useQuery({
+    queryKey: ['live-auctions-landing'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('auctions')
+        .select(`
+          *,
+          property:property_id (
+            id,
+            title,
+            address,
+            suburb,
+            state,
+            postcode,
+            images,
+            bedrooms,
+            bathrooms,
+            parking
+          )
+        `)
+        .in('status', ['live', 'pending'])
+        .order('start_time', { ascending: true })
+        .limit(4);
 
       if (error) throw error;
       return data;
@@ -464,6 +496,109 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Live Auctions Section */}
+      {liveAuctions && liveAuctions.length > 0 && (
+        <section className="py-16 md:py-24 bg-background">
+          <div className="container px-4">
+            <div className="flex items-center justify-between mb-10">
+              <div>
+                <Badge className="bg-red-500/10 text-red-500 mb-3">
+                  <span className="w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse" />
+                  Live Now
+                </Badge>
+                <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
+                  Live Auctions
+                </h2>
+                <p className="text-muted-foreground">
+                  Bid on properties in real-time
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {liveAuctions.map((auction) => {
+                const property = auction.property as {
+                  id: string;
+                  title: string;
+                  address: string;
+                  suburb: string;
+                  state: string;
+                  postcode: string;
+                  images: string[] | null;
+                  bedrooms: number | null;
+                  bathrooms: number | null;
+                  parking: number | null;
+                } | null;
+
+                return (
+                  <Link
+                    key={auction.id}
+                    to={`/auction/live/${auction.id}`}
+                    className="group"
+                  >
+                    <Card className="overflow-hidden border-0 shadow-elegant transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 relative">
+                      {auction.status === 'live' && (
+                        <div className="absolute top-3 left-3 z-10">
+                          <Badge className="bg-red-500 text-white animate-pulse">
+                            <Gavel className="w-3 h-3 mr-1" />
+                            LIVE
+                          </Badge>
+                        </div>
+                      )}
+                      {auction.status === 'pending' && (
+                        <div className="absolute top-3 left-3 z-10">
+                          <Badge variant="secondary">
+                            Upcoming
+                          </Badge>
+                        </div>
+                      )}
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <img
+                          src={property?.images?.[0] || '/placeholder.svg'}
+                          alt={property?.title || 'Auction Property'}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute bottom-3 left-3 right-3">
+                          <p className="text-white text-sm truncate">
+                            {property?.suburb}, {property?.state}
+                          </p>
+                        </div>
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold text-foreground mb-2 line-clamp-1">
+                          {property?.title || 'Auction Property'}
+                        </h3>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Current Bid</p>
+                            <p className="font-display text-xl font-bold text-accent">
+                              {formatPrice(auction.current_bid || 0)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <TrendingUp className="w-4 h-4" />
+                            <span className="text-xs">+{formatPrice(auction.min_increment)}</span>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="gold" 
+                          size="sm" 
+                          className="w-full mt-3"
+                        >
+                          <Gavel className="w-4 h-4 mr-2" />
+                          {auction.status === 'live' ? 'Bid Now' : 'View Auction'}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* How It Works */}
       <section id="how-it-works" className="py-16 md:py-24">
