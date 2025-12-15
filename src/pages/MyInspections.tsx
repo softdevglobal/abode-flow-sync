@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Header, MobileNav } from '@/components/layout/MobileNav';
@@ -8,9 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   Calendar, Clock, MapPin, Loader2, 
-  LogIn, Home, CalendarCheck, ExternalLink
+  LogIn, Home, CalendarCheck, ExternalLink, X
 } from 'lucide-react';
 import { format, parseISO, isFuture, isPast } from 'date-fns';
+import { toast } from 'sonner';
 
 interface InspectionBooking {
   id: string;
@@ -76,10 +77,30 @@ export default function MyInspections() {
     enabled: !!user?.id,
   });
 
-  const upcomingInspections = bookings.filter(
+  const queryClient = useQueryClient();
+
+  const cancelMutation = useMutation({
+    mutationFn: async (bookingId: string) => {
+      const { error } = await supabase
+        .from('inspection_bookings')
+        .update({ status: 'cancelled' })
+        .eq('id', bookingId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-inspection-bookings'] });
+      toast.success('RSVP cancelled');
+    },
+    onError: () => {
+      toast.error('Failed to cancel RSVP');
+    },
+  });
+
+  const activeBookings = bookings.filter((b) => b.status !== 'cancelled');
+  const upcomingInspections = activeBookings.filter(
     (b) => b.inspection && isFuture(parseISO(b.inspection.date_time))
   );
-  const pastInspections = bookings.filter(
+  const pastInspections = activeBookings.filter(
     (b) => b.inspection && isPast(parseISO(b.inspection.date_time))
   );
 
@@ -149,7 +170,12 @@ export default function MyInspections() {
                 </h2>
                 <div className="space-y-3">
                   {upcomingInspections.map((booking) => (
-                    <InspectionCard key={booking.id} booking={booking} />
+                    <InspectionCard 
+                      key={booking.id} 
+                      booking={booking} 
+                      onCancel={() => cancelMutation.mutate(booking.id)}
+                      isCancelling={cancelMutation.isPending}
+                    />
                   ))}
                 </div>
               </section>
@@ -176,7 +202,12 @@ export default function MyInspections() {
   );
 }
 
-function InspectionCard({ booking, isPast }: { booking: InspectionBooking; isPast?: boolean }) {
+function InspectionCard({ booking, isPast, onCancel, isCancelling }: { 
+  booking: InspectionBooking; 
+  isPast?: boolean;
+  onCancel?: () => void;
+  isCancelling?: boolean;
+}) {
   const inspection = booking.inspection;
   const property = inspection?.property;
 
@@ -241,13 +272,25 @@ function InspectionCard({ booking, isPast }: { booking: InspectionBooking; isPas
             </div>
 
             {!isPast && property && (
-              <div className="mt-3">
+              <div className="mt-3 flex items-center gap-2">
                 <Button asChild variant="outline" size="sm" className="h-7 text-xs">
                   <Link to={`/property/${property.id}`}>
                     <ExternalLink className="w-3 h-3 mr-1" />
                     View Property
                   </Link>
                 </Button>
+                {onCancel && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={onCancel}
+                    disabled={isCancelling}
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Cancel RSVP
+                  </Button>
+                )}
               </div>
             )}
           </div>
