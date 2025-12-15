@@ -446,6 +446,69 @@ export type Database = {
         }
         Relationships: []
       }
+      viewing_requests: {
+        Row: {
+          agent_id: string
+          agent_notes: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          message: string | null
+          property_id: string
+          proposed_date: string | null
+          proposed_time: string | null
+          requested_date: string
+          requested_time: string
+          status: Database["public"]["Enums"]["viewing_request_status"]
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          agent_notes?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          message?: string | null
+          property_id: string
+          proposed_date?: string | null
+          proposed_time?: string | null
+          requested_date: string
+          requested_time: string
+          status?: Database["public"]["Enums"]["viewing_request_status"]
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          agent_notes?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          message?: string | null
+          property_id?: string
+          proposed_date?: string | null
+          proposed_time?: string | null
+          requested_date?: string
+          requested_time?: string
+          status?: Database["public"]["Enums"]["viewing_request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viewing_requests_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viewing_requests_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -485,6 +548,13 @@ export type Database = {
         | "land"
         | "commercial"
         | "rural"
+      viewing_request_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "counter_proposed"
+        | "confirmed"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -638,6 +708,14 @@ export const Constants = {
         "land",
         "commercial",
         "rural",
+      ],
+      viewing_request_status: [
+        "pending",
+        "accepted",
+        "declined",
+        "counter_proposed",
+        "confirmed",
+        "cancelled",
       ],
     },
   },
