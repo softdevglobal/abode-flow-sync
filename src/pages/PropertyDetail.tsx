@@ -14,6 +14,7 @@ import { AgentEnquiryCard } from '@/components/property/AgentEnquiryCard';
 import { PropertyFeaturesGrid } from '@/components/property/PropertyFeaturesGrid';
 import { InspectionTimes } from '@/components/property/InspectionTimes';
 import { PropertyMap } from '@/components/property/PropertyMap';
+import { InspectionRequestDialog } from '@/components/property/InspectionRequestDialog';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -24,6 +25,7 @@ export default function PropertyDetail() {
   const { id } = useParams();
   const [isSaved, setIsSaved] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [showInspectionDialog, setShowInspectionDialog] = useState(false);
 
   // Fetch property from database
   const { data: property, isLoading: propertyLoading } = useQuery({
@@ -132,7 +134,7 @@ export default function PropertyDetail() {
   };
 
   const handleRequestInspection = () => {
-    toast.success('Inspection request sent! The agent will respond shortly.');
+    setShowInspectionDialog(true);
   };
 
   const statusLabel: Record<string, string> = {
@@ -422,6 +424,15 @@ export default function PropertyDetail() {
           Request an Inspection
         </Button>
       </div>
+
+      {/* Inspection Request Dialog */}
+      <InspectionRequestDialog
+        open={showInspectionDialog}
+        onOpenChange={setShowInspectionDialog}
+        propertyId={property.id}
+        propertyTitle={property.title}
+        agentId={property.agent_id}
+      />
 
       <MobileNav userRole="customer" />
     </div>
