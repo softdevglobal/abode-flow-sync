@@ -1,32 +1,26 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { format, isPast, isFuture, isToday } from 'date-fns';
+import { format } from 'date-fns';
 import { 
   Plus, 
   Gavel, 
-  Play, 
-  Pause, 
   Clock, 
-  TrendingUp,
   Building2,
-  CheckCircle,
-  AlertTriangle,
   Loader2,
-  ExternalLink
+  Pencil,
+  CalendarDays
 } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AgentLayout } from '@/components/layout/AgentLayout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
@@ -49,8 +43,6 @@ import { cn } from '@/lib/utils';
 // Demo agent ID for prototype
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 
-type StatusFilter = 'all' | 'pending' | 'live' | 'sold' | 'passed_in';
-
 interface AuctionWithProperty {
   id: string;
   property_id: string;
@@ -72,9 +64,9 @@ interface AuctionWithProperty {
   } | null;
 }
 
-function useAgentAuctions() {
+function useUpcomingAuctions() {
   return useQuery({
-    queryKey: ['agent-auctions'],
+    queryKey: ['agent-upcoming-auctions'],
     queryFn: async (): Promise<AuctionWithProperty[]> => {
       // Get agent's properties first
       const { data: agentData } = await supabase
@@ -94,12 +86,13 @@ function useAgentAuctions() {
 
       const propertyIds = properties.map(p => p.id);
 
-      // Get auctions for these properties
+      // Get auctions excluding sold and passed_in, ordered by start_time ascending
       const { data: auctions, error } = await supabase
         .from('auctions')
         .select('*')
         .in('property_id', propertyIds)
-        .order('start_time', { ascending: false });
+        .not('status', 'in', '("sold","passed_in")')
+        .order('start_time', { ascending: true });
 
       if (error) throw error;
       if (!auctions || auctions.length === 0) return [];
@@ -136,7 +129,7 @@ function CreateAuctionDialog({
   const [reservePrice, setReservePrice] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
-  // Filter out properties that already have auctions
+  // Filter out properties that already have active auctions
   const { data: existingAuctions } = useQuery({
     queryKey: ['existing-auctions'],
     queryFn: async () => {
@@ -161,12 +154,10 @@ function CreateAuctionDialog({
     setIsCreating(true);
 
     try {
-      // Combine date and time
       const [hours, minutes] = startTime.split(':').map(Number);
       const startDateTime = new Date(startDate);
       startDateTime.setHours(hours, minutes, 0, 0);
 
-      // End time is 1 hour after start by default
       const endDateTime = new Date(startDateTime);
       endDateTime.setHours(endDateTime.getHours() + 1);
 
@@ -183,11 +174,10 @@ function CreateAuctionDialog({
       if (error) throw error;
 
       toast.success('Auction created successfully');
-      queryClient.invalidateQueries({ queryKey: ['agent-auctions'] });
+      queryClient.invalidateQueries({ queryKey: ['agent-upcoming-auctions'] });
       queryClient.invalidateQueries({ queryKey: ['existing-auctions'] });
       onOpenChange(false);
 
-      // Reset form
       setSelectedProperty('');
       setStartDate(undefined);
       setStartTime('10:00');
@@ -207,7 +197,7 @@ function CreateAuctionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Gavel className="w-5 h-5" />
-            Create New Auction
+            Schedule New Auction
           </DialogTitle>
           <DialogDescription>
             Set up a live auction for one of your properties.
@@ -215,7 +205,6 @@ function CreateAuctionDialog({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          {/* Property Selection */}
           <div className="space-y-2">
             <Label>Property</Label>
             <Select value={selectedProperty} onValueChange={setSelectedProperty}>
@@ -241,7 +230,6 @@ function CreateAuctionDialog({
             </Select>
           </div>
 
-          {/* Date & Time */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Auction Date</Label>
@@ -281,7 +269,6 @@ function CreateAuctionDialog({
             </div>
           </div>
 
-          {/* Pricing */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Min Increment ($)</Label>
@@ -311,7 +298,7 @@ function CreateAuctionDialog({
           </DialogClose>
           <Button onClick={handleCreate} disabled={isCreating || !selectedProperty || !startDate}>
             {isCreating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Create Auction
+            Schedule Auction
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -321,72 +308,17 @@ function CreateAuctionDialog({
 
 function AuctionCard({ auction }: { auction: AuctionWithProperty }) {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const property = auction.property;
   const startTime = new Date(auction.start_time);
-  const isLive = auction.status === 'live';
-  const isPending = auction.status === 'pending';
-  const isSold = auction.status === 'sold';
-  const isPassedIn = auction.status === 'passed_in';
-  const isPaused = auction.status === 'paused';
-
-  const startAuction = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from('auctions')
-        .update({ status: 'live' })
-        .eq('id', auction.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agent-auctions'] });
-      toast.success('Auction is now LIVE!');
-    },
-    onError: () => toast.error('Failed to start auction'),
-  });
-
-  const pauseAuction = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from('auctions')
-        .update({ status: 'paused' })
-        .eq('id', auction.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agent-auctions'] });
-      toast.info('Auction paused');
-    },
-    onError: () => toast.error('Failed to pause auction'),
-  });
-
-  const resumeAuction = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from('auctions')
-        .update({ status: 'live' })
-        .eq('id', auction.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agent-auctions'] });
-      toast.success('Auction resumed');
-    },
-    onError: () => toast.error('Failed to resume auction'),
-  });
 
   const getStatusBadge = () => {
     switch (auction.status) {
       case 'live':
         return <Badge variant="success" className="animate-pulse">LIVE</Badge>;
       case 'pending':
-        return <Badge variant="secondary">Pending</Badge>;
+        return <Badge variant="secondary">Scheduled</Badge>;
       case 'paused':
-        return <Badge variant="warning">Paused</Badge>;
-      case 'sold':
-        return <Badge variant="default" className="bg-success">Sold</Badge>;
-      case 'passed_in':
-        return <Badge variant="outline">Passed In</Badge>;
+        return <Badge variant="outline" className="border-amber-500 text-amber-600">Paused</Badge>;
       default:
         return <Badge variant="secondary">{auction.status}</Badge>;
     }
@@ -394,211 +326,141 @@ function AuctionCard({ auction }: { auction: AuctionWithProperty }) {
 
   return (
     <Card className={cn(
-      "transition-all",
-      isLive && "border-success/50 bg-success/5",
-      (isSold || isPassedIn) && "opacity-75"
+      "overflow-hidden transition-all hover:shadow-lg",
+      auction.status === 'live' && "ring-2 ring-green-500/50"
     )}>
-      <CardContent className="p-0">
-        <div className="flex gap-4">
-          {/* Property Image */}
-          <div className="w-28 h-28 sm:w-36 sm:h-36 flex-shrink-0">
-            {property?.images?.[0] ? (
-              <img
-                src={property.images[0]}
-                alt={property.title}
-                className="w-full h-full object-cover rounded-l-lg"
-              />
-            ) : (
-              <div className="w-full h-full bg-muted rounded-l-lg flex items-center justify-center">
-                <Building2 className="w-8 h-8 text-muted-foreground" />
-              </div>
-            )}
+      {/* Property Image */}
+      <div className="aspect-video relative">
+        {property?.images?.[0] ? (
+          <img
+            src={property.images[0]}
+            alt={property.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-muted flex items-center justify-center">
+            <Building2 className="w-12 h-12 text-muted-foreground" />
           </div>
+        )}
+        <div className="absolute top-3 right-3">
+          {getStatusBadge()}
+        </div>
+      </div>
 
-          {/* Content */}
-          <div className="flex-1 py-4 pr-4">
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <h3 className="font-semibold text-foreground line-clamp-1">
-                  {property?.address || 'Unknown Property'}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {property?.suburb}, {property?.state}
-                </p>
-              </div>
-              {getStatusBadge()}
-            </div>
+      <CardContent className="p-4 space-y-4">
+        {/* Address */}
+        <div>
+          <h3 className="font-semibold text-foreground line-clamp-1">
+            {property?.address || 'Unknown Property'}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {property?.suburb}, {property?.state} {property?.postcode}
+          </p>
+        </div>
 
-            {/* Auction Details */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mb-3">
-              <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                {format(startTime, 'MMM d, yyyy h:mm a')}
-              </span>
-              {auction.current_bid > 0 && (
-                <span className="flex items-center gap-1 text-primary font-medium">
-                  <TrendingUp className="w-4 h-4" />
-                  ${Number(auction.current_bid).toLocaleString()}
-                </span>
-              )}
-            </div>
+        {/* Auction Date/Time */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CalendarDays className="w-4 h-4" />
+          <span>{format(startTime, 'EEEE, MMMM d, yyyy')}</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Clock className="w-4 h-4" />
+          <span>{format(startTime, 'h:mm a')}</span>
+        </div>
 
-            {/* Actions */}
-            <div className="flex flex-wrap gap-2">
-              {isPending && (
-                <Button 
-                  size="sm" 
-                  onClick={() => startAuction.mutate()}
-                  disabled={startAuction.isPending}
-                >
-                  <Play className="w-4 h-4 mr-1" />
-                  Start Live
-                </Button>
-              )}
-
-              {isLive && (
-                <>
-                  <Button 
-                    size="sm"
-                    onClick={() => navigate(`/agent/auction/${auction.id}/run`)}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-1" />
-                    Open Console
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => pauseAuction.mutate()}
-                    disabled={pauseAuction.isPending}
-                  >
-                    <Pause className="w-4 h-4 mr-1" />
-                    Pause
-                  </Button>
-                </>
-              )}
-
-              {isPaused && (
-                <>
-                  <Button 
-                    size="sm"
-                    onClick={() => resumeAuction.mutate()}
-                    disabled={resumeAuction.isPending}
-                  >
-                    <Play className="w-4 h-4 mr-1" />
-                    Resume
-                  </Button>
-                  <Button 
-                    size="sm"
-                    variant="outline"
-                    onClick={() => navigate(`/agent/auction/${auction.id}/run`)}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-1" />
-                    Console
-                  </Button>
-                </>
-              )}
-
-              {isSold && (
-                <div className="flex items-center gap-2 text-success">
-                  <CheckCircle className="w-4 h-4" />
-                  <span className="text-sm font-medium">
-                    Sold for ${Number(auction.current_bid).toLocaleString()}
-                  </span>
-                </div>
-              )}
-
-              {isPassedIn && (
-                <div className="flex items-center gap-2 text-warning">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="text-sm font-medium">Passed In</span>
-                </div>
-              )}
-            </div>
-          </div>
+        {/* Actions */}
+        <div className="flex gap-2 pt-2">
+          <Button 
+            className="flex-1"
+            size="lg"
+            onClick={() => navigate(`/agent/auction/${auction.id}/run`)}
+          >
+            <Gavel className="w-4 h-4 mr-2" />
+            Launch Console
+          </Button>
+          <Button 
+            variant="outline"
+            size="lg"
+            onClick={() => {
+              // Placeholder for edit functionality
+              toast.info('Edit auction coming soon');
+            }}
+          >
+            <Pencil className="w-4 h-4" />
+          </Button>
         </div>
       </CardContent>
     </Card>
   );
 }
 
+function EmptyState({ onSchedule }: { onSchedule: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 px-4">
+      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+        <Gavel className="w-8 h-8 text-muted-foreground" />
+      </div>
+      <h3 className="text-xl font-semibold mb-2">No upcoming auctions</h3>
+      <p className="text-muted-foreground text-center mb-6 max-w-sm">
+        You don't have any scheduled auctions. Create one to get started with live bidding.
+      </p>
+      <div className="flex gap-3">
+        <Button onClick={onSchedule}>
+          <Plus className="w-4 h-4 mr-2" />
+          Schedule Auction
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/agent/properties">
+            <Building2 className="w-4 h-4 mr-2" />
+            View Properties
+          </Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function AgentAuctions() {
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const { data: auctions, isLoading } = useAgentAuctions();
-
-  const filteredAuctions = auctions?.filter(a => {
-    if (statusFilter === 'all') return true;
-    return a.status === statusFilter;
-  }) || [];
-
-  // Stats
-  const liveCount = auctions?.filter(a => a.status === 'live').length || 0;
-  const pendingCount = auctions?.filter(a => a.status === 'pending').length || 0;
-  const soldCount = auctions?.filter(a => a.status === 'sold').length || 0;
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const { data: auctions, isLoading } = useUpcomingAuctions();
 
   return (
     <AgentLayout>
-      <div className="container px-4 py-6">
+      <div className="container py-6 space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground mb-1 flex items-center gap-2">
-              <Gavel className="w-6 h-6" />
-              Auctions
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              {liveCount} live • {pendingCount} pending • {soldCount} sold
+            <h1 className="text-2xl font-bold text-foreground">Auctions</h1>
+            <p className="text-muted-foreground">
+              Manage and run live auctions for your properties
             </p>
           </div>
-          <Button onClick={() => setIsCreateOpen(true)}>
+          <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Create Auction
+            Schedule Auction
           </Button>
         </div>
 
-        {/* Filters */}
-        <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)} className="mb-6">
-          <TabsList className="grid grid-cols-5 w-full sm:w-auto">
-            <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
-            <TabsTrigger value="pending" className="text-xs sm:text-sm">Pending</TabsTrigger>
-            <TabsTrigger value="live" className="text-xs sm:text-sm">Live</TabsTrigger>
-            <TabsTrigger value="sold" className="text-xs sm:text-sm">Sold</TabsTrigger>
-            <TabsTrigger value="passed_in" className="text-xs sm:text-sm">Passed In</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
         {/* Content */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-16">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
-        ) : filteredAuctions.length === 0 ? (
-          <div className="text-center py-12 bg-muted/50 rounded-lg">
-            <Gavel className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground mb-4">
-              {statusFilter === 'all' 
-                ? 'No auctions yet' 
-                : `No ${statusFilter.replace('_', ' ')} auctions`}
-            </p>
-            <Button onClick={() => setIsCreateOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Your First Auction
-            </Button>
-          </div>
+        ) : !auctions || auctions.length === 0 ? (
+          <EmptyState onSchedule={() => setCreateDialogOpen(true)} />
         ) : (
-          <div className="space-y-4">
-            {filteredAuctions.map((auction) => (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {auctions.map((auction) => (
               <AuctionCard key={auction.id} auction={auction} />
             ))}
           </div>
         )}
-
-        {/* Create Dialog */}
-        <CreateAuctionDialog 
-          open={isCreateOpen} 
-          onOpenChange={setIsCreateOpen} 
-        />
       </div>
+
+      <CreateAuctionDialog 
+        open={createDialogOpen} 
+        onOpenChange={setCreateDialogOpen} 
+      />
     </AgentLayout>
   );
 }
