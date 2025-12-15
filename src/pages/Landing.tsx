@@ -32,6 +32,8 @@ import {
   Twitter,
   Instagram,
   Linkedin,
+  QrCode,
+  Camera,
 } from 'lucide-react';
 import heroImage from '@/assets/hero-home.jpg';
 
@@ -502,6 +504,68 @@ export default function Landing() {
               <p className="text-muted-foreground">
                 Connect directly with agents and secure your dream property with confidence.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Inspection Check-In Section */}
+      <section className="py-16 md:py-24 bg-secondary">
+        <div className="container px-4">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <Badge className="bg-accent/10 text-accent mb-4">Quick Check-In</Badge>
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
+                Attending an Inspection?
+              </h2>
+              <p className="text-muted-foreground mb-6 text-lg">
+                Scan the QR code at the property entrance to check in instantly. 
+                The agent will be notified of your arrival and you can start exploring right away.
+              </p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-3 text-muted-foreground">
+                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                    <QrCode className="w-4 h-4 text-accent" />
+                  </div>
+                  <span>Scan QR code at property</span>
+                </li>
+                <li className="flex items-center gap-3 text-muted-foreground">
+                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-accent" />
+                  </div>
+                  <span>Automatic attendance registration</span>
+                </li>
+                <li className="flex items-center gap-3 text-muted-foreground">
+                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
+                    <Camera className="w-4 h-4 text-accent" />
+                  </div>
+                  <span>No app download required</span>
+                </li>
+              </ul>
+              <Link to="/check-in">
+                <Button variant="gold" size="lg">
+                  <QrCode className="w-5 h-5 mr-2" />
+                  Open Check-In Scanner
+                </Button>
+              </Link>
+            </div>
+            <div className="relative">
+              <Card className="bg-card shadow-xl rounded-2xl p-8 text-center max-w-sm mx-auto">
+                <div className="w-32 h-32 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-6">
+                  <QrCode className="w-16 h-16 text-accent" />
+                </div>
+                <h3 className="font-display text-xl font-semibold mb-2">Ready to Check In?</h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Look for the QR code displayed at the property entrance
+                </p>
+                <Link to="/check-in">
+                  <Button variant="outline" className="w-full">
+                    <Camera className="w-4 h-4 mr-2" />
+                    Scan QR Code
+                  </Button>
+                </Link>
+              </Card>
+              <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-accent/5 rounded-full blur-3xl" />
             </div>
           </div>
         </div>
