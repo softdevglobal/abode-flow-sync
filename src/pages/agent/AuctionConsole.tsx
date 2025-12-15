@@ -47,7 +47,7 @@ export default function AuctionConsole() {
 
   const { data: auction, isLoading: auctionLoading } = useAuction(id);
   const { bids, highestBid, bidCount, isSubscribed, latestBidId } = useRealtimeBids(id);
-  const { updateAuctionStatus, updatePropertyStatus } = useAuctionControls(id);
+  const { updateAuctionStatus, updatePropertyStatus, placeBid } = useAuctionControls(id);
 
   const currentHighBid = highestBid?.amount || auction?.current_bid || 0;
   const minIncrement = auction?.min_increment || 1000;
@@ -132,15 +132,23 @@ export default function AuctionConsole() {
     }
   };
 
-  const handleManualBid = () => {
+  const handleManualBid = async () => {
     const amount = parseFloat(manualBidAmount);
     if (isNaN(amount) || amount < minNextBid) {
       toast.error(`Bid must be at least $${minNextBid.toLocaleString()}`);
       return;
     }
-    // In a real app, this would create a bid on behalf of an in-room bidder
-    toast.success(`Manual bid of $${amount.toLocaleString()} recorded`);
-    setManualBidAmount('');
+    
+    try {
+      // Use a placeholder bidder ID for manual/in-room bids (agent's demo ID)
+      const manualBidderId = 'da39b948-790b-4a66-94b4-394445a98062';
+      await placeBid.mutateAsync({ amount, bidderId: manualBidderId });
+      toast.success(`Manual bid of $${amount.toLocaleString()} recorded`);
+      setManualBidAmount('');
+    } catch (error) {
+      console.error('Failed to place bid:', error);
+      toast.error('Failed to record bid');
+    }
   };
 
   if (auctionLoading) {
