@@ -10,7 +10,7 @@ import { Slider } from '@/components/ui/slider';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { ArrowLeft, Gavel, TrendingUp, Users, Clock, CheckCircle2, LogIn } from 'lucide-react';
+import { ArrowLeft, Gavel, TrendingUp, Users, Clock, CheckCircle2, LogIn, UserCheck, UserX } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function LiveAuction() {
@@ -188,6 +188,18 @@ export default function LiveAuction() {
             Back
           </Button>
           <div className="flex items-center gap-2">
+            {/* Bidder Registration Status */}
+            {user ? (
+              <Badge variant="outline" className="text-xs bg-green-50 dark:bg-green-950 border-green-300 dark:border-green-700 text-green-700 dark:text-green-400">
+                <UserCheck className="w-3 h-3 mr-1" />
+                Registered to Bid
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-xs bg-amber-50 dark:bg-amber-950 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400">
+                <UserX className="w-3 h-3 mr-1" />
+                Not Registered
+              </Badge>
+            )}
             {isSubscribed && (
               <Badge variant="outline" className="text-xs">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-1.5 animate-pulse" />
