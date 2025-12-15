@@ -31,9 +31,9 @@ const propertySchema = z.object({
   suburb: z.string().min(2, 'Suburb is required'),
   state: z.string().min(2, 'State is required'),
   postcode: z.string().min(4, 'Valid postcode required').max(4),
-  propertyType: z.enum(['house', 'apartment', 'townhouse', 'land', 'commercial']),
+  propertyType: z.enum(['house', 'apartment', 'townhouse', 'land', 'commercial', 'rural']),
   listingType: z.enum(['sale', 'rent']),
-  status: z.enum(['available', 'under_offer', 'sold', 'leased', 'off_market']),
+  status: z.enum(['available', 'under_offer', 'sold', 'leased', 'off_market', 'active', 'pending']),
   priceFrom: z.coerce.number().min(0, 'Price must be positive').optional(),
   priceTo: z.coerce.number().min(0, 'Price must be positive').optional(),
   priceDisplay: z.string().optional(),
@@ -269,6 +269,7 @@ export function PropertyListingForm({ property, onSubmit, onCancel }: PropertyLi
                     <SelectItem value="townhouse">Townhouse</SelectItem>
                     <SelectItem value="land">Land</SelectItem>
                     <SelectItem value="commercial">Commercial</SelectItem>
+                    <SelectItem value="rural">Rural</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

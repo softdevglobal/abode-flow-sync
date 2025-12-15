@@ -3,10 +3,13 @@ import { Header, MobileNav } from '@/components/layout/MobileNav';
 import { PropertyCard } from '@/components/property/PropertyCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Search, SlidersHorizontal, MapPin, X } from 'lucide-react';
-import { mockProperties } from '@/data/mockData';
-import { PropertyType } from '@/types';
+import { Search, SlidersHorizontal, MapPin, X, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
+
+type Property = Tables<'properties'>;
+type PropertyType = 'house' | 'apartment' | 'townhouse' | 'land' | 'commercial' | 'rural';
 
 const propertyTypes: { value: PropertyType | 'all'; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -21,15 +24,60 @@ export default function Browse() {
   const [selectedType, setSelectedType] = useState<PropertyType | 'all'>('all');
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredProperties = mockProperties.filter(property => {
+  // Fetch active properties from the database
+  const { data: properties = [], isLoading } = useQuery({
+    queryKey: ['browse-properties'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .in('status', ['active', 'pending'])
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Property[];
+    },
+  });
+
+  const filteredProperties = properties.filter(property => {
     const matchesSearch = 
       property.title.toLowerCase().includes(search.toLowerCase()) ||
       property.suburb.toLowerCase().includes(search.toLowerCase()) ||
       property.address.toLowerCase().includes(search.toLowerCase());
     
-    const matchesType = selectedType === 'all' || property.propertyType === selectedType;
+    const matchesType = selectedType === 'all' || property.property_type === selectedType;
 
     return matchesSearch && matchesType;
+  });
+
+  // Convert database property to UI format for PropertyCard
+  const mapPropertyForCard = (property: Property) => ({
+    id: property.id,
+    agentId: property.agent_id,
+    title: property.title,
+    address: property.address,
+    suburb: property.suburb,
+    state: property.state,
+    postcode: property.postcode,
+    propertyType: property.property_type as 'house' | 'apartment' | 'townhouse' | 'land' | 'commercial' | 'rural',
+    listingType: property.listing_type as 'sale' | 'rent',
+    status: property.status === 'active' ? 'available' as const 
+          : property.status === 'pending' ? 'under_offer' as const
+          : property.status as 'sold' | 'off_market',
+    price: property.price || undefined,
+    priceFrom: property.price_from || undefined,
+    priceTo: property.price_to || undefined,
+    priceDisplay: property.price_display || undefined,
+    bedrooms: property.bedrooms || 0,
+    bathrooms: property.bathrooms || 0,
+    parking: property.parking || 0,
+    landSize: property.land_size || undefined,
+    buildingSize: property.building_size || undefined,
+    description: property.description || '',
+    features: property.features || [],
+    images: property.images || [],
+    createdAt: new Date(property.created_at),
+    updatedAt: new Date(property.updated_at),
   });
 
   return (
@@ -88,7 +136,7 @@ export default function Browse() {
         {/* Results Count */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-muted-foreground">
-            {filteredProperties.length} properties found
+            {isLoading ? 'Loading...' : `${filteredProperties.length} properties found`}
           </p>
           {search && (
             <Button 
@@ -103,23 +151,34 @@ export default function Browse() {
           )}
         </div>
 
-        {/* Property Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredProperties.map((property, index) => (
-            <div key={property.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-              <PropertyCard property={property} linkPrefix="/property" />
-            </div>
-          ))}
-        </div>
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          </div>
+        )}
 
-        {filteredProperties.length === 0 && (
+        {/* Property Grid */}
+        {!isLoading && (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredProperties.map((property, index) => (
+              <div key={property.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <PropertyCard property={mapPropertyForCard(property)} linkPrefix="/property" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!isLoading && filteredProperties.length === 0 && (
           <div className="text-center py-12">
             <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="font-display text-lg font-semibold text-foreground mb-2">
               No properties found
             </h3>
             <p className="text-muted-foreground text-sm">
-              Try adjusting your search or filters
+              {properties.length === 0 
+                ? 'No properties have been listed yet. Check back soon!'
+                : 'Try adjusting your search or filters'}
             </p>
           </div>
         )}
