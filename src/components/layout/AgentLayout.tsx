@@ -9,7 +9,8 @@ import {
   ChevronDown,
   Menu,
   X,
-  Gavel
+  Gavel,
+  UserCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,7 +30,8 @@ const navItems = [
   { icon: Building2, label: 'Listings', path: '/agent/properties' },
   { icon: Gavel, label: 'Auctions', path: '/agent/auctions' },
   { icon: Calendar, label: 'Inspections', path: '/agent/inspections' },
-  { icon: Users, label: 'Clients', path: '/agent/requests' },
+  { icon: Users, label: 'Requests', path: '/agent/requests' },
+  { icon: UserCircle, label: 'CRM', path: '/agent/crm' },
 ];
 
 interface AgentLayoutProps {
