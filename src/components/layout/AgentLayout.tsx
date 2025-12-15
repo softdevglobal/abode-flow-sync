@@ -22,6 +22,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { useAgencyTheme } from '@/contexts/AgencyThemeContext';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/agent' },
@@ -39,6 +40,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const config = useAgencyTheme();
 
   const handleGoHome = () => {
     navigate('/');
@@ -51,11 +53,15 @@ export function AgentLayout({ children }: AgentLayoutProps) {
         <div className="container flex items-center justify-between h-16 px-4">
           {/* Logo */}
           <Link to="/agent" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg gradient-hero flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-primary-foreground" />
-            </div>
+            {config.logoUrl ? (
+              <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" />
+            ) : (
+              <div className="w-9 h-9 rounded-lg gradient-hero flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-primary-foreground" />
+              </div>
+            )}
             <span className="font-display text-xl font-bold text-foreground hidden sm:block">
-              Abode Flow Sync
+              {config.agencyName}
             </span>
           </Link>
 
