@@ -126,6 +126,51 @@ export type Database = {
           },
         ]
       }
+      crm_notes: {
+        Row: {
+          agent_id: string
+          content: string
+          created_at: string
+          customer_id: string
+          id: string
+          note_type: Database["public"]["Enums"]["crm_note_type"]
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          content: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          note_type?: Database["public"]["Enums"]["crm_note_type"]
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          content?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          note_type?: Database["public"]["Enums"]["crm_note_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_notes_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_notes_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           created_at: string
@@ -532,6 +577,7 @@ export type Database = {
         | "cancelled"
         | "attended"
         | "no_show"
+      crm_note_type: "call" | "email" | "meeting" | "follow_up" | "general"
       inspection_status: "scheduled" | "completed" | "cancelled"
       listing_type: "sale" | "rent"
       notification_type:
@@ -691,6 +737,7 @@ export const Constants = {
         "attended",
         "no_show",
       ],
+      crm_note_type: ["call", "email", "meeting", "follow_up", "general"],
       inspection_status: ["scheduled", "completed", "cancelled"],
       listing_type: ["sale", "rent"],
       notification_type: [
