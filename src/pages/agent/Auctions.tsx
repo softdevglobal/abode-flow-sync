@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
+import { format, isToday, isTomorrow } from 'date-fns';
 import { 
   Plus, 
   Gavel, 
   Clock, 
   Building2,
   Loader2,
-  Pencil,
-  CalendarDays
+  Trash2,
+  CalendarDays,
+  Radio
 } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { AgentLayout } from '@/components/layout/AgentLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,6 +25,16 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   Select,
   SelectContent,
@@ -51,9 +62,9 @@ interface AuctionWithProperty {
   min_increment: number;
   reserve_price: number | null;
   current_bid: number;
-  status: string;
+  status: 'pending' | 'live' | 'paused' | 'sold' | 'passed_in';
   created_at: string;
-  property: {
+  properties: {
     id: string;
     title: string;
     address: string;
@@ -64,9 +75,9 @@ interface AuctionWithProperty {
   } | null;
 }
 
-function useAllAuctions() {
+function useAgentAuctions() {
   return useQuery({
-    queryKey: ['agent-all-auctions'],
+    queryKey: ['agent-auctions'],
     queryFn: async (): Promise<AuctionWithProperty[]> => {
       // Get agent's properties first
       const { data: agentData } = await supabase
@@ -77,39 +88,63 @@ function useAllAuctions() {
 
       const agentId = agentData?.id || DEMO_AGENT_ID;
 
-      const { data: properties } = await supabase
-        .from('properties')
-        .select('id')
-        .eq('agent_id', agentId);
-
-      if (!properties || properties.length === 0) return [];
-
-      const propertyIds = properties.map(p => p.id);
-
-      // Get ALL auctions, ordered by start_time descending
-      const { data: auctions, error } = await supabase
+      // Fetch auctions with property join, filtered by agent, sorted by start_time ascending
+      const { data, error } = await supabase
         .from('auctions')
-        .select('*')
-        .in('property_id', propertyIds)
-        .order('start_time', { ascending: false });
+        .select(`
+          *,
+          properties!inner (
+            id,
+            title,
+            address,
+            suburb,
+            state,
+            postcode,
+            images
+          )
+        `)
+        .eq('properties.agent_id', agentId)
+        .order('start_time', { ascending: true });
 
       if (error) throw error;
-      if (!auctions || auctions.length === 0) return [];
-
-      // Get property details
-      const { data: fullProperties } = await supabase
-        .from('properties')
-        .select('id, title, address, suburb, state, postcode, images')
-        .in('id', propertyIds);
-
-      const propertiesMap = new Map(fullProperties?.map(p => [p.id, p]) || []);
-
-      return auctions.map(auction => ({
-        ...auction,
-        property: propertiesMap.get(auction.property_id) || null,
-      }));
+      return (data as AuctionWithProperty[]) || [];
     },
   });
+}
+
+function useDeleteAuction() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (auctionId: string) => {
+      const { error } = await supabase
+        .from('auctions')
+        .delete()
+        .eq('id', auctionId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agent-auctions'] });
+      queryClient.invalidateQueries({ queryKey: ['existing-auctions'] });
+      toast.success('Auction cancelled successfully');
+    },
+    onError: () => {
+      toast.error('Failed to cancel auction');
+    },
+  });
+}
+
+function formatAuctionTime(dateString: string): string {
+  const date = new Date(dateString);
+  const timeStr = format(date, 'h:mm a');
+  
+  if (isToday(date)) {
+    return `Today at ${timeStr}`;
+  }
+  if (isTomorrow(date)) {
+    return `Tomorrow at ${timeStr}`;
+  }
+  return format(date, 'MMM d') + ` at ${timeStr}`;
 }
 
 function CreateAuctionDialog({ 
@@ -173,7 +208,7 @@ function CreateAuctionDialog({
       if (error) throw error;
 
       toast.success('Auction created successfully');
-      queryClient.invalidateQueries({ queryKey: ['agent-upcoming-auctions'] });
+      queryClient.invalidateQueries({ queryKey: ['agent-auctions'] });
       queryClient.invalidateQueries({ queryKey: ['existing-auctions'] });
       onOpenChange(false);
 
@@ -241,7 +276,7 @@ function CreateAuctionDialog({
                       !startDate && "text-muted-foreground"
                     )}
                   >
-                    <Clock className="mr-2 h-4 w-4" />
+                    <CalendarDays className="mr-2 h-4 w-4" />
                     {startDate ? format(startDate, "PPP") : "Pick date"}
                   </Button>
                 </PopoverTrigger>
@@ -305,21 +340,35 @@ function CreateAuctionDialog({
   );
 }
 
-function AuctionCard({ auction, showActions = true }: { auction: AuctionWithProperty; showActions?: boolean }) {
+function AuctionCard({ 
+  auction, 
+  onDelete 
+}: { 
+  auction: AuctionWithProperty;
+  onDelete: (id: string) => void;
+}) {
   const navigate = useNavigate();
-  const property = auction.property;
-  const startTime = new Date(auction.start_time);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const property = auction.properties;
+  const isLive = auction.status === 'live';
+  const isPending = auction.status === 'pending';
+  const isCompleted = auction.status === 'sold' || auction.status === 'passed_in';
 
   const getStatusBadge = () => {
     switch (auction.status) {
       case 'live':
-        return <Badge variant="success" className="animate-pulse">LIVE</Badge>;
+        return (
+          <Badge className="bg-red-500 text-white gap-1.5 animate-pulse">
+            <Radio className="w-3 h-3" />
+            LIVE NOW
+          </Badge>
+        );
       case 'pending':
         return <Badge variant="secondary">Scheduled</Badge>;
       case 'paused':
         return <Badge variant="outline" className="border-amber-500 text-amber-600">Paused</Badge>;
       case 'sold':
-        return <Badge variant="default" className="bg-green-600">Sold</Badge>;
+        return <Badge className="bg-green-600 text-white">Sold</Badge>;
       case 'passed_in':
         return <Badge variant="outline">Passed In</Badge>;
       default:
@@ -327,99 +376,111 @@ function AuctionCard({ auction, showActions = true }: { auction: AuctionWithProp
     }
   };
 
-  const isCompleted = auction.status === 'sold' || auction.status === 'passed_in';
-
   return (
-    <Card className={cn(
-      "overflow-hidden transition-all hover:shadow-lg",
-      auction.status === 'live' && "ring-2 ring-green-500/50",
-      isCompleted && "opacity-80"
-    )}>
-      {/* Property Image */}
-      <div className="aspect-video relative">
-        {property?.images?.[0] ? (
-          <img
-            src={property.images[0]}
-            alt={property.title}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-muted flex items-center justify-center">
-            <Building2 className="w-12 h-12 text-muted-foreground" />
+    <>
+      <Card className={cn(
+        "overflow-hidden transition-all hover:shadow-lg",
+        isLive && "ring-2 ring-red-500 shadow-lg shadow-red-500/20",
+        isCompleted && "opacity-75"
+      )}>
+        {/* Property Image */}
+        <div className="aspect-video relative">
+          {property?.images?.[0] ? (
+            <img
+              src={property.images[0]}
+              alt={property.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center">
+              <Building2 className="w-12 h-12 text-muted-foreground" />
+            </div>
+          )}
+          <div className="absolute top-3 right-3">
+            {getStatusBadge()}
           </div>
-        )}
-        <div className="absolute top-3 right-3">
-          {getStatusBadge()}
-        </div>
-      </div>
-
-      <CardContent className="p-4 space-y-4">
-        {/* Address */}
-        <div>
-          <h3 className="font-semibold text-foreground line-clamp-1">
-            {property?.address || 'Unknown Property'}
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            {property?.suburb}, {property?.state} {property?.postcode}
-          </p>
+          {isLive && (
+            <div className="absolute inset-0 bg-gradient-to-t from-red-500/20 to-transparent pointer-events-none" />
+          )}
         </div>
 
-        {/* Auction Date/Time */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <CalendarDays className="w-4 h-4" />
-          <span>{format(startTime, 'EEEE, MMMM d, yyyy')}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Clock className="w-4 h-4" />
-          <span>{format(startTime, 'h:mm a')}</span>
-        </div>
+        <CardContent className="p-4 space-y-3">
+          {/* Address */}
+          <div>
+            <h3 className="font-semibold text-foreground line-clamp-1">
+              {property?.address || 'Unknown Property'}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {property?.suburb}, {property?.state} {property?.postcode}
+            </p>
+          </div>
 
-        {/* Final Price for completed */}
-        {isCompleted && auction.current_bid > 0 && (
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <span className={auction.status === 'sold' ? 'text-green-600' : 'text-muted-foreground'}>
-              Final: ${Number(auction.current_bid).toLocaleString()}
+          {/* Auction Time */}
+          <div className="flex items-center gap-2 text-sm">
+            <Clock className="w-4 h-4 text-muted-foreground" />
+            <span className={cn(
+              isLive && "text-red-600 font-medium"
+            )}>
+              {formatAuctionTime(auction.start_time)}
             </span>
           </div>
-        )}
 
-        {/* Actions */}
-        {showActions && !isCompleted && (
+          {/* Final Price for completed */}
+          {isCompleted && auction.current_bid > 0 && (
+            <div className="text-sm font-medium">
+              <span className={auction.status === 'sold' ? 'text-green-600' : 'text-muted-foreground'}>
+                Final: ${Number(auction.current_bid).toLocaleString()}
+              </span>
+            </div>
+          )}
+
+          {/* Actions */}
           <div className="flex gap-2 pt-2">
             <Button 
-              className="flex-1"
-              size="lg"
+              className={cn(
+                "flex-1",
+                isLive && "bg-red-600 hover:bg-red-700"
+              )}
               onClick={() => navigate(`/agent/auction/${auction.id}/run`)}
             >
               <Gavel className="w-4 h-4 mr-2" />
-              Launch Console
+              {isCompleted ? 'View Details' : 'Enter Console'}
             </Button>
-            <Button 
-              variant="outline"
-              size="lg"
-              onClick={() => {
-                toast.info('Edit auction coming soon');
-              }}
-            >
-              <Pencil className="w-4 h-4" />
-            </Button>
+            
+            {isPending && (
+              <Button 
+                variant="outline"
+                size="icon"
+                className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
           </div>
-        )}
+        </CardContent>
+      </Card>
 
-        {/* View details for completed */}
-        {isCompleted && (
-          <div className="pt-2">
-            <Button 
-              variant="outline"
-              className="w-full"
-              onClick={() => navigate(`/agent/auction/${auction.id}/run`)}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Auction</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this auction for {property?.address}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Auction</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => onDelete(auction.id)}
             >
-              View Details
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              Cancel Auction
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
 
@@ -429,9 +490,9 @@ function EmptyState({ onSchedule }: { onSchedule: () => void }) {
       <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
         <Gavel className="w-8 h-8 text-muted-foreground" />
       </div>
-      <h3 className="text-xl font-semibold mb-2">No upcoming auctions</h3>
+      <h3 className="text-xl font-semibold mb-2">No auctions yet</h3>
       <p className="text-muted-foreground text-center mb-6 max-w-sm">
-        You don't have any scheduled auctions. Create one to get started with live bidding.
+        Schedule your first auction to get started with live bidding.
       </p>
       <div className="flex gap-3">
         <Button onClick={onSchedule}>
@@ -451,39 +512,29 @@ function EmptyState({ onSchedule }: { onSchedule: () => void }) {
 
 function AuctionSection({ 
   title, 
-  auctions, 
-  emptyMessage,
-  icon: Icon
+  auctions,
+  onDelete,
+  icon: Icon,
+  accentColor
 }: { 
   title: string; 
-  auctions: AuctionWithProperty[]; 
-  emptyMessage: string;
+  auctions: AuctionWithProperty[];
+  onDelete: (id: string) => void;
   icon: React.ElementType;
+  accentColor?: string;
 }) {
-  if (auctions.length === 0) {
-    return (
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold flex items-center gap-2">
-          <Icon className="w-5 h-5" />
-          {title}
-        </h2>
-        <Card className="p-6">
-          <p className="text-muted-foreground text-center">{emptyMessage}</p>
-        </Card>
-      </div>
-    );
-  }
+  if (auctions.length === 0) return null;
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold flex items-center gap-2">
-        <Icon className="w-5 h-5" />
-        {title}
+      <div className="flex items-center gap-2">
+        <Icon className={cn("w-5 h-5", accentColor)} />
+        <h2 className="text-lg font-semibold">{title}</h2>
         <Badge variant="secondary">{auctions.length}</Badge>
-      </h2>
+      </div>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {auctions.map((auction) => (
-          <AuctionCard key={auction.id} auction={auction} />
+          <AuctionCard key={auction.id} auction={auction} onDelete={onDelete} />
         ))}
       </div>
     </div>
@@ -492,26 +543,24 @@ function AuctionSection({
 
 export default function AgentAuctions() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const { data: auctions, isLoading } = useAllAuctions();
+  const { data: auctions, isLoading } = useAgentAuctions();
+  const deleteAuction = useDeleteAuction();
 
   // Separate auctions by status
   const liveAuctions = auctions?.filter(a => a.status === 'live') || [];
-  const upcomingAuctions = auctions?.filter(a => a.status === 'pending' || a.status === 'paused')
-    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()) || [];
+  const upcomingAuctions = auctions?.filter(a => a.status === 'pending' || a.status === 'paused') || [];
   const completedAuctions = auctions?.filter(a => a.status === 'sold' || a.status === 'passed_in') || [];
 
-  const hasAnyAuctions = (auctions?.length || 0) > 0;
+  const hasAuctions = auctions && auctions.length > 0;
 
   return (
     <AgentLayout>
-      <div className="container py-6 space-y-8">
+      <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Auctions</h1>
-            <p className="text-muted-foreground">
-              Manage and run live auctions for your properties
-            </p>
+            <h1 className="text-2xl font-bold">Auctions</h1>
+            <p className="text-muted-foreground">Manage your live property auctions</p>
           </div>
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
@@ -524,41 +573,38 @@ export default function AgentAuctions() {
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
-        ) : !hasAnyAuctions ? (
+        ) : !hasAuctions ? (
           <EmptyState onSchedule={() => setCreateDialogOpen(true)} />
         ) : (
           <div className="space-y-10">
-            {/* Live Auctions */}
-            <AuctionSection 
-              title="Live Auctions" 
-              auctions={liveAuctions} 
-              emptyMessage="No live auctions at the moment"
-              icon={Gavel}
+            <AuctionSection
+              title="Live Auctions"
+              auctions={liveAuctions}
+              onDelete={(id) => deleteAuction.mutate(id)}
+              icon={Radio}
+              accentColor="text-red-500"
             />
-
-            {/* Upcoming Auctions */}
-            <AuctionSection 
-              title="Upcoming Auctions" 
-              auctions={upcomingAuctions} 
-              emptyMessage="No upcoming auctions scheduled"
-              icon={Clock}
-            />
-
-            {/* Completed Auctions */}
-            <AuctionSection 
-              title="Completed Auctions" 
-              auctions={completedAuctions} 
-              emptyMessage="No completed auctions yet"
+            <AuctionSection
+              title="Upcoming Auctions"
+              auctions={upcomingAuctions}
+              onDelete={(id) => deleteAuction.mutate(id)}
               icon={CalendarDays}
+            />
+            <AuctionSection
+              title="Completed Auctions"
+              auctions={completedAuctions}
+              onDelete={(id) => deleteAuction.mutate(id)}
+              icon={Gavel}
+              accentColor="text-muted-foreground"
             />
           </div>
         )}
-      </div>
 
-      <CreateAuctionDialog 
-        open={createDialogOpen} 
-        onOpenChange={setCreateDialogOpen} 
-      />
+        <CreateAuctionDialog 
+          open={createDialogOpen} 
+          onOpenChange={setCreateDialogOpen} 
+        />
+      </div>
     </AgentLayout>
   );
 }
