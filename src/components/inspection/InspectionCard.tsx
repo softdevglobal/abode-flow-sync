@@ -1,5 +1,5 @@
 import { format, isToday, isPast, isFuture } from 'date-fns';
-import { Calendar, Clock, MapPin, Users, QrCode } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, QrCode, UserCheck } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -37,6 +37,7 @@ export function InspectionCard({ inspection, onClick, onGenerateQR }: Inspection
   const status = getStatusBadge(inspection);
   const isUpcoming = isFuture(dateTime) || isToday(dateTime);
   const isCancelled = inspection.status === 'cancelled';
+  const checkedInCount = inspection.checked_in_count || 0;
 
   const handleQRClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -110,6 +111,12 @@ export function InspectionCard({ inspection, onClick, onGenerateQR }: Inspection
                 <Users className="w-4 h-4" />
                 <span>{inspection.current_attendees || 0} / {inspection.max_attendees}</span>
               </div>
+              {checkedInCount > 0 && (
+                <div className="flex items-center gap-1.5 text-green-600 font-medium">
+                  <UserCheck className="w-4 h-4" />
+                  <span>{checkedInCount} checked in</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
