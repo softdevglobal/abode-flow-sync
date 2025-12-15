@@ -36,6 +36,20 @@ export interface CustomerInteraction {
   amount?: number;
 }
 
+export interface CRMTag {
+  id: string;
+  agent_id: string;
+  name: string;
+  color: string;
+  created_at: string;
+}
+
+export interface CustomerTag {
+  id: string;
+  tag_id: string;
+  customer_id: string;
+}
+
 export function useAgentCRM(agentId: string | undefined) {
   const queryClient = useQueryClient();
 
@@ -152,9 +166,90 @@ export function useAgentCRM(agentId: string | undefined) {
     enabled: !!agentId,
   });
 
+  // Fetch all tags for this agent
+  const { data: tags, isLoading: tagsLoading } = useQuery({
+    queryKey: ['crm-tags', agentId],
+    queryFn: async (): Promise<CRMTag[]> => {
+      if (!agentId) return [];
+
+      const { data, error } = await supabase
+        .from('crm_tags')
+        .select('*')
+        .eq('agent_id', agentId)
+        .order('name');
+
+      if (error) throw error;
+      return (data || []) as CRMTag[];
+    },
+    enabled: !!agentId,
+  });
+
+  // Fetch customer tags mapping
+  const { data: customerTagsMap } = useQuery({
+    queryKey: ['customer-tags-map', agentId],
+    queryFn: async (): Promise<Map<string, string[]>> => {
+      if (!agentId) return new Map();
+
+      const { data, error } = await supabase
+        .from('customer_tags')
+        .select('customer_id, tag_id')
+        .eq('agent_id', agentId);
+
+      if (error) throw error;
+      
+      const map = new Map<string, string[]>();
+      data?.forEach(ct => {
+        const existing = map.get(ct.customer_id) || [];
+        existing.push(ct.tag_id);
+        map.set(ct.customer_id, existing);
+      });
+      return map;
+    },
+    enabled: !!agentId,
+  });
+
+  // Create tag mutation
+  const createTagMutation = useMutation({
+    mutationFn: async ({ name, color }: { name: string; color: string }) => {
+      if (!agentId) throw new Error('Missing agent ID');
+
+      const { error } = await supabase
+        .from('crm_tags')
+        .insert({ agent_id: agentId, name: name.trim(), color });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['crm-tags', agentId] });
+    },
+  });
+
+  // Delete tag mutation
+  const deleteTagMutation = useMutation({
+    mutationFn: async (tagId: string) => {
+      const { error } = await supabase
+        .from('crm_tags')
+        .delete()
+        .eq('id', tagId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['crm-tags', agentId] });
+      queryClient.invalidateQueries({ queryKey: ['customer-tags-map', agentId] });
+    },
+  });
+
   return {
     customers: customers || [],
     customersLoading,
+    tags: tags || [],
+    tagsLoading,
+    customerTagsMap: customerTagsMap || new Map(),
+    createTag: createTagMutation.mutateAsync,
+    isCreatingTag: createTagMutation.isPending,
+    deleteTag: deleteTagMutation.mutateAsync,
+    isDeletingTag: deleteTagMutation.isPending,
   };
 }
 
@@ -338,6 +433,61 @@ export function useCustomerDetails(agentId: string | undefined, customerId: stri
     },
   });
 
+  // Fetch customer's tags
+  const { data: customerTags, isLoading: customerTagsLoading } = useQuery({
+    queryKey: ['customer-tags', agentId, customerId],
+    queryFn: async (): Promise<string[]> => {
+      if (!agentId || !customerId) return [];
+
+      const { data, error } = await supabase
+        .from('customer_tags')
+        .select('tag_id')
+        .eq('agent_id', agentId)
+        .eq('customer_id', customerId);
+
+      if (error) throw error;
+      return data?.map(ct => ct.tag_id) || [];
+    },
+    enabled: !!agentId && !!customerId,
+  });
+
+  // Assign tag mutation
+  const assignTagMutation = useMutation({
+    mutationFn: async (tagId: string) => {
+      if (!agentId || !customerId) throw new Error('Missing IDs');
+
+      const { error } = await supabase
+        .from('customer_tags')
+        .insert({ agent_id: agentId, customer_id: customerId, tag_id: tagId });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer-tags', agentId, customerId] });
+      queryClient.invalidateQueries({ queryKey: ['customer-tags-map', agentId] });
+    },
+  });
+
+  // Remove tag mutation
+  const removeTagMutation = useMutation({
+    mutationFn: async (tagId: string) => {
+      if (!agentId || !customerId) throw new Error('Missing IDs');
+
+      const { error } = await supabase
+        .from('customer_tags')
+        .delete()
+        .eq('agent_id', agentId)
+        .eq('customer_id', customerId)
+        .eq('tag_id', tagId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer-tags', agentId, customerId] });
+      queryClient.invalidateQueries({ queryKey: ['customer-tags-map', agentId] });
+    },
+  });
+
   return {
     interactions: interactions || [],
     interactionsLoading,
@@ -347,5 +497,11 @@ export function useCustomerDetails(agentId: string | undefined, customerId: stri
     isAddingNote: addNoteMutation.isPending,
     deleteNote: deleteNoteMutation.mutateAsync,
     isDeletingNote: deleteNoteMutation.isPending,
+    customerTags: customerTags || [],
+    customerTagsLoading,
+    assignTag: assignTagMutation.mutateAsync,
+    isAssigningTag: assignTagMutation.isPending,
+    removeTag: removeTagMutation.mutateAsync,
+    isRemovingTag: removeTagMutation.isPending,
   };
 }

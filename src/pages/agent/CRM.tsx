@@ -20,6 +20,11 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
   Search,
   Users,
   Calendar,
@@ -32,11 +37,13 @@ import {
   Plus,
   Trash2,
   Loader2,
-  User,
   Home,
   FileText,
+  Tag,
+  X,
+  Check,
 } from 'lucide-react';
-import { useAgentCRM, useCustomerDetails, CRMCustomer, CRMNote } from '@/hooks/useAgentCRM';
+import { useAgentCRM, useCustomerDetails, CRMCustomer, CRMNote, CRMTag } from '@/hooks/useAgentCRM';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,11 +62,31 @@ const NOTE_TYPE_CONFIG = {
   general: { label: 'General', icon: FileText, color: 'bg-gray-500' },
 };
 
+const TAG_COLORS = [
+  '#ef4444', // red
+  '#f97316', // orange
+  '#eab308', // yellow
+  '#22c55e', // green
+  '#06b6d4', // cyan
+  '#3b82f6', // blue
+  '#8b5cf6', // violet
+  '#ec4899', // pink
+];
+
+const DEFAULT_TAGS = [
+  { name: 'Hot Lead', color: '#ef4444' },
+  { name: 'First Home Buyer', color: '#3b82f6' },
+  { name: 'Investor', color: '#22c55e' },
+  { name: 'Downsizer', color: '#8b5cf6' },
+  { name: 'Follow Up', color: '#f97316' },
+];
+
 export default function CRM() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<CRMCustomer | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [filterTag, setFilterTag] = useState<string | null>(null);
 
   // Get agent ID
   const { data: agentData } = useQuery({
@@ -79,16 +106,32 @@ export default function CRM() {
   // For prototype, use hardcoded agent ID if not logged in
   const agentId = agentData?.id || 'da39b948-790b-4a66-94b4-394445a98062';
 
-  const { customers, customersLoading } = useAgentCRM(agentId);
+  const { 
+    customers, 
+    customersLoading, 
+    tags, 
+    customerTagsMap,
+    createTag,
+    isCreatingTag,
+    deleteTag,
+  } = useAgentCRM(agentId);
 
   const filteredCustomers = customers.filter(customer => {
     const searchLower = searchQuery.toLowerCase();
     const fullName = `${customer.first_name || ''} ${customer.last_name || ''}`.toLowerCase();
-    return (
+    const matchesSearch = (
       fullName.includes(searchLower) ||
       customer.email.toLowerCase().includes(searchLower) ||
       customer.phone?.toLowerCase().includes(searchLower)
     );
+    
+    // Filter by tag if selected
+    if (filterTag) {
+      const customerTags = customerTagsMap.get(customer.id) || [];
+      return matchesSearch && customerTags.includes(filterTag);
+    }
+    
+    return matchesSearch;
   });
 
   const handleCustomerClick = (customer: CRMCustomer) => {
@@ -102,13 +145,14 @@ export default function CRM() {
     return (first + last).toUpperCase() || customer.email[0].toUpperCase();
   };
 
-  const getTotalInteractions = (customer: CRMCustomer) => {
-    return customer.inspection_count + customer.viewing_count + customer.bid_count;
+  const getCustomerTags = (customerId: string) => {
+    const tagIds = customerTagsMap.get(customerId) || [];
+    return tags.filter(t => tagIds.includes(t.id));
   };
 
   return (
     <AgentLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 p-4 md:p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -122,18 +166,46 @@ export default function CRM() {
               <Users className="w-4 h-4 mr-1" />
               {customers.length} Customers
             </Badge>
+            <TagManager 
+              tags={tags} 
+              onCreateTag={createTag}
+              isCreating={isCreatingTag}
+              onDeleteTag={deleteTag}
+            />
           </div>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, email, or phone..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        {/* Search and Filter */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, email, or phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={filterTag || 'all'} onValueChange={(v) => setFilterTag(v === 'all' ? null : v)}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <Tag className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Filter by tag" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Customers</SelectItem>
+              {tags.map((tag) => (
+                <SelectItem key={tag.id} value={tag.id}>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: tag.color }}
+                    />
+                    {tag.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Customer List */}
@@ -158,70 +230,88 @@ export default function CRM() {
           <Card>
             <CardContent className="py-12 text-center">
               <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">No customers yet</h3>
+              <h3 className="text-lg font-medium text-foreground mb-2">No customers found</h3>
               <p className="text-muted-foreground">
-                Customers will appear here when they interact with your properties
+                {filterTag ? 'No customers match the selected tag filter' : 'Customers will appear here when they interact with your properties'}
               </p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredCustomers.map((customer) => (
-              <Card
-                key={customer.id}
-                className="cursor-pointer hover:bg-accent/50 transition-colors"
-                onClick={() => handleCustomerClick(customer)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={customer.avatar_url || undefined} />
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {getInitials(customer)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-foreground truncate">
-                        {customer.first_name || customer.last_name
-                          ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
-                          : 'Unknown'}
-                      </h3>
-                      <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
-                      {customer.phone && (
-                        <p className="text-sm text-muted-foreground">{customer.phone}</p>
+            {filteredCustomers.map((customer) => {
+              const customerTags = getCustomerTags(customer.id);
+              return (
+                <Card
+                  key={customer.id}
+                  className="cursor-pointer hover:bg-accent/50 transition-colors"
+                  onClick={() => handleCustomerClick(customer)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={customer.avatar_url || undefined} />
+                        <AvatarFallback className="bg-primary text-primary-foreground">
+                          {getInitials(customer)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-foreground truncate">
+                          {customer.first_name || customer.last_name
+                            ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
+                            : 'Unknown'}
+                        </h3>
+                        <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
+                        {customer.phone && (
+                          <p className="text-sm text-muted-foreground">{customer.phone}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Customer Tags */}
+                    {customerTags.length > 0 && (
+                      <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+                        {customerTags.map((tag) => (
+                          <span
+                            key={tag.id}
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                            style={{ backgroundColor: tag.color }}
+                          >
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2 mt-3 flex-wrap">
+                      {customer.inspection_count > 0 && (
+                        <Badge variant="outline" className="text-xs">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          {customer.inspection_count}
+                        </Badge>
+                      )}
+                      {customer.viewing_count > 0 && (
+                        <Badge variant="outline" className="text-xs">
+                          <Eye className="w-3 h-3 mr-1" />
+                          {customer.viewing_count}
+                        </Badge>
+                      )}
+                      {customer.bid_count > 0 && (
+                        <Badge variant="outline" className="text-xs">
+                          <Gavel className="w-3 h-3 mr-1" />
+                          {customer.bid_count}
+                        </Badge>
                       )}
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2 mt-4 flex-wrap">
-                    {customer.inspection_count > 0 && (
-                      <Badge variant="outline" className="text-xs">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        {customer.inspection_count} Inspections
-                      </Badge>
+                    {customer.last_interaction && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Last: {formatDistanceToNow(new Date(customer.last_interaction), { addSuffix: true })}
+                      </p>
                     )}
-                    {customer.viewing_count > 0 && (
-                      <Badge variant="outline" className="text-xs">
-                        <Eye className="w-3 h-3 mr-1" />
-                        {customer.viewing_count} Viewings
-                      </Badge>
-                    )}
-                    {customer.bid_count > 0 && (
-                      <Badge variant="outline" className="text-xs">
-                        <Gavel className="w-3 h-3 mr-1" />
-                        {customer.bid_count} Bids
-                      </Badge>
-                    )}
-                  </div>
-
-                  {customer.last_interaction && (
-                    <p className="text-xs text-muted-foreground mt-3">
-                      Last interaction: {formatDistanceToNow(new Date(customer.last_interaction), { addSuffix: true })}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
 
@@ -232,6 +322,7 @@ export default function CRM() {
               <CustomerDetailPanel
                 customer={selectedCustomer}
                 agentId={agentId}
+                allTags={tags}
               />
             )}
           </SheetContent>
@@ -241,12 +332,156 @@ export default function CRM() {
   );
 }
 
+function TagManager({ 
+  tags, 
+  onCreateTag, 
+  isCreating,
+  onDeleteTag,
+}: { 
+  tags: CRMTag[];
+  onCreateTag: (data: { name: string; color: string }) => Promise<void>;
+  isCreating: boolean;
+  onDeleteTag: (id: string) => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState(TAG_COLORS[0]);
+
+  const handleCreateTag = async () => {
+    if (!newTagName.trim()) {
+      toast.error('Please enter a tag name');
+      return;
+    }
+    if (newTagName.trim().length > 30) {
+      toast.error('Tag name must be less than 30 characters');
+      return;
+    }
+
+    try {
+      await onCreateTag({ name: newTagName.trim(), color: newTagColor });
+      setNewTagName('');
+      toast.success('Tag created');
+    } catch (error: any) {
+      if (error?.code === '23505') {
+        toast.error('A tag with this name already exists');
+      } else {
+        toast.error('Failed to create tag');
+      }
+    }
+  };
+
+  const handleDeleteTag = async (tagId: string) => {
+    try {
+      await onDeleteTag(tagId);
+      toast.success('Tag deleted');
+    } catch (error) {
+      toast.error('Failed to delete tag');
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Tag className="w-4 h-4 mr-2" />
+          Manage Tags
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80" align="end">
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-medium text-sm mb-2">Create New Tag</h4>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Tag name"
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                maxLength={30}
+                className="flex-1"
+              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0"
+                    style={{ backgroundColor: newTagColor }}
+                  >
+                    <span className="sr-only">Pick color</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-2" align="start">
+                  <div className="grid grid-cols-4 gap-1">
+                    {TAG_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        className="w-6 h-6 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: color }}
+                        onClick={() => setNewTagColor(color)}
+                      >
+                        {newTagColor === color && (
+                          <Check className="w-3 h-3 text-white" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Button onClick={handleCreateTag} disabled={isCreating} size="icon">
+                {isCreating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-medium text-sm mb-2">Existing Tags ({tags.length})</h4>
+            {tags.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No tags created yet</p>
+            ) : (
+              <div className="space-y-1 max-h-48 overflow-y-auto">
+                {tags.map((tag) => (
+                  <div
+                    key={tag.id}
+                    className="flex items-center justify-between p-2 rounded-lg bg-secondary/50 group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      <span className="text-sm">{tag.name}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => handleDeleteTag(tag.id)}
+                    >
+                      <Trash2 className="w-3 h-3 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function CustomerDetailPanel({ 
   customer, 
-  agentId 
+  agentId,
+  allTags,
 }: { 
   customer: CRMCustomer; 
   agentId: string;
+  allTags: CRMTag[];
 }) {
   const [noteContent, setNoteContent] = useState('');
   const [noteType, setNoteType] = useState<CRMNote['note_type']>('general');
@@ -260,7 +495,15 @@ function CustomerDetailPanel({
     isAddingNote,
     deleteNote,
     isDeletingNote,
+    customerTags,
+    assignTag,
+    isAssigningTag,
+    removeTag,
+    isRemovingTag,
   } = useCustomerDetails(agentId, customer.id);
+
+  const assignedTags = allTags.filter(t => customerTags.includes(t.id));
+  const availableTags = allTags.filter(t => !customerTags.includes(t.id));
 
   const getInitials = () => {
     const first = customer.first_name?.[0] || '';
@@ -290,6 +533,24 @@ function CustomerDetailPanel({
       toast.success('Note deleted');
     } catch (error) {
       toast.error('Failed to delete note');
+    }
+  };
+
+  const handleAssignTag = async (tagId: string) => {
+    try {
+      await assignTag(tagId);
+      toast.success('Tag assigned');
+    } catch (error) {
+      toast.error('Failed to assign tag');
+    }
+  };
+
+  const handleRemoveTag = async (tagId: string) => {
+    try {
+      await removeTag(tagId);
+      toast.success('Tag removed');
+    } catch (error) {
+      toast.error('Failed to remove tag');
     }
   };
 
@@ -343,6 +604,63 @@ function CustomerDetailPanel({
         </div>
       </SheetHeader>
 
+      {/* Tags Section */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Tag className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Tags</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {assignedTags.map((tag) => (
+            <span
+              key={tag.id}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium text-white"
+              style={{ backgroundColor: tag.color }}
+            >
+              {tag.name}
+              <button
+                onClick={() => handleRemoveTag(tag.id)}
+                disabled={isRemovingTag}
+                className="ml-1 hover:bg-white/20 rounded-full p-0.5"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+          {availableTags.length > 0 && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="h-7 text-xs">
+                  <Plus className="w-3 h-3 mr-1" />
+                  Add Tag
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-2" align="start">
+                <div className="space-y-1">
+                  {availableTags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      onClick={() => handleAssignTag(tag.id)}
+                      disabled={isAssigningTag}
+                      className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-secondary/50 text-left"
+                    >
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      <span className="text-sm">{tag.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
+          {assignedTags.length === 0 && availableTags.length === 0 && (
+            <span className="text-sm text-muted-foreground">No tags available. Create tags first.</span>
+          )}
+        </div>
+      </div>
+
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-3">
         <Card>
@@ -386,7 +704,7 @@ function CustomerDetailPanel({
               No interactions found
             </div>
           ) : (
-            <ScrollArea className="h-[400px] pr-4">
+            <ScrollArea className="h-[350px] pr-4">
               <div className="space-y-3">
                 {interactions.map((interaction) => (
                   <div
@@ -461,6 +779,7 @@ function CustomerDetailPanel({
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
                 rows={3}
+                maxLength={1000}
               />
               <Button 
                 onClick={handleAddNote} 
@@ -494,7 +813,7 @@ function CustomerDetailPanel({
               No notes yet. Add your first note above.
             </div>
           ) : (
-            <ScrollArea className="h-[300px] pr-4">
+            <ScrollArea className="h-[250px] pr-4">
               <div className="space-y-3">
                 {notes.map((note) => {
                   const config = NOTE_TYPE_CONFIG[note.note_type];
