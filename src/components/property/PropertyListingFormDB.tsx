@@ -22,7 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { ImagePlus, X, Loader2 } from 'lucide-react';
+import { ImagePlus, Video, X, Loader2, GripVertical, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 
@@ -74,9 +74,12 @@ interface PropertyListingFormDBProps {
 
 export function PropertyListingFormDB({ property, onSubmit, onCancel }: PropertyListingFormDBProps) {
   const [images, setImages] = useState<string[]>(property?.images || []);
+  const [videos, setVideos] = useState<string[]>([]);
   const [features, setFeatures] = useState<string[]>(property?.features || []);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [isUploadingVideos, setIsUploadingVideos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const isEditing = !!property;
 
   const form = useForm<PropertyFormData>({
@@ -107,14 +110,56 @@ export function PropertyListingFormDB({ property, onSubmit, onCancel }: Property
     const files = e.target.files;
     if (!files) return;
 
-    setIsUploading(true);
+    setIsUploadingImages(true);
+    let processed = 0;
+    const totalFiles = files.length;
     
-    // For demo: convert to base64. In production, upload to Supabase Storage
     Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`${file.name} is not an image`);
+        processed++;
+        if (processed === totalFiles) setIsUploadingImages(false);
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onloadend = () => {
         setImages((prev) => [...prev, reader.result as string]);
-        setIsUploading(false);
+        processed++;
+        if (processed === totalFiles) setIsUploadingImages(false);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    setIsUploadingVideos(true);
+    let processed = 0;
+    const totalFiles = files.length;
+    
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('video/')) {
+        toast.error(`${file.name} is not a video`);
+        processed++;
+        if (processed === totalFiles) setIsUploadingVideos(false);
+        return;
+      }
+      
+      if (file.size > 100 * 1024 * 1024) {
+        toast.error(`${file.name} is too large (max 100MB)`);
+        processed++;
+        if (processed === totalFiles) setIsUploadingVideos(false);
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setVideos((prev) => [...prev, reader.result as string]);
+        processed++;
+        if (processed === totalFiles) setIsUploadingVideos(false);
       };
       reader.readAsDataURL(file);
     });
@@ -122,6 +167,30 @@ export function PropertyListingFormDB({ property, onSubmit, onCancel }: Property
 
   const removeImage = (index: number) => {
     setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeVideo = (index: number) => {
+    setVideos((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    
+    const newImages = [...images];
+    const draggedImage = newImages[draggedIndex];
+    newImages.splice(draggedIndex, 1);
+    newImages.splice(index, 0, draggedImage);
+    setImages(newImages);
+    setDraggedIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
   };
 
   const toggleFeature = (feature: string) => {
@@ -172,27 +241,48 @@ export function PropertyListingFormDB({ property, onSubmit, onCancel }: Property
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         {/* Image Upload Section */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Property Images *</Label>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-medium">Property Images *</Label>
+            <span className="text-xs text-muted-foreground">{images.length} image{images.length !== 1 ? 's' : ''} • Drag to reorder</span>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
             {images.map((img, index) => (
-              <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-border bg-muted">
+              <div 
+                key={index} 
+                draggable
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragEnd={handleDragEnd}
+                className={`relative aspect-square rounded-lg overflow-hidden border bg-muted group cursor-move ${
+                  draggedIndex === index ? 'border-primary ring-2 ring-primary/20' : 'border-border'
+                } ${index === 0 ? 'ring-2 ring-primary' : ''}`}
+              >
                 <img src={img} alt={`Property ${index + 1}`} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <GripVertical className="w-4 h-4 text-white drop-shadow-md" />
+                </div>
+                {index === 0 && (
+                  <span className="absolute bottom-1 left-1 px-1.5 py-0.5 bg-primary text-primary-foreground text-[10px] font-medium rounded">
+                    Main
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
-                  className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors"
+                  className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 hover:bg-destructive/90 transition-all"
                 >
                   <X className="w-3 h-3" />
                 </button>
               </div>
             ))}
             <label className="aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary/50 bg-muted/50 flex flex-col items-center justify-center cursor-pointer transition-colors">
-              {isUploading ? (
+              {isUploadingImages ? (
                 <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
               ) : (
                 <>
                   <ImagePlus className="w-6 h-6 text-muted-foreground mb-1" />
-                  <span className="text-xs text-muted-foreground">Add</span>
+                  <span className="text-xs text-muted-foreground">Add Images</span>
                 </>
               )}
               <input
@@ -200,6 +290,51 @@ export function PropertyListingFormDB({ property, onSubmit, onCancel }: Property
                 accept="image/*"
                 multiple
                 onChange={handleImageUpload}
+                className="hidden"
+              />
+            </label>
+          </div>
+        </div>
+
+        {/* Video Upload Section */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-medium">Property Videos</Label>
+            <span className="text-xs text-muted-foreground">{videos.length} video{videos.length !== 1 ? 's' : ''} • Max 100MB each</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {videos.map((video, index) => (
+              <div 
+                key={index} 
+                className="relative aspect-video rounded-lg overflow-hidden border border-border bg-muted group"
+              >
+                <video src={video} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                  <Play className="w-8 h-8 text-white" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeVideo(index)}
+                  className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 hover:bg-destructive/90 transition-all"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+            <label className="aspect-video rounded-lg border-2 border-dashed border-border hover:border-primary/50 bg-muted/50 flex flex-col items-center justify-center cursor-pointer transition-colors">
+              {isUploadingVideos ? (
+                <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+              ) : (
+                <>
+                  <Video className="w-6 h-6 text-muted-foreground mb-1" />
+                  <span className="text-xs text-muted-foreground">Add Videos</span>
+                </>
+              )}
+              <input
+                type="file"
+                accept="video/*"
+                multiple
+                onChange={handleVideoUpload}
                 className="hidden"
               />
             </label>
