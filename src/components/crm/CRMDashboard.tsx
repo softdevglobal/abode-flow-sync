@@ -20,6 +20,7 @@ import {
   Target,
   BarChart3,
   CalendarDays,
+  Download,
 } from 'lucide-react';
 import { CRMCustomer, getLeadScoreLabel } from '@/hooks/useAgentCRM';
 import { 
@@ -29,6 +30,7 @@ import {
   DateRangePreset 
 } from '@/hooks/useCRMMetrics';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 interface CRMDashboardProps {
   customers: CRMCustomer[];
@@ -44,6 +46,68 @@ const DATE_PRESETS: { value: DateRangePreset; label: string }[] = [
   { value: 'this_month', label: 'This Month' },
   { value: 'last_month', label: 'Last Month' },
 ];
+
+function downloadCSV(content: string, filename: string) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+}
+
+function exportMetricsToCSV(
+  metrics: ReturnType<typeof calculateMetricsFromActivities> | null,
+  customers: CRMCustomer[],
+  datePreset: DateRangePreset
+) {
+  if (!metrics) {
+    toast.error('No metrics data to export');
+    return;
+  }
+
+  const hotLeads = customers.filter(c => c.lead_score >= 60).length;
+  const warmLeads = customers.filter(c => c.lead_score >= 30 && c.lead_score < 60).length;
+  const coolLeads = customers.filter(c => c.lead_score >= 10 && c.lead_score < 30).length;
+  const newLeads = customers.filter(c => c.lead_score < 10).length;
+  const avgLeadScore = customers.length > 0 
+    ? Math.round(customers.reduce((sum, c) => sum + c.lead_score, 0) / customers.length)
+    : 0;
+
+  const rows = [
+    ['CRM Metrics Report'],
+    ['Generated', format(new Date(), 'yyyy-MM-dd HH:mm')],
+    ['Time Period', DATE_PRESETS.find(p => p.value === datePreset)?.label || 'All Time'],
+    [''],
+    ['Summary Metrics'],
+    ['Total Leads', metrics.totalLeads],
+    ['Hot Leads', hotLeads],
+    ['Warm Leads', warmLeads],
+    ['Cool Leads', coolLeads],
+    ['New Leads', newLeads],
+    ['Average Lead Score', avgLeadScore],
+    [''],
+    ['Activity Metrics'],
+    ['Total Inspections', metrics.totalInspections],
+    ['Customers with Inspections', metrics.customersWithInspections],
+    ['Total Viewing Requests', metrics.totalViewings],
+    ['Customers with Viewings', metrics.customersWithViewings],
+    ['Total Bids', metrics.totalBids],
+    ['Customers with Bids', metrics.customersWithBids],
+    [''],
+    ['Conversion Rates'],
+    ['Inspection to Viewing', `${metrics.inspectionToViewingRate}%`],
+    ['Viewing to Bid', `${metrics.viewingToBidRate}%`],
+    ['Inspection to Bid', `${metrics.inspectionToBidRate}%`],
+  ];
+
+  const csv = rows.map(row => row.join(',')).join('\n');
+  const date = format(new Date(), 'yyyy-MM-dd');
+  downloadCSV(csv, `crm-metrics-${date}.csv`);
+  toast.success('Metrics exported successfully');
+}
 
 export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProps) {
   const [datePreset, setDatePreset] = useState<DateRangePreset>('all');
@@ -119,6 +183,15 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
                   {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d, yyyy')}
                 </Badge>
               )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => exportMetricsToCSV(metrics, customers, datePreset)}
+                disabled={!metrics}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export Metrics
+              </Button>
             </div>
           </div>
         </CardContent>

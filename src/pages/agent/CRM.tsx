@@ -47,6 +47,7 @@ import {
   TrendingUp,
   LayoutDashboard,
   UserSearch,
+  Download,
 } from 'lucide-react';
 import { useAgentCRM, useCustomerDetails, CRMCustomer, CRMNote, CRMTag, getLeadScoreLabel } from '@/hooks/useAgentCRM';
 import { useAuth } from '@/hooks/useAuth';
@@ -86,6 +87,70 @@ const DEFAULT_TAGS = [
   { name: 'Downsizer', color: '#8b5cf6' },
   { name: 'Follow Up', color: '#f97316' },
 ];
+
+// CSV Export utilities
+function downloadCSV(content: string, filename: string) {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+}
+
+function escapeCSV(value: string | number | null | undefined): string {
+  if (value === null || value === undefined) return '';
+  const str = String(value);
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+function exportCustomersToCSV(
+  customers: CRMCustomer[], 
+  customerTagsMap: Map<string, string[]>,
+  tags: CRMTag[]
+) {
+  const headers = [
+    'Name',
+    'Email',
+    'Phone',
+    'Lead Score',
+    'Lead Status',
+    'Inspections',
+    'Viewings',
+    'Bids',
+    'Tags',
+    'Last Interaction',
+  ];
+
+  const rows = customers.map(customer => {
+    const customerTagIds = customerTagsMap.get(customer.id) || [];
+    const customerTags = tags.filter(t => customerTagIds.includes(t.id)).map(t => t.name).join('; ');
+    const scoreInfo = getLeadScoreLabel(customer.lead_score);
+    const name = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Unknown';
+    
+    return [
+      escapeCSV(name),
+      escapeCSV(customer.email),
+      escapeCSV(customer.phone),
+      customer.lead_score,
+      scoreInfo.label,
+      customer.inspection_count,
+      customer.viewing_count,
+      customer.bid_count,
+      escapeCSV(customerTags),
+      customer.last_interaction ? format(new Date(customer.last_interaction), 'yyyy-MM-dd HH:mm') : '',
+    ].join(',');
+  });
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  const date = format(new Date(), 'yyyy-MM-dd');
+  downloadCSV(csv, `crm-customers-${date}.csv`);
+}
 
 export default function CRM() {
   const { user } = useAuth();
@@ -192,6 +257,15 @@ export default function CRM() {
               <Users className="w-4 h-4 mr-1" />
               {customers.length} Customers
             </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportCustomersToCSV(customers, customerTagsMap, tags)}
+              disabled={customers.length === 0}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </Button>
             <TagManager 
               tags={tags} 
               onCreateTag={createTag}
