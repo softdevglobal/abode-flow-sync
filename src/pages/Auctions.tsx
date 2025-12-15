@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,9 +12,55 @@ import {
   Gavel, TrendingUp, Clock, Search, Bed, Bath, Car, 
   MapPin, ArrowRight, Loader2 
 } from 'lucide-react';
-import { format, formatDistanceToNow, isPast } from 'date-fns';
+import { format, isPast, differenceInSeconds } from 'date-fns';
 
 type AuctionStatus = 'all' | 'live' | 'pending';
+
+// Countdown Timer Component
+function CountdownTimer({ targetDate }: { targetDate: Date }) {
+  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(targetDate));
+
+  function calculateTimeLeft(target: Date) {
+    const totalSeconds = differenceInSeconds(target, new Date());
+    if (totalSeconds <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
+    
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    return { days, hours, minutes, seconds, expired: false };
+  }
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft(targetDate));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [targetDate]);
+
+  if (timeLeft.expired) {
+    return <span className="text-xs text-primary font-medium">Starting soon...</span>;
+  }
+
+  if (timeLeft.days > 0) {
+    return (
+      <div className="flex items-center gap-1 text-xs font-mono">
+        <span className="bg-muted px-1.5 py-0.5 rounded">{timeLeft.days}d</span>
+        <span className="bg-muted px-1.5 py-0.5 rounded">{timeLeft.hours}h</span>
+        <span className="bg-muted px-1.5 py-0.5 rounded">{timeLeft.minutes}m</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1 text-xs font-mono">
+      <span className="bg-muted px-1.5 py-0.5 rounded">{String(timeLeft.hours).padStart(2, '0')}h</span>
+      <span className="bg-muted px-1.5 py-0.5 rounded">{String(timeLeft.minutes).padStart(2, '0')}m</span>
+      <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded">{String(timeLeft.seconds).padStart(2, '0')}s</span>
+    </div>
+  );
+}
 
 export default function Auctions() {
   const [statusFilter, setStatusFilter] = useState<AuctionStatus>('all');
@@ -228,12 +274,19 @@ export default function Auctions() {
                           LIVE NOW
                         </Badge>
                       ) : (
-                        <Badge variant="secondary">
-                          <Clock className="w-3 h-3 mr-1" />
-                          {hasStarted ? 'Starting Soon' : formatDistanceToNow(startTime, { addSuffix: true })}
+                        <Badge variant="secondary" className="flex items-center gap-1.5">
+                          <Clock className="w-3 h-3" />
+                          Starts in
                         </Badge>
                       )}
                     </div>
+
+                    {/* Countdown for pending auctions */}
+                    {!isLive && !hasStarted && (
+                      <div className="absolute top-3 right-3 bg-card/95 backdrop-blur-sm rounded-md px-2 py-1.5 shadow-lg">
+                        <CountdownTimer targetDate={startTime} />
+                      </div>
+                    )}
 
                     {/* Property Quick Stats */}
                     <div className="absolute bottom-3 left-3 right-3 flex items-center gap-3 text-white text-sm">
