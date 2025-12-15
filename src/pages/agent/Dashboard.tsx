@@ -1,43 +1,69 @@
 import { AgentLayout } from '@/components/layout/AgentLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Calendar, Users, Clock, Plus, ArrowRight } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Building2, Calendar, Users, Clock, Plus, ArrowRight, Bell, CheckCircle, AlertCircle, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAgentProperties } from '@/hooks/useAgentProperties';
+import { useAgentDashboard, useAgentNotifications } from '@/hooks/useAgentDashboard';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function AgentDashboard() {
-  const { properties, loading } = useAgentProperties();
+  const { properties, loading: propertiesLoading } = useAgentProperties();
+  const { 
+    activeCount, 
+    pendingCount, 
+    upcomingInspectionsCount, 
+    pendingBookingsCount,
+    isLoading: statsLoading 
+  } = useAgentDashboard();
+  const { data: notifications = [], isLoading: notificationsLoading } = useAgentNotifications(5);
+
+  const loading = statsLoading;
 
   const stats = [
     {
       title: 'Active Listings',
-      value: properties.filter((p) => p.status === 'active').length,
+      value: activeCount,
       icon: Building2,
       color: 'text-accent',
       bgColor: 'bg-accent/10',
     },
     {
-      title: 'Pending',
-      value: properties.filter((p) => p.status === 'pending').length,
-      icon: Clock,
-      color: 'text-warning',
-      bgColor: 'bg-warning/10',
-    },
-    {
-      title: 'Sold',
-      value: properties.filter((p) => p.status === 'sold').length,
+      title: 'Upcoming Inspections',
+      value: upcomingInspectionsCount,
       icon: Calendar,
       color: 'text-success',
       bgColor: 'bg-success/10',
     },
     {
-      title: 'Total Properties',
-      value: properties.length,
+      title: 'Pending Bookings',
+      value: pendingBookingsCount,
       icon: Users,
+      color: 'text-warning',
+      bgColor: 'bg-warning/10',
+    },
+    {
+      title: 'Pending Listings',
+      value: pendingCount,
+      icon: Clock,
       color: 'text-info',
       bgColor: 'bg-info/10',
     },
   ];
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'inspection_reminder':
+        return <Calendar className="w-4 h-4 text-primary" />;
+      case 'booking_confirmed':
+        return <CheckCircle className="w-4 h-4 text-success" />;
+      case 'booking_cancelled':
+        return <AlertCircle className="w-4 h-4 text-destructive" />;
+      default:
+        return <Info className="w-4 h-4 text-muted-foreground" />;
+    }
+  };
 
   return (
     <AgentLayout>
@@ -62,9 +88,13 @@ export default function AgentDashboard() {
                     <stat.icon className={`w-5 h-5 ${stat.color}`} />
                   </div>
                   <div>
-                    <p className="text-2xl font-display font-bold">
-                      {loading ? '...' : stat.value}
-                    </p>
+                    {loading ? (
+                      <Skeleton className="h-8 w-12 mb-1" />
+                    ) : (
+                      <p className="text-2xl font-display font-bold">
+                        {stat.value}
+                      </p>
+                    )}
                     <p className="text-xs text-muted-foreground">{stat.title}</p>
                   </div>
                 </div>
@@ -89,7 +119,7 @@ export default function AgentDashboard() {
           </Button>
         </div>
 
-        {/* Quick Links */}
+        {/* Quick Links & Recent Activity */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <Card className="border-border">
             <CardHeader>
@@ -126,26 +156,86 @@ export default function AgentDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-border gradient-hero text-primary-foreground">
-            <CardContent className="pt-6">
-              <h3 className="font-display text-xl font-bold mb-2">
-                Add a New Listing
-              </h3>
-              <p className="text-primary-foreground/80 mb-4">
-                List a new property and start receiving enquiries from potential buyers.
-              </p>
-              <Button asChild variant="secondary">
-                <Link to="/agent/properties">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Listing
-                </Link>
-              </Button>
+          {/* Recent Activity / Notifications */}
+          <Card className="border-border">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Bell className="w-5 h-5" />
+                Recent Activity
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {notificationsLoading ? (
+                <div className="space-y-3">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <Skeleton className="w-8 h-8 rounded-full" />
+                      <div className="flex-1">
+                        <Skeleton className="h-4 w-3/4 mb-2" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="text-center py-6 text-muted-foreground">
+                  <Bell className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No recent activity</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${
+                        notification.read ? 'bg-muted/30' : 'bg-muted/50'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-background flex items-center justify-center shrink-0">
+                        {getNotificationIcon(notification.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm ${notification.read ? 'text-muted-foreground' : 'text-foreground font-medium'}`}>
+                          {notification.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">
+                          {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                        </p>
+                      </div>
+                      {!notification.read && (
+                        <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-2" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
+        {/* CTA Card */}
+        <Card className="border-border gradient-hero text-primary-foreground mb-8">
+          <CardContent className="pt-6">
+            <h3 className="font-display text-xl font-bold mb-2">
+              Add a New Listing
+            </h3>
+            <p className="text-primary-foreground/80 mb-4">
+              List a new property and start receiving enquiries from potential buyers.
+            </p>
+            <Button asChild variant="secondary">
+              <Link to="/agent/properties">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Listing
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Recent Properties */}
-        {properties.length > 0 && (
+        {!propertiesLoading && properties.length > 0 && (
           <Card className="border-border">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="font-display text-lg">Recent Listings</CardTitle>
