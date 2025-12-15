@@ -16,6 +16,7 @@ import MyViewings from "./pages/MyViewings";
 
 // Buyer Pages
 import LiveAuction from "./pages/buyer/LiveAuction";
+import BuyerProfile from "./pages/buyer/Profile";
 import Auctions from "./pages/Auctions";
 
 // Agent Pages
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/viewings" element={<MyViewings />} />
               <Route path="/auctions" element={<Auctions />} />
               <Route path="/auction/live/:id" element={<LiveAuction />} />
+              <Route path="/profile" element={<BuyerProfile />} />
 
               {/* Agent View Routes */}
               <Route path="/agent" element={<AgentDashboard />} />
