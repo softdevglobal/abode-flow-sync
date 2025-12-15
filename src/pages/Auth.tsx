@@ -46,8 +46,9 @@ export default function Auth() {
 
   useEffect(() => {
     if (!loading && user) {
-      // Check if there's a redirect destination stored
-      const redirectPath = sessionStorage.getItem('redirectAfterAuth');
+      // Check for redirect query param first, then sessionStorage
+      const redirectParam = searchParams.get('redirect');
+      const redirectPath = redirectParam || sessionStorage.getItem('redirectAfterAuth');
       if (redirectPath) {
         sessionStorage.removeItem('redirectAfterAuth');
         navigate(redirectPath);
@@ -55,7 +56,7 @@ export default function Auth() {
         navigate('/');
       }
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, navigate, searchParams]);
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
