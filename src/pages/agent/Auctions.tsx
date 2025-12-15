@@ -64,9 +64,9 @@ interface AuctionWithProperty {
   } | null;
 }
 
-function useUpcomingAuctions() {
+function useAllAuctions() {
   return useQuery({
-    queryKey: ['agent-upcoming-auctions'],
+    queryKey: ['agent-all-auctions'],
     queryFn: async (): Promise<AuctionWithProperty[]> => {
       // Get agent's properties first
       const { data: agentData } = await supabase
@@ -86,13 +86,12 @@ function useUpcomingAuctions() {
 
       const propertyIds = properties.map(p => p.id);
 
-      // Get auctions excluding sold and passed_in, ordered by start_time ascending
+      // Get ALL auctions, ordered by start_time descending
       const { data: auctions, error } = await supabase
         .from('auctions')
         .select('*')
         .in('property_id', propertyIds)
-        .not('status', 'in', '("sold","passed_in")')
-        .order('start_time', { ascending: true });
+        .order('start_time', { ascending: false });
 
       if (error) throw error;
       if (!auctions || auctions.length === 0) return [];
@@ -306,7 +305,7 @@ function CreateAuctionDialog({
   );
 }
 
-function AuctionCard({ auction }: { auction: AuctionWithProperty }) {
+function AuctionCard({ auction, showActions = true }: { auction: AuctionWithProperty; showActions?: boolean }) {
   const navigate = useNavigate();
   const property = auction.property;
   const startTime = new Date(auction.start_time);
@@ -319,15 +318,22 @@ function AuctionCard({ auction }: { auction: AuctionWithProperty }) {
         return <Badge variant="secondary">Scheduled</Badge>;
       case 'paused':
         return <Badge variant="outline" className="border-amber-500 text-amber-600">Paused</Badge>;
+      case 'sold':
+        return <Badge variant="default" className="bg-green-600">Sold</Badge>;
+      case 'passed_in':
+        return <Badge variant="outline">Passed In</Badge>;
       default:
         return <Badge variant="secondary">{auction.status}</Badge>;
     }
   };
 
+  const isCompleted = auction.status === 'sold' || auction.status === 'passed_in';
+
   return (
     <Card className={cn(
       "overflow-hidden transition-all hover:shadow-lg",
-      auction.status === 'live' && "ring-2 ring-green-500/50"
+      auction.status === 'live' && "ring-2 ring-green-500/50",
+      isCompleted && "opacity-80"
     )}>
       {/* Property Image */}
       <div className="aspect-video relative">
@@ -368,27 +374,50 @@ function AuctionCard({ auction }: { auction: AuctionWithProperty }) {
           <span>{format(startTime, 'h:mm a')}</span>
         </div>
 
+        {/* Final Price for completed */}
+        {isCompleted && auction.current_bid > 0 && (
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <span className={auction.status === 'sold' ? 'text-green-600' : 'text-muted-foreground'}>
+              Final: ${Number(auction.current_bid).toLocaleString()}
+            </span>
+          </div>
+        )}
+
         {/* Actions */}
-        <div className="flex gap-2 pt-2">
-          <Button 
-            className="flex-1"
-            size="lg"
-            onClick={() => navigate(`/agent/auction/${auction.id}/run`)}
-          >
-            <Gavel className="w-4 h-4 mr-2" />
-            Launch Console
-          </Button>
-          <Button 
-            variant="outline"
-            size="lg"
-            onClick={() => {
-              // Placeholder for edit functionality
-              toast.info('Edit auction coming soon');
-            }}
-          >
-            <Pencil className="w-4 h-4" />
-          </Button>
-        </div>
+        {showActions && !isCompleted && (
+          <div className="flex gap-2 pt-2">
+            <Button 
+              className="flex-1"
+              size="lg"
+              onClick={() => navigate(`/agent/auction/${auction.id}/run`)}
+            >
+              <Gavel className="w-4 h-4 mr-2" />
+              Launch Console
+            </Button>
+            <Button 
+              variant="outline"
+              size="lg"
+              onClick={() => {
+                toast.info('Edit auction coming soon');
+              }}
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* View details for completed */}
+        {isCompleted && (
+          <div className="pt-2">
+            <Button 
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate(`/agent/auction/${auction.id}/run`)}
+            >
+              View Details
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -420,13 +449,62 @@ function EmptyState({ onSchedule }: { onSchedule: () => void }) {
   );
 }
 
+function AuctionSection({ 
+  title, 
+  auctions, 
+  emptyMessage,
+  icon: Icon
+}: { 
+  title: string; 
+  auctions: AuctionWithProperty[]; 
+  emptyMessage: string;
+  icon: React.ElementType;
+}) {
+  if (auctions.length === 0) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold flex items-center gap-2">
+          <Icon className="w-5 h-5" />
+          {title}
+        </h2>
+        <Card className="p-6">
+          <p className="text-muted-foreground text-center">{emptyMessage}</p>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold flex items-center gap-2">
+        <Icon className="w-5 h-5" />
+        {title}
+        <Badge variant="secondary">{auctions.length}</Badge>
+      </h2>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {auctions.map((auction) => (
+          <AuctionCard key={auction.id} auction={auction} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function AgentAuctions() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const { data: auctions, isLoading } = useUpcomingAuctions();
+  const { data: auctions, isLoading } = useAllAuctions();
+
+  // Separate auctions by status
+  const liveAuctions = auctions?.filter(a => a.status === 'live') || [];
+  const upcomingAuctions = auctions?.filter(a => a.status === 'pending' || a.status === 'paused')
+    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()) || [];
+  const completedAuctions = auctions?.filter(a => a.status === 'sold' || a.status === 'passed_in') || [];
+
+  const hasAnyAuctions = (auctions?.length || 0) > 0;
 
   return (
     <AgentLayout>
-      <div className="container py-6 space-y-6">
+      <div className="container py-6 space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -446,13 +524,33 @@ export default function AgentAuctions() {
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
-        ) : !auctions || auctions.length === 0 ? (
+        ) : !hasAnyAuctions ? (
           <EmptyState onSchedule={() => setCreateDialogOpen(true)} />
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {auctions.map((auction) => (
-              <AuctionCard key={auction.id} auction={auction} />
-            ))}
+          <div className="space-y-10">
+            {/* Live Auctions */}
+            <AuctionSection 
+              title="Live Auctions" 
+              auctions={liveAuctions} 
+              emptyMessage="No live auctions at the moment"
+              icon={Gavel}
+            />
+
+            {/* Upcoming Auctions */}
+            <AuctionSection 
+              title="Upcoming Auctions" 
+              auctions={upcomingAuctions} 
+              emptyMessage="No upcoming auctions scheduled"
+              icon={Clock}
+            />
+
+            {/* Completed Auctions */}
+            <AuctionSection 
+              title="Completed Auctions" 
+              auctions={completedAuctions} 
+              emptyMessage="No completed auctions yet"
+              icon={CalendarDays}
+            />
           </div>
         )}
       </div>
