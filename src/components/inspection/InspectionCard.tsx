@@ -1,13 +1,15 @@
 import { format, isToday, isPast, isFuture } from 'date-fns';
-import { Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, QrCode } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { InspectionWithProperty } from '@/hooks/useAgentInspections';
 
 interface InspectionCardProps {
   inspection: InspectionWithProperty;
   onClick?: () => void;
+  onGenerateQR?: () => void;
 }
 
 function getStatusBadge(inspection: InspectionWithProperty) {
@@ -28,17 +30,24 @@ function getStatusBadge(inspection: InspectionWithProperty) {
   return { label: 'Upcoming', variant: 'default' as const };
 }
 
-export function InspectionCard({ inspection, onClick }: InspectionCardProps) {
+export function InspectionCard({ inspection, onClick, onGenerateQR }: InspectionCardProps) {
   const property = inspection.property;
   const dateTime = new Date(inspection.date_time);
   const endTime = new Date(dateTime.getTime() + inspection.duration * 60000);
   const status = getStatusBadge(inspection);
+  const isUpcoming = isFuture(dateTime) || isToday(dateTime);
+  const isCancelled = inspection.status === 'cancelled';
+
+  const handleQRClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onGenerateQR?.();
+  };
 
   return (
     <Card 
       className={cn(
         "cursor-pointer transition-all hover:shadow-md",
-        inspection.status === 'cancelled' && "opacity-60"
+        isCancelled && "opacity-60"
       )}
       onClick={onClick}
     >
@@ -70,9 +79,22 @@ export function InspectionCard({ inspection, onClick }: InspectionCardProps) {
                   {property?.suburb}, {property?.state} {property?.postcode}
                 </p>
               </div>
-              <Badge variant={status.variant} className="ml-2 flex-shrink-0">
-                {status.label}
-              </Badge>
+              <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                {isUpcoming && !isCancelled && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2"
+                    onClick={handleQRClick}
+                  >
+                    <QrCode className="w-4 h-4" />
+                    <span className="hidden sm:inline ml-1.5">QR</span>
+                  </Button>
+                )}
+                <Badge variant={status.variant}>
+                  {status.label}
+                </Badge>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
