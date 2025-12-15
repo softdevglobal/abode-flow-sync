@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Bed, Bath, Car, Ruler, Heart, Share2, 
-  MapPin, Calendar, ChevronDown, ChevronUp, Loader2
+  MapPin, Calendar, ChevronDown, ChevronUp, Loader2, Gavel
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PropertyImageGallery } from '@/components/property/PropertyImageGallery';
@@ -71,6 +71,23 @@ export default function PropertyDetail() {
       
       if (error) throw error;
       return data || [];
+    },
+    enabled: !!id,
+  });
+
+  // Fetch active auction for this property
+  const { data: activeAuction } = useQuery({
+    queryKey: ['property-auction', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('auctions')
+        .select('id, status')
+        .eq('property_id', id!)
+        .in('status', ['live', 'pending'])
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
     },
     enabled: !!id,
   });
@@ -242,6 +259,18 @@ export default function PropertyDetail() {
                 <Badge variant="outline">
                   {propertyTypeLabel[property.property_type] || property.property_type}
                 </Badge>
+                {activeAuction?.status === 'live' && (
+                  <Badge className="bg-red-500 text-white animate-pulse">
+                    <Gavel className="w-3 h-3 mr-1" />
+                    Live Auction
+                  </Badge>
+                )}
+                {activeAuction?.status === 'pending' && (
+                  <Badge variant="secondary">
+                    <Gavel className="w-3 h-3 mr-1" />
+                    Auction Upcoming
+                  </Badge>
+                )}
               </div>
 
               {/* Quick Stats - Horizontal */}
@@ -345,6 +374,20 @@ export default function PropertyDetail() {
             <div className="sticky top-6">
               <AgentEnquiryCard agent={mappedAgent} propertyTitle={property.title} />
               
+              {/* Live Auction Button - Desktop */}
+              {activeAuction && (
+                <Link to={`/auction/live/${activeAuction.id}`}>
+                  <Button
+                    variant={activeAuction.status === 'live' ? 'default' : 'outline'}
+                    size="lg"
+                    className={`w-full mt-4 ${activeAuction.status === 'live' ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                  >
+                    <Gavel className="w-5 h-5 mr-2" />
+                    {activeAuction.status === 'live' ? 'Watch Live Auction' : 'View Upcoming Auction'}
+                  </Button>
+                </Link>
+              )}
+              
               {/* Request Inspection Button - Desktop */}
               <Button
                 variant="gold"
@@ -361,7 +404,19 @@ export default function PropertyDetail() {
       </div>
 
       {/* Fixed Bottom CTA - Mobile */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 lg:hidden z-40">
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 lg:hidden z-40 space-y-2">
+        {activeAuction && (
+          <Link to={`/auction/live/${activeAuction.id}`} className="block">
+            <Button
+              variant={activeAuction.status === 'live' ? 'default' : 'outline'}
+              size="lg"
+              className={`w-full ${activeAuction.status === 'live' ? 'bg-red-500 hover:bg-red-600' : ''}`}
+            >
+              <Gavel className="w-5 h-5 mr-2" />
+              {activeAuction.status === 'live' ? 'Watch Live Auction' : 'View Upcoming Auction'}
+            </Button>
+          </Link>
+        )}
         <Button variant="gold" size="lg" className="w-full" onClick={handleRequestInspection}>
           <Calendar className="w-5 h-5 mr-2" />
           Request an Inspection
