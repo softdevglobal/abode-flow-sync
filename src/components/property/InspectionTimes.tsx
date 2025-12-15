@@ -36,11 +36,16 @@ export function InspectionTimes({ inspections }: InspectionTimesProps) {
         .neq('status', 'cancelled');
 
       if (bookings) {
-        const statusMap: BookingStatus = {};
-        inspectionIds.forEach(id => {
-          statusMap[id] = bookings.some(b => b.inspection_id === id) ? 'booked' : 'none';
+        setBookingStatus(prev => {
+          const statusMap: BookingStatus = { ...prev };
+          inspectionIds.forEach(id => {
+            // Only update if not currently loading (preserve loading state)
+            if (prev[id] !== 'loading') {
+              statusMap[id] = bookings.some(b => b.inspection_id === id) ? 'booked' : 'none';
+            }
+          });
+          return statusMap;
         });
-        setBookingStatus(statusMap);
       }
     };
 
