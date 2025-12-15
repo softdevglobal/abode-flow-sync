@@ -92,7 +92,11 @@ export default function AgentProperties() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredProperties.map((property, index) => (
             <div key={property.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-              <PropertyCard property={property} linkPrefix="/agent/property" />
+              <PropertyCard 
+                property={property} 
+                linkPrefix="/agent/property" 
+                onEdit={handleOpenForm}
+              />
             </div>
           ))}
         </div>
