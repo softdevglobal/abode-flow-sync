@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Building2, Users, ArrowRight, Home, Star, Shield, LogIn, LogOut } from 'lucide-react';
+import { Building2, Users, ArrowRight, Home, Star, Shield, Briefcase } from 'lucide-react';
 import heroImage from '@/assets/hero-home.jpg';
-import { useAuth } from '@/hooks/useAuth';
 
 export default function Landing() {
-  const { user, role, signOut } = useAuth();
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -28,62 +26,33 @@ export default function Landing() {
               <div className="w-10 h-10 rounded-lg bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-primary-foreground" />
               </div>
-              <span className="font-display text-xl font-semibold text-primary-foreground">PropConnect</span>
+              <span className="font-display text-xl font-semibold text-primary-foreground">Abode Flow Sync</span>
             </div>
 
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 animate-slide-up leading-tight">
-              Find Your Dream Home, 
-              <span className="text-accent"> Simplified</span>
+              Real Estate Platform
+              <span className="text-accent"> Prototype</span>
             </h1>
 
             <p className="text-lg text-primary-foreground/80 mb-8 animate-slide-up stagger-1 max-w-xl">
-              Connect with trusted agents, schedule viewings, and discover properties that match your lifestyle. 
-              Your next chapter starts here.
+              Choose your view to explore the platform. Agents can manage listings and inspections. Buyers can browse properties.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 animate-slide-up stagger-2">
-              <Link to="/browse">
+              <Link to="/agent">
                 <Button variant="gold" size="xl" className="w-full sm:w-auto">
-                  <Home className="w-5 h-5 mr-2" />
-                  Browse Properties
+                  <Briefcase className="w-5 h-5 mr-2" />
+                  Agent View
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              {user ? (
-                <>
-                  {role === 'agent' ? (
-                    <Link to="/agent/dashboard">
-                      <Button variant="heroOutline" size="xl" className="w-full sm:w-auto">
-                        <Building2 className="w-5 h-5 mr-2" />
-                        Agent Dashboard
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Link to="/viewings">
-                      <Button variant="heroOutline" size="xl" className="w-full sm:w-auto">
-                        <Users className="w-5 h-5 mr-2" />
-                        My Viewings
-                      </Button>
-                    </Link>
-                  )}
-                  <Button 
-                    variant="ghost" 
-                    size="xl" 
-                    className="w-full sm:w-auto text-primary-foreground hover:bg-primary-foreground/10"
-                    onClick={() => signOut()}
-                  >
-                    <LogOut className="w-5 h-5 mr-2" />
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <Link to="/auth">
-                  <Button variant="heroOutline" size="xl" className="w-full sm:w-auto">
-                    <LogIn className="w-5 h-5 mr-2" />
-                    Sign In
-                  </Button>
-                </Link>
-              )}
+              <Link to="/browse">
+                <Button variant="heroOutline" size="xl" className="w-full sm:w-auto">
+                  <Home className="w-5 h-5 mr-2" />
+                  Buyer View
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -94,10 +63,10 @@ export default function Landing() {
         <div className="container px-4">
           <div className="text-center mb-12">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Why Choose PropConnect?
+              Platform Features
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              A modern platform designed for both real estate professionals and property seekers.
+              A complete real estate management platform for agents and property seekers.
             </p>
           </div>
 
@@ -105,11 +74,11 @@ export default function Landing() {
             <Card variant="elevated" className="text-center">
               <CardContent className="pt-8 pb-6">
                 <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-7 h-7 text-accent" />
+                  <Briefcase className="w-7 h-7 text-accent" />
                 </div>
-                <h3 className="font-display text-xl font-semibold mb-2">Easy Connections</h3>
+                <h3 className="font-display text-xl font-semibold mb-2">Agent Dashboard</h3>
                 <p className="text-sm text-muted-foreground">
-                  Request viewings instantly and communicate directly with agents through our streamlined platform.
+                  Manage property listings, schedule inspections, and track client requests from one central hub.
                 </p>
               </CardContent>
             </Card>
@@ -119,9 +88,9 @@ export default function Landing() {
                 <div className="w-14 h-14 rounded-xl bg-success/10 flex items-center justify-center mx-auto mb-4">
                   <Star className="w-7 h-7 text-success" />
                 </div>
-                <h3 className="font-display text-xl font-semibold mb-2">Smart Tools</h3>
+                <h3 className="font-display text-xl font-semibold mb-2">Property Listings</h3>
                 <p className="text-sm text-muted-foreground">
-                  Use our affordability calculator, QR check-ins, and real-time notifications to stay informed.
+                  Create and manage detailed property listings with images, features, and pricing information.
                 </p>
               </CardContent>
             </Card>
@@ -129,11 +98,11 @@ export default function Landing() {
             <Card variant="elevated" className="text-center">
               <CardContent className="pt-8 pb-6">
                 <div className="w-14 h-14 rounded-xl bg-info/10 flex items-center justify-center mx-auto mb-4">
-                  <Shield className="w-7 h-7 text-info" />
+                  <Users className="w-7 h-7 text-info" />
                 </div>
-                <h3 className="font-display text-xl font-semibold mb-2">Trusted & Secure</h3>
+                <h3 className="font-display text-xl font-semibold mb-2">Buyer Experience</h3>
                 <p className="text-sm text-muted-foreground">
-                  Licensed agents, verified listings, and secure communication for your peace of mind.
+                  Browse properties, use affordability calculators, and request viewings seamlessly.
                 </p>
               </CardContent>
             </Card>
@@ -146,20 +115,22 @@ export default function Landing() {
         <div className="container px-4">
           <div className="gradient-hero rounded-2xl p-8 md:p-12 text-center">
             <h2 className="font-display text-2xl md:text-3xl font-bold text-primary-foreground mb-4">
-              Ready to Get Started?
+              Ready to Explore?
             </h2>
             <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-              Whether you're a property seeker or an agent, PropConnect has the tools you need.
+              Choose a view to get started with the platform prototype.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/browse">
+              <Link to="/agent">
                 <Button variant="gold" size="lg">
-                  Start Browsing
+                  <Briefcase className="w-4 h-4 mr-2" />
+                  Agent View
                 </Button>
               </Link>
-              <Link to="/calculator">
+              <Link to="/browse">
                 <Button variant="heroOutline" size="lg">
-                  Try Calculator
+                  <Home className="w-4 h-4 mr-2" />
+                  Buyer View
                 </Button>
               </Link>
             </div>
@@ -173,10 +144,10 @@ export default function Landing() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-accent" />
-              <span className="font-display font-semibold">PropConnect</span>
+              <span className="font-display font-semibold">Abode Flow Sync</span>
             </div>
             <p className="text-sm text-muted-foreground text-center">
-              © 2024 PropConnect. All rights reserved.
+              Prototype - Real Estate Platform
             </p>
           </div>
         </div>
