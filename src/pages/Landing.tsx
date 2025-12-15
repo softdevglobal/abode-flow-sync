@@ -40,6 +40,7 @@ import heroImage from '@/assets/hero-home.jpg';
 export default function Landing() {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showFloatingCheckIn, setShowFloatingCheckIn] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchLocation, setSearchLocation] = useState('');
   const [minPrice, setMinPrice] = useState('');
@@ -48,10 +49,11 @@ export default function Landing() {
   const statsRef = useRef<HTMLDivElement>(null);
   const [statsVisible, setStatsVisible] = useState(false);
 
-  // Handle scroll for sticky nav
+  // Handle scroll for sticky nav and floating button
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
+      setShowFloatingCheckIn(window.scrollY > 500);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -712,6 +714,24 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+      {/* Floating Check-In Button */}
+      <Link
+        to="/check-in"
+        className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${
+          showFloatingCheckIn 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 translate-y-4 pointer-events-none'
+        }`}
+      >
+        <Button 
+          variant="gold" 
+          size="lg" 
+          className="shadow-xl rounded-full px-6 gap-2"
+        >
+          <QrCode className="w-5 h-5" />
+          <span className="hidden sm:inline">Check In</span>
+        </Button>
+      </Link>
     </div>
   );
 }
