@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
@@ -10,129 +10,146 @@ type PropertyUpdate = TablesUpdate<'properties'>;
 // Demo agent ID for prototype (first agent in database)
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 
+// Fetch agent ID
+async function fetchAgentId(): Promise<string> {
+  const { data, error } = await supabase
+    .from('agents')
+    .select('id')
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) {
+    return DEMO_AGENT_ID;
+  }
+  return data.id;
+}
+
+// Fetch properties for agent
+async function fetchProperties(agentId: string): Promise<Property[]> {
+  const { data, error } = await supabase
+    .from('properties')
+    .select('*')
+    .eq('agent_id', agentId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching properties:', error);
+    throw error;
+  }
+  return data || [];
+}
+
 export function useAgentProperties() {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [agentId, setAgentId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Get demo agent ID
-  useEffect(() => {
-    async function fetchAgentId() {
-      // Try to get any agent from database for demo
-      const { data, error } = await supabase
-        .from('agents')
-        .select('id')
-        .limit(1)
-        .maybeSingle();
+  // Query for agent ID
+  const { data: agentId } = useQuery({
+    queryKey: ['agent-id'],
+    queryFn: fetchAgentId,
+    staleTime: Infinity,
+  });
 
-      if (error) {
-        console.error('Error fetching agent:', error);
-        // Use demo ID as fallback
-        setAgentId(DEMO_AGENT_ID);
-        return;
-      }
+  // Query for properties
+  const { data: properties = [], isLoading: loading } = useQuery({
+    queryKey: ['agent-properties', agentId],
+    queryFn: () => fetchProperties(agentId!),
+    enabled: !!agentId,
+  });
 
-      if (data) {
-        setAgentId(data.id);
-      } else {
-        setAgentId(DEMO_AGENT_ID);
-      }
-    }
-
-    fetchAgentId();
-  }, []);
-
-  // Fetch properties for the agent
-  useEffect(() => {
-    async function fetchProperties() {
-      if (!agentId) {
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
+  // Create property mutation
+  const createMutation = useMutation({
+    mutationFn: async (propertyData: Omit<PropertyInsert, 'agent_id'>) => {
+      if (!agentId) throw new Error('Agent profile not found');
+      
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
-        .eq('agent_id', agentId)
-        .order('created_at', { ascending: false });
+        .insert({
+          ...propertyData,
+          agent_id: agentId,
+        })
+        .select()
+        .single();
 
-      if (error) {
-        console.error('Error fetching properties:', error);
-        toast.error('Failed to load properties');
-      } else {
-        setProperties(data || []);
-      }
-      setLoading(false);
-    }
-
-    if (agentId) {
-      fetchProperties();
-    }
-  }, [agentId]);
-
-  const createProperty = async (propertyData: Omit<PropertyInsert, 'agent_id'>) => {
-    if (!agentId) {
-      toast.error('Agent profile not found');
-      return null;
-    }
-
-    const { data, error } = await supabase
-      .from('properties')
-      .insert({
-        ...propertyData,
-        agent_id: agentId,
-      })
-      .select()
-      .single();
-
-    if (error) {
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agent-properties'] });
+      toast.success('Property created successfully');
+    },
+    onError: (error) => {
       console.error('Error creating property:', error);
       toast.error('Failed to create property');
+    },
+  });
+
+  // Update property mutation
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: PropertyUpdate }) => {
+      const { data: result, error } = await supabase
+        .from('properties')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agent-properties'] });
+      toast.success('Property updated successfully');
+    },
+    onError: (error) => {
+      console.error('Error updating property:', error);
+      toast.error('Failed to update property');
+    },
+  });
+
+  // Delete property mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('properties')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agent-properties'] });
+      toast.success('Property deleted successfully');
+    },
+    onError: (error) => {
+      console.error('Error deleting property:', error);
+      toast.error('Failed to delete property');
+    },
+  });
+
+  const createProperty = async (propertyData: Omit<PropertyInsert, 'agent_id'>) => {
+    try {
+      return await createMutation.mutateAsync(propertyData);
+    } catch {
       return null;
     }
-
-    setProperties((prev) => [data, ...prev]);
-    toast.success('Property created successfully');
-    return data;
   };
 
   const updateProperty = async (id: string, propertyData: PropertyUpdate) => {
-    const { data, error } = await supabase
-      .from('properties')
-      .update(propertyData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error updating property:', error);
-      toast.error('Failed to update property');
+    try {
+      return await updateMutation.mutateAsync({ id, data: propertyData });
+    } catch {
       return null;
     }
-
-    setProperties((prev) =>
-      prev.map((p) => (p.id === id ? data : p))
-    );
-    toast.success('Property updated successfully');
-    return data;
   };
 
   const deleteProperty = async (id: string) => {
-    const { error } = await supabase
-      .from('properties')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error deleting property:', error);
-      toast.error('Failed to delete property');
+    try {
+      await deleteMutation.mutateAsync(id);
+      return true;
+    } catch {
       return false;
     }
-
-    setProperties((prev) => prev.filter((p) => p.id !== id));
-    toast.success('Property deleted successfully');
-    return true;
   };
 
   return {
