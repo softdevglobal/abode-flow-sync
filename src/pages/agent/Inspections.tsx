@@ -10,6 +10,7 @@ import { useAgentProperties } from '@/hooks/useAgentProperties';
 import { InspectionCard } from '@/components/inspection/InspectionCard';
 import { InspectionCalendar } from '@/components/inspection/InspectionCalendar';
 import { InspectionDetailSheet } from '@/components/inspection/InspectionDetailSheet';
+import { InspectionQRDialog } from '@/components/inspection/InspectionQRDialog';
 import { ScheduleInspectionModal } from '@/components/inspection/ScheduleInspectionModal';
 import type { InspectionWithProperty } from '@/hooks/useAgentInspections';
 
@@ -23,6 +24,8 @@ export default function AgentInspections() {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [selectedInspection, setSelectedInspection] = useState<InspectionWithProperty | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isQROpen, setIsQROpen] = useState(false);
+  const [qrInspection, setQrInspection] = useState<InspectionWithProperty | null>(null);
 
   const { inspections, isLoading, createInspection, cancelInspection } = useAgentInspections();
   const { properties } = useAgentProperties();
@@ -89,6 +92,18 @@ export default function AgentInspections() {
 
   const handleCancelInspection = (id: string) => {
     cancelInspection.mutate(id);
+  };
+
+  const handleGenerateQR = (inspection: InspectionWithProperty) => {
+    setQrInspection(inspection);
+    setIsQROpen(true);
+  };
+
+  const handleDetailQR = () => {
+    if (selectedInspection) {
+      setQrInspection(selectedInspection);
+      setIsQROpen(true);
+    }
   };
 
   // Stats
@@ -199,6 +214,7 @@ export default function AgentInspections() {
                     key={inspection.id}
                     inspection={inspection}
                     onClick={() => handleInspectionClick(inspection)}
+                    onGenerateQR={() => handleGenerateQR(inspection)}
                   />
                 ))
               )}
@@ -220,6 +236,14 @@ export default function AgentInspections() {
           open={isDetailOpen}
           onOpenChange={setIsDetailOpen}
           onCancel={handleCancelInspection}
+          onGenerateQR={handleDetailQR}
+        />
+
+        {/* QR Code Dialog */}
+        <InspectionQRDialog
+          inspection={qrInspection}
+          open={isQROpen}
+          onOpenChange={setIsQROpen}
         />
       </div>
     </AgentLayout>
