@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
@@ -8,35 +7,40 @@ type Property = Tables<'properties'>;
 type PropertyInsert = TablesInsert<'properties'>;
 type PropertyUpdate = TablesUpdate<'properties'>;
 
+// Demo agent ID for prototype (first agent in database)
+const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
+
 export function useAgentProperties() {
-  const { user } = useAuth();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [agentId, setAgentId] = useState<string | null>(null);
 
-  // Fetch agent ID for the current user
+  // Get demo agent ID
   useEffect(() => {
     async function fetchAgentId() {
-      if (!user) return;
-
+      // Try to get any agent from database for demo
       const { data, error } = await supabase
         .from('agents')
         .select('id')
-        .eq('user_id', user.id)
+        .limit(1)
         .maybeSingle();
 
       if (error) {
         console.error('Error fetching agent:', error);
+        // Use demo ID as fallback
+        setAgentId(DEMO_AGENT_ID);
         return;
       }
 
       if (data) {
         setAgentId(data.id);
+      } else {
+        setAgentId(DEMO_AGENT_ID);
       }
     }
 
     fetchAgentId();
-  }, [user]);
+  }, []);
 
   // Fetch properties for the agent
   useEffect(() => {

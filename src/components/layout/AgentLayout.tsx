@@ -5,7 +5,7 @@ import {
   Calendar, 
   Users, 
   Bell,
-  LogOut,
+  Home,
   ChevronDown,
   Menu,
   X
@@ -19,7 +19,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
@@ -37,15 +36,11 @@ interface AgentLayoutProps {
 export function AgentLayout({ children }: AgentLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleGoHome = () => {
     navigate('/');
   };
-
-  const userInitials = user?.email?.slice(0, 2).toUpperCase() || 'AG';
 
   return (
     <div className="min-h-screen bg-background">
@@ -99,7 +94,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                   <Avatar className="w-8 h-8">
                     <AvatarImage src="" />
                     <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                      {userInitials}
+                      AG
                     </AvatarFallback>
                   </Avatar>
                   <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -107,13 +102,13 @@ export function AgentLayout({ children }: AgentLayoutProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">{user?.email}</p>
-                  <p className="text-xs text-muted-foreground">Agent</p>
+                  <p className="text-sm font-medium">Demo Agent</p>
+                  <p className="text-xs text-muted-foreground">Prototype Mode</p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
+                <DropdownMenuItem onClick={handleGoHome}>
+                  <Home className="w-4 h-4 mr-2" />
+                  Back to Home
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -153,11 +148,11 @@ export function AgentLayout({ children }: AgentLayoutProps) {
               );
             })}
             <button
-              onClick={handleSignOut}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 w-full"
+              onClick={handleGoHome}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted w-full"
             >
-              <LogOut className="w-5 h-5" />
-              Sign Out
+              <Home className="w-5 h-5" />
+              Back to Home
             </button>
           </nav>
         )}

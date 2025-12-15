@@ -1,39 +1,38 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 type Inspection = Tables<'inspections'>;
 type Property = Tables<'properties'>;
 
+// Demo agent ID for prototype
+const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
+
 export interface InspectionWithProperty extends Inspection {
   property: Property | null;
 }
 
 export function useAgentInspections() {
-  const { user } = useAuth();
   const queryClient = useQueryClient();
 
   const inspectionsQuery = useQuery({
-    queryKey: ['agent-inspections', user?.id],
+    queryKey: ['agent-inspections'],
     queryFn: async (): Promise<InspectionWithProperty[]> => {
-      if (!user?.id) return [];
-
-      // First get agent's properties
+      // First get agent ID
       const { data: agentData } = await supabase
         .from('agents')
         .select('id')
-        .eq('user_id', user.id)
+        .limit(1)
         .maybeSingle();
 
-      if (!agentData) return [];
+      const agentId = agentData?.id || DEMO_AGENT_ID;
 
       // Get properties for this agent
       const { data: properties } = await supabase
         .from('properties')
         .select('id')
-        .eq('agent_id', agentData.id);
+        .eq('agent_id', agentId);
 
       if (!properties || properties.length === 0) return [];
 
@@ -61,7 +60,6 @@ export function useAgentInspections() {
         property: propertiesMap.get(inspection.property_id) || null,
       }));
     },
-    enabled: !!user?.id,
   });
 
   const createInspection = useMutation({
