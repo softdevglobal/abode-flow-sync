@@ -1,27 +1,87 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, Bed, Bath, Car, Ruler, Heart, Share2, 
-  MapPin, Calendar, ChevronDown, ChevronUp
+  MapPin, Calendar, ChevronDown, ChevronUp, Loader2
 } from 'lucide-react';
-import { mockProperties, mockAgent, mockInspections } from '@/data/mockData';
 import { toast } from 'sonner';
 import { PropertyImageGallery } from '@/components/property/PropertyImageGallery';
 import { AgentEnquiryCard } from '@/components/property/AgentEnquiryCard';
 import { PropertyFeaturesGrid } from '@/components/property/PropertyFeaturesGrid';
 import { InspectionTimes } from '@/components/property/InspectionTimes';
 import { PropertyMap } from '@/components/property/PropertyMap';
+import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
+
+type Property = Tables<'properties'>;
+type Inspection = Tables<'inspections'>;
 
 export default function PropertyDetail() {
   const { id } = useParams();
-  const property = mockProperties.find(p => p.id === id);
   const [isSaved, setIsSaved] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  const inspections = mockInspections.filter(i => i.propertyId === id);
+  // Fetch property from database
+  const { data: property, isLoading: propertyLoading } = useQuery({
+    queryKey: ['property', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('properties')
+        .select('*')
+        .eq('id', id!)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  // Fetch agent info
+  const { data: agent } = useQuery({
+    queryKey: ['agent', property?.agent_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('agents')
+        .select('*, profiles:user_id(first_name, last_name, email, phone)')
+        .eq('id', property!.agent_id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!property?.agent_id,
+  });
+
+  // Fetch inspections for this property
+  const { data: inspections = [] } = useQuery({
+    queryKey: ['property-inspections', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('inspections')
+        .select('*')
+        .eq('property_id', id!)
+        .eq('status', 'scheduled')
+        .gte('date_time', new Date().toISOString())
+        .order('date_time', { ascending: true });
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id,
+  });
+
+  if (propertyLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!property) {
     return (
@@ -59,10 +119,9 @@ export default function PropertyDetail() {
   };
 
   const statusLabel: Record<string, string> = {
-    available: 'For Sale',
-    under_offer: 'Under Offer',
+    active: 'For Sale',
+    pending: 'Under Offer',
     sold: 'Sold',
-    leased: 'Leased',
     off_market: 'Off Market',
   };
 
@@ -72,12 +131,48 @@ export default function PropertyDetail() {
     townhouse: 'Townhouse',
     land: 'Land',
     commercial: 'Commercial',
+    rural: 'Rural',
   };
 
-  const shouldTruncate = property.description.length > 300;
+  const description = property.description || '';
+  const shouldTruncate = description.length > 300;
   const displayDescription = isDescriptionExpanded 
-    ? property.description 
-    : property.description.slice(0, 300);
+    ? description 
+    : description.slice(0, 300);
+
+  // Map inspections to format expected by InspectionTimes
+  const mappedInspections: import('@/types').Inspection[] = inspections.map((i) => ({
+    id: i.id,
+    propertyId: i.property_id,
+    agentId: property.agent_id,
+    date: new Date(i.date_time),
+    startTime: new Date(i.date_time).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: true }),
+    endTime: new Date(new Date(i.date_time).getTime() + i.duration * 60000).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit', hour12: true }),
+    isPrivate: false,
+    createdAt: new Date(i.created_at),
+  }));
+
+  // Map agent to expected format
+  const mappedAgent: import('@/types').Agent = agent ? {
+    id: agent.id,
+    email: agent.profiles ? (agent.profiles as any).email || 'agent@example.com' : 'agent@example.com',
+    name: agent.profiles ? `${(agent.profiles as any).first_name || ''} ${(agent.profiles as any).last_name || ''}`.trim() || 'Agent' : 'Agent',
+    role: 'agent',
+    phone: agent.profiles ? (agent.profiles as any).phone || '0400 000 000' : '0400 000 000',
+    avatar: agent.profile_image || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200',
+    company: agent.agency_name || 'Real Estate Agency',
+    license: agent.license_number || undefined,
+    createdAt: new Date(agent.created_at),
+  } : {
+    id: 'unknown',
+    email: 'agent@example.com',
+    name: 'Agent',
+    role: 'agent',
+    phone: '0400 000 000',
+    avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200',
+    company: 'Real Estate Agency',
+    createdAt: new Date(),
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24 lg:pb-0">
@@ -107,7 +202,7 @@ export default function PropertyDetail() {
 
       {/* Image Gallery */}
       <div className="group">
-        <PropertyImageGallery images={property.images} title={property.title} />
+        <PropertyImageGallery images={property.images || []} title={property.title} />
       </div>
 
       {/* Main Content */}
@@ -127,7 +222,7 @@ export default function PropertyDetail() {
             <div>
               {/* Price - Prominent */}
               <p className="font-display text-3xl lg:text-4xl font-bold text-foreground mb-2">
-                {property.priceDisplay}
+                {property.price_display || (property.price ? `$${property.price.toLocaleString()}` : 'Contact Agent')}
               </p>
 
               {/* Address */}
@@ -141,11 +236,11 @@ export default function PropertyDetail() {
 
               {/* Badges */}
               <div className="flex flex-wrap items-center gap-2 mb-6">
-                <Badge variant={property.status === 'available' ? 'success' : 'warning'}>
-                  {property.listingType === 'rent' ? 'For Rent' : statusLabel[property.status]}
+                <Badge variant={property.status === 'active' ? 'success' : 'warning'}>
+                  {property.listing_type === 'rent' ? 'For Rent' : statusLabel[property.status] || property.status}
                 </Badge>
                 <Badge variant="outline">
-                  {propertyTypeLabel[property.propertyType]}
+                  {propertyTypeLabel[property.property_type] || property.property_type}
                 </Badge>
               </div>
 
@@ -153,23 +248,23 @@ export default function PropertyDetail() {
               <div className="flex items-center gap-6 py-4 border-y border-border">
                 <div className="flex items-center gap-2">
                   <Bed className="w-5 h-5 text-muted-foreground" />
-                  <span className="font-semibold">{property.bedrooms}</span>
+                  <span className="font-semibold">{property.bedrooms || 0}</span>
                   <span className="text-muted-foreground text-sm hidden sm:inline">Beds</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Bath className="w-5 h-5 text-muted-foreground" />
-                  <span className="font-semibold">{property.bathrooms}</span>
+                  <span className="font-semibold">{property.bathrooms || 0}</span>
                   <span className="text-muted-foreground text-sm hidden sm:inline">Baths</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Car className="w-5 h-5 text-muted-foreground" />
-                  <span className="font-semibold">{property.parking}</span>
+                  <span className="font-semibold">{property.parking || 0}</span>
                   <span className="text-muted-foreground text-sm hidden sm:inline">Parking</span>
                 </div>
-                {(property.landSize || property.buildingSize) && (
+                {(property.land_size || property.building_size) && (
                   <div className="flex items-center gap-2">
                     <Ruler className="w-5 h-5 text-muted-foreground" />
-                    <span className="font-semibold">{property.landSize || property.buildingSize}</span>
+                    <span className="font-semibold">{property.land_size || property.building_size}</span>
                     <span className="text-muted-foreground text-sm">m²</span>
                   </div>
                 )}
@@ -193,36 +288,42 @@ export default function PropertyDetail() {
             </div>
 
             {/* Description */}
-            <div className="space-y-3">
-              <h2 className="font-display text-xl font-semibold">Description</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                {displayDescription}
-                {shouldTruncate && !isDescriptionExpanded && '...'}
-              </p>
-              {shouldTruncate && (
-                <Button
-                  variant="link"
-                  className="px-0 h-auto text-accent"
-                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                >
-                  {isDescriptionExpanded ? (
-                    <>
-                      Read less <ChevronUp className="w-4 h-4 ml-1" />
-                    </>
-                  ) : (
-                    <>
-                      Read more <ChevronDown className="w-4 h-4 ml-1" />
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
+            {description && (
+              <div className="space-y-3">
+                <h2 className="font-display text-xl font-semibold">Description</h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  {displayDescription}
+                  {shouldTruncate && !isDescriptionExpanded && '...'}
+                </p>
+                {shouldTruncate && (
+                  <Button
+                    variant="link"
+                    className="px-0 h-auto text-accent"
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  >
+                    {isDescriptionExpanded ? (
+                      <>
+                        Read less <ChevronUp className="w-4 h-4 ml-1" />
+                      </>
+                    ) : (
+                      <>
+                        Read more <ChevronDown className="w-4 h-4 ml-1" />
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
 
             {/* Features */}
-            <PropertyFeaturesGrid features={property.features} />
+            {property.features && property.features.length > 0 && (
+              <PropertyFeaturesGrid features={property.features} />
+            )}
 
             {/* Inspection Times */}
-            <InspectionTimes inspections={inspections} />
+            {mappedInspections.length > 0 && (
+              <InspectionTimes inspections={mappedInspections} />
+            )}
 
             {/* Map */}
             <PropertyMap
@@ -235,14 +336,14 @@ export default function PropertyDetail() {
             {/* Mobile Agent Card */}
             <div className="lg:hidden">
               <h2 className="font-display text-xl font-semibold mb-4">Listed by</h2>
-              <AgentEnquiryCard agent={mockAgent} propertyTitle={property.title} />
+              <AgentEnquiryCard agent={mappedAgent} propertyTitle={property.title} />
             </div>
           </div>
 
           {/* Right Column - Sticky Agent Card (Desktop) */}
           <div className="hidden lg:block">
             <div className="sticky top-6">
-              <AgentEnquiryCard agent={mockAgent} propertyTitle={property.title} />
+              <AgentEnquiryCard agent={mappedAgent} propertyTitle={property.title} />
               
               {/* Request Inspection Button - Desktop */}
               <Button
