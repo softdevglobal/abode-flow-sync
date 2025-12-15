@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AgencyThemeProvider } from "@/contexts/AgencyThemeContext";
+import { AuthProvider } from "@/hooks/useAuth";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -37,33 +38,35 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            {/* Landing / Home */}
-            <Route path="/" element={<Landing />} />
+          <AuthProvider>
+            <Routes>
+              {/* Landing / Home */}
+              <Route path="/" element={<Landing />} />
 
-            {/* Buyer View Routes */}
-            <Route path="/browse" element={<Browse />} />
-            <Route path="/property/:id" element={<PropertyDetail />} />
-            <Route path="/calculator" element={<CalculatorPage />} />
-            <Route path="/checkin" element={<CheckIn />} />
-            <Route path="/viewings" element={<MyViewings />} />
-            <Route path="/auctions" element={<Auctions />} />
-            <Route path="/auction/live/:id" element={<LiveAuction />} />
+              {/* Buyer View Routes */}
+              <Route path="/browse" element={<Browse />} />
+              <Route path="/property/:id" element={<PropertyDetail />} />
+              <Route path="/calculator" element={<CalculatorPage />} />
+              <Route path="/checkin" element={<CheckIn />} />
+              <Route path="/viewings" element={<MyViewings />} />
+              <Route path="/auctions" element={<Auctions />} />
+              <Route path="/auction/live/:id" element={<LiveAuction />} />
 
-            {/* Agent View Routes */}
-            <Route path="/agent" element={<AgentDashboard />} />
-            <Route path="/agent/dashboard" element={<AgentDashboard />} />
-            <Route path="/agent/properties" element={<AgentProperties />} />
-            <Route path="/agent/property/:id" element={<PropertyDetail />} />
-            <Route path="/agent/requests" element={<AgentRequests />} />
-            <Route path="/agent/inspections" element={<AgentInspections />} />
-            <Route path="/agent/appraisals" element={<AgentAppraisals />} />
-            <Route path="/agent/auctions" element={<AgentAuctions />} />
-            <Route path="/agent/auction/:id/run" element={<AuctionConsole />} />
+              {/* Agent View Routes */}
+              <Route path="/agent" element={<AgentDashboard />} />
+              <Route path="/agent/dashboard" element={<AgentDashboard />} />
+              <Route path="/agent/properties" element={<AgentProperties />} />
+              <Route path="/agent/property/:id" element={<PropertyDetail />} />
+              <Route path="/agent/requests" element={<AgentRequests />} />
+              <Route path="/agent/inspections" element={<AgentInspections />} />
+              <Route path="/agent/appraisals" element={<AgentAppraisals />} />
+              <Route path="/agent/auctions" element={<AgentAuctions />} />
+              <Route path="/agent/auction/:id/run" element={<AuctionConsole />} />
 
-            {/* Catch-all */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              {/* Catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
