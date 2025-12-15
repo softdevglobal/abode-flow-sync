@@ -716,7 +716,7 @@ export default function Landing() {
                   <span>No app download required</span>
                 </li>
               </ul>
-              <Link to="/check-in">
+              <Link to="/checkin">
                 <Button variant="gold" size="lg">
                   <QrCode className="w-5 h-5 mr-2" />
                   Open Check-In Scanner
@@ -732,7 +732,7 @@ export default function Landing() {
                 <p className="text-sm text-muted-foreground mb-6">
                   Look for the QR code displayed at the property entrance
                 </p>
-                <Link to="/check-in">
+                <Link to="/checkin">
                   <Button variant="outline" className="w-full">
                     <Camera className="w-4 h-4 mr-2" />
                     Scan QR Code
@@ -892,7 +892,7 @@ export default function Landing() {
       </footer>
       {/* Floating Check-In Button */}
       <Link
-        to="/check-in"
+        to="/checkin"
         className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${
           showFloatingCheckIn 
             ? 'opacity-100 translate-y-0' 
