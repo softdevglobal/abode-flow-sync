@@ -19,12 +19,12 @@ import {
 } from '@/components/ui/dialog';
 import { 
   Gavel, TrendingUp, Clock, Search, Bed, Bath, Car, 
-  MapPin, ArrowRight, Loader2, LogIn, UserCheck
+  MapPin, ArrowRight, Loader2, LogIn, UserCheck, CheckCircle, XCircle
 } from 'lucide-react';
 import { format, isPast, differenceInSeconds } from 'date-fns';
 import { toast } from 'sonner';
 
-type AuctionStatus = 'all' | 'live' | 'pending';
+type AuctionStatus = 'all' | 'live' | 'pending' | 'completed';
 
 // Countdown Timer Component
 function CountdownTimer({ targetDate }: { targetDate: Date }) {
@@ -105,58 +105,47 @@ export default function Auctions() {
   const { data: auctions = [], isLoading } = useQuery({
     queryKey: ['public-auctions', statusFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('auctions')
-        .select(`
+      const selectQuery = `
+        id,
+        status,
+        start_time,
+        end_time,
+        current_bid,
+        min_increment,
+        reserve_price,
+        property:properties(
           id,
-          status,
-          start_time,
-          end_time,
-          current_bid,
-          min_increment,
-          reserve_price,
-          property:properties(
-            id,
-            title,
-            address,
-            suburb,
-            state,
-            postcode,
-            images,
-            bedrooms,
-            bathrooms,
-            parking,
-            price_display
-          )
-        `)
-        .in('status', ['live', 'pending'])
-        .order('start_time', { ascending: true });
+          title,
+          address,
+          suburb,
+          state,
+          postcode,
+          images,
+          bedrooms,
+          bathrooms,
+          parking,
+          price_display
+        )
+      `;
 
-      if (statusFilter !== 'all') {
+      let query;
+      
+      if (statusFilter === 'all') {
         query = supabase
           .from('auctions')
-          .select(`
-            id,
-            status,
-            start_time,
-            end_time,
-            current_bid,
-            min_increment,
-            reserve_price,
-            property:properties(
-              id,
-              title,
-              address,
-              suburb,
-              state,
-              postcode,
-              images,
-              bedrooms,
-              bathrooms,
-              parking,
-              price_display
-            )
-          `)
+          .select(selectQuery)
+          .in('status', ['live', 'pending', 'sold', 'passed_in'])
+          .order('start_time', { ascending: false });
+      } else if (statusFilter === 'completed') {
+        query = supabase
+          .from('auctions')
+          .select(selectQuery)
+          .in('status', ['sold', 'passed_in'])
+          .order('end_time', { ascending: false });
+      } else {
+        query = supabase
+          .from('auctions')
+          .select(selectQuery)
           .eq('status', statusFilter)
           .order('start_time', { ascending: true });
       }
@@ -190,6 +179,7 @@ export default function Auctions() {
 
   const liveCount = auctions.filter((a) => a.status === 'live').length;
   const upcomingCount = auctions.filter((a) => a.status === 'pending').length;
+  const completedCount = auctions.filter((a) => a.status === 'sold' || a.status === 'passed_in').length;
 
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">
@@ -214,7 +204,7 @@ export default function Auctions() {
           </div>
 
           {/* Stats */}
-          <div className="flex gap-4 mb-4">
+          <div className="flex gap-4 mb-4 flex-wrap">
             <div className="flex items-center gap-2 text-sm">
               <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               <span className="font-medium">{liveCount}</span>
@@ -224,6 +214,11 @@ export default function Auctions() {
               <Clock className="w-4 h-4 text-muted-foreground" />
               <span className="font-medium">{upcomingCount}</span>
               <span className="text-muted-foreground">Upcoming</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <CheckCircle className="w-4 h-4 text-muted-foreground" />
+              <span className="font-medium">{completedCount}</span>
+              <span className="text-muted-foreground">Completed</span>
             </div>
           </div>
 
@@ -239,13 +234,16 @@ export default function Auctions() {
               />
             </div>
             <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as AuctionStatus)}>
-              <TabsList>
-                <TabsTrigger value="all">All ({auctions.length})</TabsTrigger>
+              <TabsList className="flex-wrap h-auto">
+                <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="live">
                   Live ({liveCount})
                 </TabsTrigger>
                 <TabsTrigger value="pending">
                   Upcoming ({upcomingCount})
+                </TabsTrigger>
+                <TabsTrigger value="completed">
+                  Completed ({completedCount})
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -281,6 +279,9 @@ export default function Auctions() {
               if (!property) return null;
 
               const isLive = auction.status === 'live';
+              const isSold = auction.status === 'sold';
+              const isPassedIn = auction.status === 'passed_in';
+              const isCompleted = isSold || isPassedIn;
               const startTime = new Date(auction.start_time);
               const endTime = new Date(auction.end_time);
               const hasStarted = isPast(startTime);
@@ -308,6 +309,16 @@ export default function Auctions() {
                         <Badge className="bg-red-500 text-white animate-pulse">
                           <span className="w-2 h-2 bg-white rounded-full mr-1.5" />
                           LIVE NOW
+                        </Badge>
+                      ) : isSold ? (
+                        <Badge className="bg-green-600 text-white">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          SOLD
+                        </Badge>
+                      ) : isPassedIn ? (
+                        <Badge variant="secondary" className="bg-gray-500 text-white">
+                          <XCircle className="w-3 h-3 mr-1" />
+                          PASSED IN
                         </Badge>
                       ) : (
                         <Badge variant="secondary" className="flex items-center gap-1.5">
@@ -352,43 +363,63 @@ export default function Auctions() {
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <p className="text-xs text-muted-foreground">
-                          {isLive ? 'Current Bid' : 'Starting Bid'}
+                          {isCompleted ? 'Final Price' : isLive ? 'Current Bid' : 'Starting Bid'}
                         </p>
-                        <p className="text-xl font-bold text-primary flex items-center gap-1">
+                        <p className={`text-xl font-bold flex items-center gap-1 ${isCompleted ? 'text-muted-foreground' : 'text-primary'}`}>
                           <TrendingUp className="w-4 h-4" />
                           {formatCurrency(auction.current_bid || 0)}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-muted-foreground">
-                          {isLive ? 'Ends' : 'Starts'}
+                          {isCompleted ? 'Ended' : isLive ? 'Ends' : 'Starts'}
                         </p>
                         <p className="text-sm font-medium">
-                          {format(isLive ? endTime : startTime, 'MMM d, h:mm a')}
+                          {format(isCompleted ? endTime : isLive ? endTime : startTime, 'MMM d, h:mm a')}
                         </p>
                       </div>
                     </div>
 
                     {/* CTA Buttons */}
                     <div className="space-y-2">
-                      <Button 
-                        className={`w-full ${isLive ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                        variant={isLive ? 'default' : 'outline'}
-                        onClick={() => handleRegisterToBid(auction.id, isLive)}
-                      >
-                        {user ? (
-                          <>
-                            <Gavel className="w-4 h-4 mr-2" />
-                            {isLive ? 'Join Live Auction' : 'View Auction'}
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </>
-                        ) : (
-                          <>
-                            <UserCheck className="w-4 h-4 mr-2" />
-                            Register to Bid
-                          </>
-                        )}
-                      </Button>
+                      {isCompleted ? (
+                        <Button 
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => navigate(`/auction/live/${auction.id}`)}
+                        >
+                          {isSold ? (
+                            <>
+                              <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
+                              View Sale Result
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="w-4 h-4 mr-2" />
+                              View Auction Details
+                            </>
+                          )}
+                        </Button>
+                      ) : (
+                        <Button 
+                          className={`w-full ${isLive ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                          variant={isLive ? 'default' : 'outline'}
+                          onClick={() => handleRegisterToBid(auction.id, isLive)}
+                        >
+                          {user ? (
+                            <>
+                              <Gavel className="w-4 h-4 mr-2" />
+                              {isLive ? 'Join Live Auction' : 'View Auction'}
+                              <ArrowRight className="w-4 h-4 ml-2" />
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck className="w-4 h-4 mr-2" />
+                              Register to Bid
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
