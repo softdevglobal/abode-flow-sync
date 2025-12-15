@@ -11,6 +11,9 @@ import {
   X,
   Gavel,
   UserCircle,
+  CheckCircle,
+  AlertCircle,
+  Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,10 +23,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useAgencyTheme } from '@/contexts/AgencyThemeContext';
+import { useAgentNotifications } from '@/hooks/useAgentDashboard';
+import { formatDistanceToNow } from 'date-fns';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/agent' },
@@ -42,7 +53,24 @@ export function AgentLayout({ children }: AgentLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const config = useAgencyTheme();
+  const { data: notifications = [], isLoading: notificationsLoading } = useAgentNotifications(10);
+  
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'inspection_reminder':
+        return <Calendar className="w-4 h-4 text-primary" />;
+      case 'booking_confirmed':
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'booking_cancelled':
+        return <AlertCircle className="w-4 h-4 text-destructive" />;
+      default:
+        return <Info className="w-4 h-4 text-muted-foreground" />;
+    }
+  };
 
   const handleGoHome = () => {
     navigate('/');
@@ -92,10 +120,71 @@ export function AgentLayout({ children }: AgentLayoutProps) {
           {/* Right Side */}
           <div className="flex items-center gap-3">
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
-            </Button>
+            <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80 p-0">
+                <div className="p-3 border-b border-border">
+                  <h4 className="font-semibold text-sm">Notifications</h4>
+                  {unreadCount > 0 && (
+                    <p className="text-xs text-muted-foreground">{unreadCount} unread</p>
+                  )}
+                </div>
+                <ScrollArea className="h-[300px]">
+                  {notificationsLoading ? (
+                    <div className="p-4 text-center text-muted-foreground text-sm">
+                      Loading...
+                    </div>
+                  ) : notifications.length === 0 ? (
+                    <div className="p-6 text-center text-muted-foreground">
+                      <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No notifications yet</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-border">
+                      {notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={cn(
+                            "p-3 hover:bg-muted/50 cursor-pointer transition-colors",
+                            !notification.read && "bg-primary/5"
+                          )}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                              {getNotificationIcon(notification.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={cn(
+                                "text-sm",
+                                !notification.read ? "font-medium text-foreground" : "text-muted-foreground"
+                              )}>
+                                {notification.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {notification.message}
+                              </p>
+                              <p className="text-xs text-muted-foreground/70 mt-1">
+                                {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                              </p>
+                            </div>
+                            {!notification.read && (
+                              <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-2" />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </PopoverContent>
+            </Popover>
 
             {/* Profile Dropdown */}
             <DropdownMenu>
