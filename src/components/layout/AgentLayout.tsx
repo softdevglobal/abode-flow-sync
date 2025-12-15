@@ -8,7 +8,8 @@ import {
   Home,
   ChevronDown,
   Menu,
-  X
+  X,
+  Gavel
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +26,7 @@ import { useState } from 'react';
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/agent' },
   { icon: Building2, label: 'Listings', path: '/agent/properties' },
+  { icon: Gavel, label: 'Auctions', path: '/agent/auctions' },
   { icon: Calendar, label: 'Inspections', path: '/agent/inspections' },
   { icon: Users, label: 'Clients', path: '/agent/requests' },
 ];
