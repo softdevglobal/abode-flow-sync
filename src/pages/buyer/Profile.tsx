@@ -1,0 +1,466 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { MobileNav } from '@/components/layout/MobileNav';
+import { 
+  User, Gavel, TrendingUp, Clock, ArrowLeft, LogIn,
+  History, Award, MapPin, Loader2, ExternalLink
+} from 'lucide-react';
+import { format } from 'date-fns';
+
+export default function BuyerProfile() {
+  const navigate = useNavigate();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const [activeTab, setActiveTab] = useState('bids');
+
+  // Fetch user's bid history
+  const { data: bidHistory = [], isLoading: bidsLoading } = useQuery({
+    queryKey: ['user-bid-history', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('bids')
+        .select(`
+          id,
+          amount,
+          created_at,
+          auction_id,
+          auction:auctions(
+            id,
+            status,
+            current_bid,
+            start_time,
+            end_time,
+            property:properties(
+              id,
+              title,
+              address,
+              suburb,
+              state,
+              images
+            )
+          )
+        `)
+        .eq('bidder_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
+  // Fetch auctions the user has participated in
+  const { data: participatedAuctions = [], isLoading: auctionsLoading } = useQuery({
+    queryKey: ['user-auctions', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      // Get unique auction IDs where user has placed bids
+      const { data: userBids, error: bidsError } = await supabase
+        .from('bids')
+        .select('auction_id')
+        .eq('bidder_id', user.id);
+
+      if (bidsError) throw bidsError;
+      if (!userBids || userBids.length === 0) return [];
+
+      const auctionIds = [...new Set(userBids.map(b => b.auction_id))];
+
+      const { data, error } = await supabase
+        .from('auctions')
+        .select(`
+          id,
+          status,
+          current_bid,
+          start_time,
+          end_time,
+          property:properties(
+            id,
+            title,
+            address,
+            suburb,
+            state,
+            images
+          )
+        `)
+        .in('id', auctionIds)
+        .order('start_time', { ascending: false });
+
+      if (error) throw error;
+
+      // Check if user is highest bidder on each auction
+      const auctionsWithStatus = await Promise.all(
+        (data || []).map(async (auction) => {
+          const { data: highestBid } = await supabase
+            .from('bids')
+            .select('bidder_id')
+            .eq('auction_id', auction.id)
+            .order('amount', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          return {
+            ...auction,
+            isHighestBidder: highestBid?.bidder_id === user.id,
+            userBidCount: userBids.filter(b => b.auction_id === auction.id).length,
+          };
+        })
+      );
+
+      return auctionsWithStatus;
+    },
+    enabled: !!user?.id,
+  });
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-AU', {
+      style: 'currency',
+      currency: 'AUD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'live':
+        return <Badge className="bg-red-500 text-white">Live</Badge>;
+      case 'pending':
+        return <Badge variant="secondary">Upcoming</Badge>;
+      case 'sold':
+        return <Badge className="bg-green-600 text-white">Sold</Badge>;
+      case 'passed_in':
+        return <Badge variant="secondary">Passed In</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background pb-20 lg:pb-0">
+        <header className="bg-card border-b sticky top-0 z-40">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <User className="w-8 h-8 text-primary" />
+                <h1 className="text-2xl font-bold">My Profile</h1>
+              </div>
+              <Link to="/">
+                <Button variant="outline" size="sm">
+                  Back to Home
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        <main className="container mx-auto px-4 py-12">
+          <Card className="max-w-md mx-auto">
+            <CardContent className="py-12 text-center">
+              <LogIn className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Sign in to view your profile</h2>
+              <p className="text-muted-foreground mb-6">
+                Access your bid history, auction participation, and account settings.
+              </p>
+              <Button asChild size="lg">
+                <Link to="/auth">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+
+        <MobileNav userRole="customer" />
+      </div>
+    );
+  }
+
+  const totalBids = bidHistory.length;
+  const activeAuctions = participatedAuctions.filter(a => a.status === 'live' || a.status === 'pending').length;
+  const wonAuctions = participatedAuctions.filter(a => a.status === 'sold' && a.isHighestBidder).length;
+
+  return (
+    <div className="min-h-screen bg-background pb-20 lg:pb-0">
+      {/* Header */}
+      <header className="bg-card border-b sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-xl font-bold">My Profile</h1>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => signOut()}>
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <Card>
+            <CardContent className="py-4 text-center">
+              <History className="w-5 h-5 mx-auto text-primary mb-1" />
+              <p className="text-2xl font-bold">{totalBids}</p>
+              <p className="text-xs text-muted-foreground">Total Bids</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-4 text-center">
+              <Gavel className="w-5 h-5 mx-auto text-primary mb-1" />
+              <p className="text-2xl font-bold">{activeAuctions}</p>
+              <p className="text-xs text-muted-foreground">Active Auctions</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="py-4 text-center">
+              <Award className="w-5 h-5 mx-auto text-green-600 mb-1" />
+              <p className="text-2xl font-bold">{wonAuctions}</p>
+              <p className="text-xs text-muted-foreground">Auctions Won</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full mb-6">
+            <TabsTrigger value="bids" className="flex-1">
+              <History className="w-4 h-4 mr-2" />
+              Bid History
+            </TabsTrigger>
+            <TabsTrigger value="auctions" className="flex-1">
+              <Gavel className="w-4 h-4 mr-2" />
+              My Auctions
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Bid History Tab */}
+          <TabsContent value="bids">
+            {bidsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : bidHistory.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <History className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No bids yet</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Start bidding on properties to build your history.
+                  </p>
+                  <Button asChild>
+                    <Link to="/auctions">
+                      <Gavel className="w-4 h-4 mr-2" />
+                      Browse Auctions
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {bidHistory.map((bid) => {
+                  const auction = bid.auction as any;
+                  const property = auction?.property as any;
+
+                  return (
+                    <Card key={bid.id} className="overflow-hidden">
+                      <CardContent className="p-4">
+                        <div className="flex gap-4">
+                          {/* Property Image */}
+                          <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                            {property?.images?.[0] ? (
+                              <img
+                                src={property.images[0]}
+                                alt={property.title}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                                No Image
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Bid Details */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <h4 className="font-semibold text-sm line-clamp-1">
+                                  {property?.title || 'Property'}
+                                </h4>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  {property?.suburb}, {property?.state}
+                                </p>
+                              </div>
+                              {getStatusBadge(auction?.status)}
+                            </div>
+
+                            <Separator className="my-2" />
+
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-xs text-muted-foreground">Your Bid</p>
+                                <p className="font-bold text-primary">{formatCurrency(bid.amount)}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-xs text-muted-foreground">
+                                  {format(new Date(bid.created_at), 'MMM d, h:mm a')}
+                                </p>
+                                {auction?.status === 'live' && (
+                                  <Link 
+                                    to={`/auction/live/${auction.id}`}
+                                    className="text-xs text-primary hover:underline flex items-center justify-end gap-1"
+                                  >
+                                    View Live <ExternalLink className="w-3 h-3" />
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* My Auctions Tab */}
+          <TabsContent value="auctions">
+            {auctionsLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : participatedAuctions.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <Gavel className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No auctions yet</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Participate in auctions to see them here.
+                  </p>
+                  <Button asChild>
+                    <Link to="/auctions">
+                      <Gavel className="w-4 h-4 mr-2" />
+                      Browse Auctions
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {participatedAuctions.map((auction) => {
+                  const property = auction.property as any;
+
+                  return (
+                    <Card key={auction.id} className="overflow-hidden">
+                      <div className="flex">
+                        {/* Property Image */}
+                        <div className="w-32 h-32 bg-muted flex-shrink-0">
+                          {property?.images?.[0] ? (
+                            <img
+                              src={property.images[0]}
+                              alt={property.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                              No Image
+                            </div>
+                          )}
+                        </div>
+
+                        <CardContent className="flex-1 p-4">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div>
+                              <h4 className="font-semibold line-clamp-1">
+                                {property?.title || 'Property'}
+                              </h4>
+                              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                {property?.suburb}, {property?.state}
+                              </p>
+                            </div>
+                            <div className="flex flex-col items-end gap-1">
+                              {getStatusBadge(auction.status)}
+                              {auction.isHighestBidder && auction.status !== 'passed_in' && (
+                                <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50 dark:bg-green-950">
+                                  <Award className="w-3 h-3 mr-1" />
+                                  {auction.status === 'sold' ? 'Won' : 'Leading'}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between mt-3">
+                            <div>
+                              <p className="text-xs text-muted-foreground">
+                                {auction.status === 'sold' || auction.status === 'passed_in' ? 'Final Price' : 'Current Bid'}
+                              </p>
+                              <p className="font-bold text-lg flex items-center gap-1">
+                                <TrendingUp className="w-4 h-4 text-primary" />
+                                {formatCurrency(auction.current_bid || 0)}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-muted-foreground">Your Bids</p>
+                              <p className="font-medium">{auction.userBidCount}</p>
+                            </div>
+                          </div>
+
+                          <div className="mt-3">
+                            <Button 
+                              asChild 
+                              size="sm" 
+                              variant={auction.status === 'live' ? 'default' : 'outline'}
+                              className={auction.status === 'live' ? 'bg-red-500 hover:bg-red-600' : ''}
+                            >
+                              <Link to={`/auction/live/${auction.id}`}>
+                                {auction.status === 'live' ? 'Join Live' : 'View Details'}
+                                <ExternalLink className="w-3 h-3 ml-2" />
+                              </Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </main>
+
+      <MobileNav userRole="customer" />
+    </div>
+  );
+}

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Building2, Calendar, Users, Calculator, FileText, QrCode, Bell, Menu, X, Gavel } from 'lucide-react';
+import { Home, Building2, Calendar, Users, Calculator, FileText, QrCode, Bell, Menu, X, Gavel, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -18,9 +18,10 @@ const agentNavItems = [
 
 const customerNavItems = [
   { icon: Home, label: 'Browse', path: '/browse' },
-  { icon: Calendar, label: 'My Viewings', path: '/viewings' },
-  { icon: QrCode, label: 'Check In', path: '/checkin' },
+  { icon: Gavel, label: 'Auctions', path: '/auctions' },
+  { icon: Calendar, label: 'Viewings', path: '/viewings' },
   { icon: Calculator, label: 'Calculator', path: '/calculator' },
+  { icon: User, label: 'Profile', path: '/profile' },
 ];
 
 export function MobileNav({ userRole }: MobileNavProps) {
