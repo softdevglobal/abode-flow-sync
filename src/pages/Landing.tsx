@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Building2, Users, ArrowRight, Home, Star, Shield } from 'lucide-react';
+import { Building2, Users, ArrowRight, Home, Star, Shield, LogIn, LogOut } from 'lucide-react';
 import heroImage from '@/assets/hero-home.jpg';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Landing() {
+  const { user, role, signOut } = useAuth();
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -47,12 +49,41 @@ export default function Landing() {
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <Link to="/agent">
-                <Button variant="heroOutline" size="xl" className="w-full sm:w-auto">
-                  <Building2 className="w-5 h-5 mr-2" />
-                  Agent Portal
-                </Button>
-              </Link>
+              {user ? (
+                <>
+                  {role === 'agent' ? (
+                    <Link to="/agent/dashboard">
+                      <Button variant="heroOutline" size="xl" className="w-full sm:w-auto">
+                        <Building2 className="w-5 h-5 mr-2" />
+                        Agent Dashboard
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Link to="/viewings">
+                      <Button variant="heroOutline" size="xl" className="w-full sm:w-auto">
+                        <Users className="w-5 h-5 mr-2" />
+                        My Viewings
+                      </Button>
+                    </Link>
+                  )}
+                  <Button 
+                    variant="ghost" 
+                    size="xl" 
+                    className="w-full sm:w-auto text-primary-foreground hover:bg-primary-foreground/10"
+                    onClick={() => signOut()}
+                  >
+                    <LogOut className="w-5 h-5 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Link to="/auth">
+                  <Button variant="heroOutline" size="xl" className="w-full sm:w-auto">
+                    <LogIn className="w-5 h-5 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
