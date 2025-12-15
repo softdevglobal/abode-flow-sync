@@ -529,6 +529,12 @@ export default function Landing() {
                   Bid on properties in real-time
                 </p>
               </div>
+              <Link to="/auctions">
+                <Button variant="outline" className="hidden md:flex">
+                  View All Auctions
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -610,6 +616,16 @@ export default function Landing() {
                   </Link>
                 );
               })}
+            </div>
+
+            {/* Mobile View All Button */}
+            <div className="mt-8 text-center md:hidden">
+              <Link to="/auctions">
+                <Button variant="outline">
+                  View All Auctions
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
