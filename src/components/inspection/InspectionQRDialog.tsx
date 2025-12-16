@@ -77,13 +77,13 @@ export function InspectionQRDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-background/95 backdrop-blur-sm border-border/50">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <QrCode className="w-5 h-5" />
+          <DialogTitle className="flex items-center gap-2 font-display">
+            <QrCode className="w-5 h-5 text-primary" />
             Inspection Check-In QR Code
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="font-body">
             Display this QR code at the property for buyers to check in instantly.
           </DialogDescription>
         </DialogHeader>
@@ -91,16 +91,16 @@ export function InspectionQRDialog({
         <div className="flex flex-col items-center py-6">
           {/* Property info */}
           <div className="text-center mb-4">
-            <p className="font-semibold text-foreground">
+            <p className="font-semibold text-foreground font-display">
               {inspection.property?.address}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground font-body">
               {inspection.property?.suburb}, {inspection.property?.state}
             </p>
           </div>
 
           {/* QR Code */}
-          <div className="p-4 bg-white rounded-xl shadow-lg">
+          <div className="p-4 bg-white rounded-xl shadow-lg border border-border/20">
             <QRCode
               id="inspection-qr-code"
               value={checkInUrl}
@@ -111,7 +111,7 @@ export function InspectionQRDialog({
           </div>
 
           {/* Instructions */}
-          <p className="text-xs text-muted-foreground mt-4 text-center max-w-xs">
+          <p className="text-xs text-muted-foreground mt-4 text-center max-w-xs font-body">
             Buyers can scan this code with their phone camera to register their attendance automatically.
           </p>
         </div>
@@ -120,11 +120,11 @@ export function InspectionQRDialog({
         <div className="flex gap-2">
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 font-body hover:border-primary/50"
             onClick={handleCopyLink}
           >
             {copied ? (
-              <Check className="w-4 h-4 mr-2" />
+              <Check className="w-4 h-4 mr-2 text-green-500" />
             ) : (
               <Copy className="w-4 h-4 mr-2" />
             )}
@@ -132,7 +132,7 @@ export function InspectionQRDialog({
           </Button>
           <Button
             variant="default"
-            className="flex-1"
+            className="flex-1 font-body shadow-glow-sm"
             onClick={handleDownloadQR}
           >
             <Download className="w-4 h-4 mr-2" />
