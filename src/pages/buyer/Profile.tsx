@@ -155,16 +155,18 @@ export default function BuyerProfile() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-20 lg:pb-0">
-        <header className="bg-card border-b sticky top-0 z-40">
+      <div className="min-h-screen bg-background pb-20 lg:pb-0 font-body">
+        <header className="bg-card/50 backdrop-blur-md border-b border-border/50 sticky top-0 z-40">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <User className="w-8 h-8 text-primary" />
-                <h1 className="text-2xl font-bold">My Profile</h1>
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <User className="w-5 h-5 text-primary" />
+                </div>
+                <h1 className="text-2xl font-display font-bold">My Profile</h1>
               </div>
               <Link to="/">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="border-border/50">
                   Back to Home
                 </Button>
               </Link>
@@ -173,14 +175,16 @@ export default function BuyerProfile() {
         </header>
 
         <main className="container mx-auto px-4 py-12">
-          <Card className="max-w-md mx-auto">
+          <Card className="max-w-md mx-auto border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
             <CardContent className="py-12 text-center">
-              <LogIn className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Sign in to view your profile</h2>
-              <p className="text-muted-foreground mb-6">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <LogIn className="w-8 h-8 text-primary" />
+              </div>
+              <h2 className="text-xl font-display font-bold mb-2">Sign in to view your profile</h2>
+              <p className="text-muted-foreground mb-6 font-body">
                 Access your bid history, auction participation, and account settings.
               </p>
-              <Button asChild size="lg">
+              <Button asChild size="lg" className="shadow-glow-sm">
                 <Link to="/auth">
                   <LogIn className="w-4 h-4 mr-2" />
                   Sign In
@@ -200,21 +204,21 @@ export default function BuyerProfile() {
   const wonAuctions = participatedAuctions.filter(a => a.status === 'sold' && a.isHighestBidder).length;
 
   return (
-    <div className="min-h-screen bg-background pb-20 lg:pb-0">
+    <div className="min-h-screen bg-background pb-20 lg:pb-0 font-body">
       {/* Header */}
-      <header className="bg-card border-b sticky top-0 z-40">
+      <header className="bg-card/50 backdrop-blur-md border-b border-border/50 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="hover:bg-primary/10">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-xl font-bold">My Profile</h1>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
+                <h1 className="text-xl font-display font-bold">My Profile</h1>
+                <p className="text-sm text-muted-foreground font-body">{user.email}</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => signOut()}>
+            <Button variant="outline" size="sm" onClick={() => signOut()} className="border-border/50">
               Sign Out
             </Button>
           </div>
@@ -224,25 +228,31 @@ export default function BuyerProfile() {
       <main className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-4 mb-6">
-          <Card>
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
             <CardContent className="py-4 text-center">
-              <History className="w-5 h-5 mx-auto text-primary mb-1" />
-              <p className="text-2xl font-bold">{totalBids}</p>
-              <p className="text-xs text-muted-foreground">Total Bids</p>
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-1">
+                <History className="w-4 h-4 text-primary" />
+              </div>
+              <p className="text-2xl font-display font-bold">{totalBids}</p>
+              <p className="text-xs text-muted-foreground font-body">Total Bids</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
             <CardContent className="py-4 text-center">
-              <Gavel className="w-5 h-5 mx-auto text-primary mb-1" />
-              <p className="text-2xl font-bold">{activeAuctions}</p>
-              <p className="text-xs text-muted-foreground">Active Auctions</p>
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-1">
+                <Gavel className="w-4 h-4 text-primary" />
+              </div>
+              <p className="text-2xl font-display font-bold">{activeAuctions}</p>
+              <p className="text-xs text-muted-foreground font-body">Active Auctions</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
             <CardContent className="py-4 text-center">
-              <Award className="w-5 h-5 mx-auto text-green-600 mb-1" />
-              <p className="text-2xl font-bold">{wonAuctions}</p>
-              <p className="text-xs text-muted-foreground">Auctions Won</p>
+              <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center mx-auto mb-1">
+                <Award className="w-4 h-4 text-green-500" />
+              </div>
+              <p className="text-2xl font-display font-bold">{wonAuctions}</p>
+              <p className="text-xs text-muted-foreground font-body">Auctions Won</p>
             </CardContent>
           </Card>
         </div>
@@ -267,14 +277,16 @@ export default function BuyerProfile() {
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
             ) : bidHistory.length === 0 ? (
-              <Card>
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
                 <CardContent className="py-12 text-center">
-                  <History className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No bids yet</h3>
-                  <p className="text-muted-foreground mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <History className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-display font-bold mb-2">No bids yet</h3>
+                  <p className="text-muted-foreground mb-6 font-body">
                     Start bidding on properties to build your history.
                   </p>
-                  <Button asChild>
+                  <Button asChild className="shadow-glow-sm">
                     <Link to="/auctions">
                       <Gavel className="w-4 h-4 mr-2" />
                       Browse Auctions
@@ -289,7 +301,7 @@ export default function BuyerProfile() {
                   const property = auction?.property as any;
 
                   return (
-                    <Card key={bid.id} className="overflow-hidden">
+                    <Card key={bid.id} className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm rounded-xl hover:border-primary/30 transition-colors">
                       <CardContent className="p-4">
                         <div className="flex gap-4">
                           {/* Property Image */}
@@ -360,14 +372,16 @@ export default function BuyerProfile() {
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
             ) : participatedAuctions.length === 0 ? (
-              <Card>
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
                 <CardContent className="py-12 text-center">
-                  <Gavel className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No auctions yet</h3>
-                  <p className="text-muted-foreground mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <Gavel className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-display font-bold mb-2">No auctions yet</h3>
+                  <p className="text-muted-foreground mb-6 font-body">
                     Participate in auctions to see them here.
                   </p>
-                  <Button asChild>
+                  <Button asChild className="shadow-glow-sm">
                     <Link to="/auctions">
                       <Gavel className="w-4 h-4 mr-2" />
                       Browse Auctions
@@ -381,7 +395,7 @@ export default function BuyerProfile() {
                   const property = auction.property as any;
 
                   return (
-                    <Card key={auction.id} className="overflow-hidden">
+                    <Card key={auction.id} className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm rounded-xl hover:border-primary/30 transition-colors">
                       <div className="flex">
                         {/* Property Image */}
                         <div className="w-32 h-32 bg-muted flex-shrink-0">
