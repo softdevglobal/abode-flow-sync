@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { MobileNav } from '@/components/layout/MobileNav';
+import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { 
   User, Gavel, TrendingUp, Clock, ArrowLeft, LogIn,
   History, Award, MapPin, Loader2, ExternalLink
@@ -155,26 +155,8 @@ export default function BuyerProfile() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-20 lg:pb-0 font-body">
-        <header className="bg-card/50 backdrop-blur-md border-b border-border/50 sticky top-0 z-40">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <User className="w-5 h-5 text-primary" />
-                </div>
-                <h1 className="text-2xl font-display font-bold">My Profile</h1>
-              </div>
-              <Link to="/">
-                <Button variant="outline" size="sm" className="border-border/50">
-                  Back to Home
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </header>
-
-        <main className="container mx-auto px-4 py-12">
+      <BuyerLayout>
+        <div className="container mx-auto px-4 py-12">
           <Card className="max-w-md mx-auto border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
             <CardContent className="py-12 text-center">
               <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -192,10 +174,8 @@ export default function BuyerProfile() {
               </Button>
             </CardContent>
           </Card>
-        </main>
-
-        <MobileNav userRole="customer" />
-      </div>
+        </div>
+      </BuyerLayout>
     );
   }
 
@@ -204,28 +184,18 @@ export default function BuyerProfile() {
   const wonAuctions = participatedAuctions.filter(a => a.status === 'sold' && a.isHighestBidder).length;
 
   return (
-    <div className="min-h-screen bg-background pb-20 lg:pb-0 font-body">
-      {/* Header */}
-      <header className="bg-card/50 backdrop-blur-md border-b border-border/50 sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="hover:bg-primary/10">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl font-display font-bold">My Profile</h1>
-                <p className="text-sm text-muted-foreground font-body">{user.email}</p>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => signOut()} className="border-border/50">
-              Sign Out
-            </Button>
+    <BuyerLayout>
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* Page Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-xl font-display font-bold">My Profile</h1>
+            <p className="text-sm text-muted-foreground font-body">{user.email}</p>
           </div>
+          <Button variant="outline" size="sm" onClick={() => signOut()} className="border-border/50">
+            Sign Out
+          </Button>
         </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-4 mb-6">
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
@@ -472,9 +442,7 @@ export default function BuyerProfile() {
             )}
           </TabsContent>
         </Tabs>
-      </main>
-
-      <MobileNav userRole="customer" />
-    </div>
+      </div>
+    </BuyerLayout>
   );
 }

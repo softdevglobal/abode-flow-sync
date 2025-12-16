@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Header, MobileNav } from '@/components/layout/MobileNav';
+import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { PropertyCard } from '@/components/property/PropertyCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -413,10 +413,8 @@ export default function Browse() {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0 font-body">
-      <Header userRole="customer" />
-
-      <main className="container px-4 py-6">
+    <BuyerLayout>
+      <div className="container px-4 py-6">
         {/* Search Header */}
         <div className="mb-6">
           <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
@@ -596,9 +594,7 @@ export default function Browse() {
             )}
           </div>
         </div>
-      </main>
-
-      <MobileNav userRole="customer" />
-    </div>
+      </div>
+    </BuyerLayout>
   );
 }

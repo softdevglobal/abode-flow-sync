@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { MobileNav } from '@/components/layout/MobileNav';
+import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -194,7 +194,7 @@ export default function PropertyDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24 lg:pb-0">
+    <BuyerLayout>
       {/* Back Navigation - Fixed on mobile */}
       <div className="fixed top-4 left-4 z-50 lg:hidden">
         <Link to="/browse">
@@ -434,7 +434,6 @@ export default function PropertyDetail() {
         agentId={property.agent_id}
       />
 
-      <MobileNav userRole="customer" />
-    </div>
+    </BuyerLayout>
   );
 }
