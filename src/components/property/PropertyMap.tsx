@@ -85,6 +85,11 @@ export function PropertyMap({ address, suburb, state, postcode }: PropertyMapPro
     };
   }, [coordinates, address, suburb, state, postcode]);
 
+  const handleOpenGoogleMaps = () => {
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   if (mapError) {
     // Fallback to static display
     return (
@@ -96,14 +101,13 @@ export function PropertyMap({ address, suburb, state, postcode }: PropertyMapPro
         <div className="bg-secondary rounded-lg p-6 text-center">
           <MapPin className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
           <p className="font-medium">{fullAddress}</p>
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={handleOpenGoogleMaps}
             className="text-accent hover:underline text-sm mt-2 inline-block"
           >
             View on Google Maps →
-          </a>
+          </button>
         </div>
       </div>
     );
@@ -119,14 +123,13 @@ export function PropertyMap({ address, suburb, state, postcode }: PropertyMapPro
         <div ref={mapContainer} className="h-[300px] w-full" />
         <div className="bg-card p-3 border-t border-border">
           <p className="text-sm text-muted-foreground">{fullAddress}</p>
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={handleOpenGoogleMaps}
             className="text-accent hover:underline text-sm"
           >
             Get directions →
-          </a>
+          </button>
         </div>
       </div>
     </div>

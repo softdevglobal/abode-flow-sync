@@ -189,15 +189,15 @@ export default function AuctionConsole() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-xl">
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
               <h1 className="font-display text-xl md:text-2xl font-bold text-foreground flex items-center gap-2">
-                <Gavel className="w-6 h-6" />
+                <Gavel className="w-6 h-6 text-primary" />
                 Auction Console
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground font-body">
                 {property?.address}, {property?.suburb}
               </p>
             </div>
@@ -216,8 +216,8 @@ export default function AuctionConsole() {
                 Connecting...
               </Badge>
             )}
-            <Badge variant={isEnded ? 'secondary' : 'default'}>
-              {auction.status.replace('_', ' ').toUpperCase()}
+            <Badge variant={isEnded ? 'secondary' : 'default'} className="uppercase">
+              {auction.status.replace('_', ' ')}
             </Badge>
           </div>
         </div>
@@ -227,12 +227,12 @@ export default function AuctionConsole() {
           <div className="lg:col-span-2 space-y-6">
             {/* Current High Bid - Hero Display */}
             <Card className={cn(
-              "border-4 transition-all duration-300",
-              isAnimating ? "border-success bg-success/5 scale-[1.02]" : "border-primary/50",
+              "border-2 transition-all duration-300 rounded-2xl",
+              isAnimating ? "border-success bg-success/5 scale-[1.02]" : "border-primary/50 bg-card/50 backdrop-blur-sm",
               isEnded && "opacity-75"
             )}>
               <CardContent className="pt-8 pb-10 text-center">
-                <p className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider">
+                <p className="text-sm font-medium text-muted-foreground mb-2 uppercase tracking-wider font-body">
                   Current High Bid
                 </p>
                 <p className={cn(
@@ -276,22 +276,22 @@ export default function AuctionConsole() {
 
             {/* Property Card */}
             {property && (
-              <Card>
+              <Card className="rounded-2xl border-border/50 bg-card/50 backdrop-blur-sm">
                 <CardContent className="p-4">
                   <div className="flex gap-4">
                     {property.images?.[0] && (
                       <img
                         src={property.images[0]}
                         alt={property.title}
-                        className="w-24 h-24 object-cover rounded-lg"
+                        className="w-24 h-24 object-cover rounded-xl"
                       />
                     )}
                     <div className="flex-1">
-                      <h3 className="font-semibold">{property.title}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="font-display font-semibold">{property.title}</h3>
+                      <p className="text-sm text-muted-foreground font-body">
                         {property.address}, {property.suburb} {property.state} {property.postcode}
                       </p>
-                      <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
+                      <div className="flex gap-4 mt-2 text-sm text-muted-foreground font-body">
                         <span>{property.bedrooms} bed</span>
                         <span>{property.bathrooms} bath</span>
                         <span>{property.parking} car</span>
@@ -303,14 +303,14 @@ export default function AuctionConsole() {
             )}
 
             {/* Bid History */}
-            <Card>
+            <Card className="rounded-2xl border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center justify-between font-display">
                   <span className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5" />
+                    <TrendingUp className="w-5 h-5 text-primary" />
                     Bid History
                   </span>
-                  <Badge variant="secondary">{bidCount} bids</Badge>
+                  <Badge variant="secondary" className="bg-primary/10 text-primary">{bidCount} bids</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -369,9 +369,9 @@ export default function AuctionConsole() {
           <div className="space-y-6">
             {/* Manual Bid Entry */}
             {!isEnded && (
-              <Card>
+              <Card className="rounded-2xl border-border/50 bg-card/50 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-base">Manual Bid Entry</CardTitle>
+                  <CardTitle className="text-base font-display">Manual Bid Entry</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -397,10 +397,10 @@ export default function AuctionConsole() {
 
             {/* Auctioneer Calls */}
             {!isEnded && (
-              <Card>
+              <Card className="rounded-2xl border-border/50 bg-card/50 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Volume2 className="w-4 h-4" />
+                  <CardTitle className="text-base flex items-center gap-2 font-display">
+                    <Volume2 className="w-4 h-4 text-primary" />
                     Auctioneer Calls
                   </CardTitle>
                 </CardHeader>
@@ -431,9 +431,9 @@ export default function AuctionConsole() {
 
             {/* Final Actions */}
             {!isEnded && (
-              <Card className="border-destructive/50">
+              <Card className="border-destructive/50 rounded-2xl bg-card/50 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-base text-destructive">Final Actions</CardTitle>
+                  <CardTitle className="text-base text-destructive font-display">Final Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <AlertDialog>
@@ -448,10 +448,10 @@ export default function AuctionConsole() {
                         SOLD
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="bg-background border-border">
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Sale</AlertDialogTitle>
-                        <AlertDialogDescription>
+                        <AlertDialogTitle className="font-display">Confirm Sale</AlertDialogTitle>
+                        <AlertDialogDescription className="font-body">
                           Mark this property as sold for ${currentHighBid.toLocaleString()}?
                           This action cannot be undone.
                         </AlertDialogDescription>

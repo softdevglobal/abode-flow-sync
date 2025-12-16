@@ -227,13 +227,13 @@ function CreateAuctionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-background border-border">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Gavel className="w-5 h-5" />
+          <DialogTitle className="flex items-center gap-2 font-display">
+            <Gavel className="w-5 h-5 text-primary" />
             Schedule New Auction
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="font-body">
             Set up a live auction for one of your properties.
           </DialogDescription>
         </DialogHeader>
@@ -379,7 +379,7 @@ function AuctionCard({
   return (
     <>
       <Card className={cn(
-        "overflow-hidden transition-all hover:shadow-lg",
+        "overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 bg-card/50 backdrop-blur-sm rounded-2xl",
         isLive && "ring-2 ring-red-500 shadow-lg shadow-red-500/20",
         isCompleted && "opacity-75"
       )}>
@@ -407,10 +407,10 @@ function AuctionCard({
         <CardContent className="p-4 space-y-3">
           {/* Address */}
           <div>
-            <h3 className="font-semibold text-foreground line-clamp-1">
+            <h3 className="font-display font-semibold text-foreground line-clamp-1">
               {property?.address || 'Unknown Property'}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground font-body">
               {property?.suburb}, {property?.state} {property?.postcode}
             </p>
           </div>
@@ -462,10 +462,10 @@ function AuctionCard({
       </Card>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-background border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Auction</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="font-display">Cancel Auction</AlertDialogTitle>
+            <AlertDialogDescription className="font-body">
               Are you sure you want to cancel this auction for {property?.address}? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -486,20 +486,20 @@ function AuctionCard({
 
 function EmptyState({ onSchedule }: { onSchedule: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4">
-      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-        <Gavel className="w-8 h-8 text-muted-foreground" />
+    <div className="flex flex-col items-center justify-center py-16 px-4 border border-border/50 rounded-2xl bg-card/30 backdrop-blur-sm">
+      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+        <Gavel className="w-8 h-8 text-primary" />
       </div>
-      <h3 className="text-xl font-semibold mb-2">No auctions yet</h3>
-      <p className="text-muted-foreground text-center mb-6 max-w-sm">
+      <h3 className="font-display text-xl font-semibold mb-2">No auctions yet</h3>
+      <p className="text-muted-foreground text-center mb-6 max-w-sm font-body">
         Schedule your first auction to get started with live bidding.
       </p>
       <div className="flex gap-3">
-        <Button onClick={onSchedule}>
+        <Button onClick={onSchedule} className="rounded-xl">
           <Plus className="w-4 h-4 mr-2" />
           Schedule Auction
         </Button>
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild className="rounded-xl">
           <Link to="/agent/properties">
             <Building2 className="w-4 h-4 mr-2" />
             View Properties
@@ -528,9 +528,9 @@ function AuctionSection({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Icon className={cn("w-5 h-5", accentColor)} />
-        <h2 className="text-lg font-semibold">{title}</h2>
-        <Badge variant="secondary">{auctions.length}</Badge>
+        <Icon className={cn("w-5 h-5", accentColor || "text-primary")} />
+        <h2 className="font-display text-lg font-semibold">{title}</h2>
+        <Badge variant="secondary" className="bg-primary/10 text-primary">{auctions.length}</Badge>
       </div>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {auctions.map((auction) => (
@@ -559,10 +559,10 @@ export default function AgentAuctions() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Auctions</h1>
-            <p className="text-muted-foreground">Manage your live property auctions</p>
+            <h1 className="font-display text-3xl md:text-4xl font-bold">Auctions</h1>
+            <p className="text-muted-foreground font-body">Manage your live property auctions</p>
           </div>
-          <Button onClick={() => setCreateDialogOpen(true)}>
+          <Button onClick={() => setCreateDialogOpen(true)} className="rounded-xl">
             <Plus className="w-4 h-4 mr-2" />
             Schedule Auction
           </Button>
