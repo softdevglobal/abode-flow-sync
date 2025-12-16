@@ -645,6 +645,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      send_inspection_reminders: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "agent" | "customer"
