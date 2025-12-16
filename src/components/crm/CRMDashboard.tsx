@@ -160,14 +160,14 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
       {/* Date Range Filter */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <CalendarDays className="w-5 h-5 text-muted-foreground" />
               <span className="text-sm font-medium">Time Period:</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DateRangePreset)}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -179,7 +179,7 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
                 </SelectContent>
               </Select>
               {dateRange && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
                   {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d, yyyy')}
                 </Badge>
               )}
@@ -188,9 +188,10 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
                 size="sm"
                 onClick={() => exportMetricsToCSV(metrics, customers, datePreset)}
                 disabled={!metrics}
+                className="w-full sm:w-auto"
               >
                 <Download className="w-4 h-4 mr-2" />
-                Export Metrics
+                Export
               </Button>
             </div>
           </div>
@@ -198,60 +199,60 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
       </Card>
 
       {/* Key Metrics */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">
                   {datePreset === 'all' ? 'Total Leads' : 'Active Leads'}
                 </p>
-                <p className="text-3xl font-bold">{metrics?.totalLeads ?? 0}</p>
+                <p className="text-2xl sm:text-3xl font-bold">{metrics?.totalLeads ?? 0}</p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Users className="w-6 h-6 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Hot Leads</p>
-                <p className="text-3xl font-bold text-red-500">{hotLeads}</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
-                <Flame className="w-6 h-6 text-red-500" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Avg Lead Score</p>
-                <p className="text-3xl font-bold">{avgLeadScore}</p>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-muted-foreground">Hot Leads</p>
+                <p className="text-2xl sm:text-3xl font-bold text-red-500">{hotLeads}</p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center">
-                <Target className="w-6 h-6 text-orange-500" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Multi-Engaged</p>
-                <p className="text-3xl font-bold">{customersWithMultipleEngagements}</p>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-muted-foreground">Avg Lead Score</p>
+                <p className="text-2xl sm:text-3xl font-bold">{avgLeadScore}</p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-green-500" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                <Target className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-muted-foreground">Multi-Engaged</p>
+                <p className="text-2xl sm:text-3xl font-bold">{customersWithMultipleEngagements}</p>
+              </div>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
               </div>
             </div>
           </CardContent>
@@ -272,78 +273,78 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            {/* Funnel Visualization */}
-            <div className="flex items-center justify-between gap-4">
+          <div className="space-y-4 sm:space-y-6">
+            {/* Funnel Visualization - Horizontal scroll on mobile */}
+            <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto pb-2 sm:pb-0 -mx-2 px-2 sm:mx-0 sm:px-0">
               {/* Stage 1: Inspections */}
-              <div className="flex-1">
+              <div className="flex-shrink-0 w-[100px] sm:w-auto sm:flex-1">
                 <div 
-                  className="relative bg-blue-500/20 rounded-lg p-4 text-center"
-                  style={{ minHeight: '120px' }}
+                  className="relative bg-blue-500/20 rounded-lg p-3 sm:p-4 text-center"
+                  style={{ minHeight: '100px' }}
                 >
-                  <Calendar className="w-8 h-8 mx-auto text-blue-500 mb-2" />
-                  <p className="text-3xl font-bold text-blue-600">{metrics?.customersWithInspections ?? 0}</p>
-                  <p className="text-sm text-muted-foreground">Inspections</p>
-                  <p className="text-xs text-muted-foreground mt-1">{metrics?.totalInspections ?? 0} total</p>
+                  <Calendar className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-blue-500 mb-1 sm:mb-2" />
+                  <p className="text-xl sm:text-3xl font-bold text-blue-600">{metrics?.customersWithInspections ?? 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Inspections</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{metrics?.totalInspections ?? 0} total</p>
                 </div>
               </div>
 
               {/* Arrow with conversion rate */}
-              <div className="flex flex-col items-center gap-1 px-2">
-                <ArrowRight className="w-6 h-6 text-muted-foreground" />
-                <Badge variant="outline" className="text-xs">
+              <div className="flex flex-col items-center gap-0.5 sm:gap-1 flex-shrink-0">
+                <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 text-muted-foreground" />
+                <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2">
                   {metrics?.inspectionToViewingRate ?? 0}%
                 </Badge>
               </div>
 
               {/* Stage 2: Viewings */}
-              <div className="flex-1">
+              <div className="flex-shrink-0 w-[100px] sm:w-auto sm:flex-1">
                 <div 
-                  className="relative bg-green-500/20 rounded-lg p-4 text-center"
-                  style={{ minHeight: '120px' }}
+                  className="relative bg-green-500/20 rounded-lg p-3 sm:p-4 text-center"
+                  style={{ minHeight: '100px' }}
                 >
-                  <Eye className="w-8 h-8 mx-auto text-green-500 mb-2" />
-                  <p className="text-3xl font-bold text-green-600">{metrics?.customersWithViewings ?? 0}</p>
-                  <p className="text-sm text-muted-foreground">Viewings</p>
-                  <p className="text-xs text-muted-foreground mt-1">{metrics?.totalViewings ?? 0} total</p>
+                  <Eye className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-green-500 mb-1 sm:mb-2" />
+                  <p className="text-xl sm:text-3xl font-bold text-green-600">{metrics?.customersWithViewings ?? 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Viewings</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{metrics?.totalViewings ?? 0} total</p>
                 </div>
               </div>
 
               {/* Arrow with conversion rate */}
-              <div className="flex flex-col items-center gap-1 px-2">
-                <ArrowRight className="w-6 h-6 text-muted-foreground" />
-                <Badge variant="outline" className="text-xs">
+              <div className="flex flex-col items-center gap-0.5 sm:gap-1 flex-shrink-0">
+                <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 text-muted-foreground" />
+                <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2">
                   {metrics?.viewingToBidRate ?? 0}%
                 </Badge>
               </div>
 
               {/* Stage 3: Bids */}
-              <div className="flex-1">
+              <div className="flex-shrink-0 w-[100px] sm:w-auto sm:flex-1">
                 <div 
-                  className="relative bg-purple-500/20 rounded-lg p-4 text-center"
-                  style={{ minHeight: '120px' }}
+                  className="relative bg-purple-500/20 rounded-lg p-3 sm:p-4 text-center"
+                  style={{ minHeight: '100px' }}
                 >
-                  <Gavel className="w-8 h-8 mx-auto text-purple-500 mb-2" />
-                  <p className="text-3xl font-bold text-purple-600">{metrics?.customersWithBids ?? 0}</p>
-                  <p className="text-sm text-muted-foreground">Bidders</p>
-                  <p className="text-xs text-muted-foreground mt-1">{metrics?.totalBids ?? 0} total</p>
+                  <Gavel className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-purple-500 mb-1 sm:mb-2" />
+                  <p className="text-xl sm:text-3xl font-bold text-purple-600">{metrics?.customersWithBids ?? 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Bidders</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{metrics?.totalBids ?? 0} total</p>
                 </div>
               </div>
             </div>
 
             {/* Conversion Summary */}
-            <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-3 sm:pt-4 border-t">
               <div className="text-center">
-                <p className="text-2xl font-bold text-blue-600">{metrics?.inspectionToViewingRate ?? 0}%</p>
-                <p className="text-xs text-muted-foreground">Inspection → Viewing</p>
+                <p className="text-lg sm:text-2xl font-bold text-blue-600">{metrics?.inspectionToViewingRate ?? 0}%</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Inspection → Viewing</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-green-600">{metrics?.viewingToBidRate ?? 0}%</p>
-                <p className="text-xs text-muted-foreground">Viewing → Bid</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-600">{metrics?.viewingToBidRate ?? 0}%</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Viewing → Bid</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-purple-600">{metrics?.inspectionToBidRate ?? 0}%</p>
-                <p className="text-xs text-muted-foreground">Inspection → Bid</p>
+                <p className="text-lg sm:text-2xl font-bold text-purple-600">{metrics?.inspectionToBidRate ?? 0}%</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Inspection → Bid</p>
               </div>
             </div>
           </div>
@@ -351,7 +352,7 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
       </Card>
 
       {/* Lead Score Distribution */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
