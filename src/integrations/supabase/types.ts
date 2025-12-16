@@ -47,6 +47,72 @@ export type Database = {
         }
         Relationships: []
       }
+      appraisals: {
+        Row: {
+          address: string
+          agent_id: string
+          confidence: string
+          created_at: string
+          id: string
+          is_public: boolean
+          notes: string | null
+          postcode: string
+          price_from: number
+          price_to: number
+          property_id: string | null
+          state: string
+          suburb: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          agent_id: string
+          confidence?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          notes?: string | null
+          postcode: string
+          price_from: number
+          price_to: number
+          property_id?: string | null
+          state?: string
+          suburb: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          agent_id?: string
+          confidence?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          notes?: string | null
+          postcode?: string
+          price_from?: number
+          price_to?: number
+          property_id?: string | null
+          state?: string
+          suburb?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appraisals_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appraisals_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auctions: {
         Row: {
           created_at: string

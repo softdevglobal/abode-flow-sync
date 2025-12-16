@@ -25,6 +25,7 @@ import HowItWorks from "./pages/HowItWorks";
 // Buyer Pages
 import LiveAuction from "./pages/buyer/LiveAuction";
 import BuyerProfile from "./pages/buyer/Profile";
+import BuyerAppraisals from "./pages/buyer/Appraisals";
 import Auctions from "./pages/Auctions";
 
 // Agent Pages
@@ -72,6 +73,7 @@ const AnimatedRoutes = () => {
         <Route path="/saved" element={<PageTransition><SavedProperties /></PageTransition>} />
         <Route path="/auctions" element={<PageTransition><Auctions /></PageTransition>} />
         <Route path="/auction/live/:id" element={<PageTransition><LiveAuction /></PageTransition>} />
+        <Route path="/appraisals" element={<PageTransition><BuyerAppraisals /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><BuyerProfile /></PageTransition>} />
 
         {/* Agent View Routes */}
