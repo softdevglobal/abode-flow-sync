@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MobileNav } from '@/components/layout/MobileNav';
+import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import {
   Dialog,
   DialogContent,
@@ -182,7 +182,7 @@ export default function Auctions() {
   const completedCount = auctions.filter((a) => a.status === 'sold' || a.status === 'passed_in').length;
 
   return (
-    <div className="min-h-screen bg-background pb-20 lg:pb-0 font-body">
+    <BuyerLayout>
       {/* Header */}
       <header className="bg-card/50 backdrop-blur-md border-b border-border/50 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
@@ -470,7 +470,6 @@ export default function Auctions() {
         </DialogContent>
       </Dialog>
 
-      <MobileNav userRole="customer" />
-    </div>
+    </BuyerLayout>
   );
 }

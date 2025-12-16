@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Header, MobileNav } from '@/components/layout/MobileNav';
+import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -111,9 +111,8 @@ export default function MyViewings() {
   // Not logged in
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-20 md:pb-0">
-        <Header userRole="customer" />
-        <main className="container px-4 py-6 max-w-lg mx-auto">
+      <BuyerLayout>
+        <div className="container px-4 py-6 max-w-lg mx-auto">
           <Card className="text-center">
             <CardContent className="pt-8 pb-8">
               <LogIn className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
@@ -129,17 +128,14 @@ export default function MyViewings() {
               </Button>
             </CardContent>
           </Card>
-        </main>
-        <MobileNav userRole="customer" />
-      </div>
+        </div>
+      </BuyerLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <Header userRole="customer" />
-
-      <main className="container px-4 py-6">
+    <BuyerLayout>
+      <div className="container px-4 py-6">
         <div className="mb-6">
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">
             My Viewings
@@ -200,10 +196,8 @@ export default function MyViewings() {
             </TabsContent>
           </Tabs>
         )}
-      </main>
-
-      <MobileNav userRole="customer" />
-    </div>
+      </div>
+    </BuyerLayout>
   );
 }
 
