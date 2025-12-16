@@ -109,7 +109,7 @@ export default function AgentProperties() {
               {properties.length} {properties.length === 1 ? 'property' : 'properties'}
             </p>
           </div>
-          <Button variant="gold" onClick={() => handleOpenForm()} className="w-full sm:w-auto shadow-glow-sm">
+          <Button variant="gold" onClick={() => handleOpenForm()} className="w-full sm:w-auto shadow-glow-sm font-body">
             <Plus className="w-4 h-4 mr-2" />
             Add New Listing
           </Button>
@@ -123,19 +123,19 @@ export default function AgentProperties() {
               placeholder="Search by address or suburb..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 h-11"
+              className="pl-10 h-11 font-body"
             />
           </div>
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as PropertyStatus)}>
-            <SelectTrigger className="w-full sm:w-[180px] h-11">
+            <SelectTrigger className="w-full sm:w-[180px] h-11 font-body">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="sold">Sold</SelectItem>
-              <SelectItem value="off_market">Off Market</SelectItem>
+              <SelectItem value="all" className="font-body">All Status</SelectItem>
+              <SelectItem value="active" className="font-body">Active</SelectItem>
+              <SelectItem value="pending" className="font-body">Pending</SelectItem>
+              <SelectItem value="sold" className="font-body">Sold</SelectItem>
+              <SelectItem value="off_market" className="font-body">Off Market</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -146,18 +146,18 @@ export default function AgentProperties() {
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : filteredProperties.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Building2 className="w-8 h-8 text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center py-20 text-center bg-card/50 border border-border/50 rounded-xl backdrop-blur-sm">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <Building2 className="w-8 h-8 text-primary" />
             </div>
             <h3 className="font-display text-lg font-semibold mb-1">No properties found</h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-4 font-body">
               {search || statusFilter !== 'all'
                 ? 'Try adjusting your filters'
                 : 'Create your first listing to get started'}
             </p>
             {!search && statusFilter === 'all' && (
-              <Button variant="gold" onClick={() => handleOpenForm()}>
+              <Button variant="gold" onClick={() => handleOpenForm()} className="shadow-glow-sm font-body">
                 <Plus className="w-4 h-4 mr-2" />
                 Add New Listing
               </Button>
@@ -185,7 +185,7 @@ export default function AgentProperties() {
       {/* Add/Edit Property Form - Mobile: Sheet, Desktop: Dialog */}
       {isMobile ? (
         <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+          <SheetContent side="bottom" className="h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-sm border-border/50">
             <SheetHeader className="mb-4">
               <SheetTitle className="font-display">
                 {editingProperty ? 'Edit Property' : 'New Property Listing'}
@@ -196,7 +196,7 @@ export default function AgentProperties() {
         </Sheet>
       ) : (
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-background/95 backdrop-blur-sm border-border/50">
             <DialogHeader>
               <DialogTitle className="font-display text-xl">
                 {editingProperty ? 'Edit Property' : 'New Property Listing'}
@@ -209,18 +209,18 @@ export default function AgentProperties() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteProperty} onOpenChange={() => setDeleteProperty(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-background/95 backdrop-blur-sm border-border/50">
           <DialogHeader>
             <DialogTitle className="font-display">Delete Property</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="font-body">
               Are you sure you want to delete "{deleteProperty?.title}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setDeleteProperty(null)} disabled={isDeleting}>
+            <Button variant="outline" onClick={() => setDeleteProperty(null)} disabled={isDeleting} className="font-body hover:border-primary/50">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting}>
+            <Button variant="destructive" onClick={handleConfirmDelete} disabled={isDeleting} className="font-body">
               {isDeleting && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
               Delete
             </Button>
