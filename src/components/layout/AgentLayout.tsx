@@ -69,9 +69,9 @@ export function AgentLayout({ children }: AgentLayoutProps) {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'inspection_reminder':
-        return <Calendar className="w-4 h-4 text-primary" />;
+        return <Calendar className="w-4 h-4 text-accent" />;
       case 'booking_confirmed':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return <CheckCircle className="w-4 h-4 text-success" />;
       case 'booking_cancelled':
         return <AlertCircle className="w-4 h-4 text-destructive" />;
       default:
@@ -86,15 +86,15 @@ export function AgentLayout({ children }: AgentLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navigation */}
-      <header className="sticky top-0 z-50 bg-card border-b border-border">
+      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border">
         <div className="container flex items-center justify-between h-16 px-4">
           {/* Logo */}
           <Link to="/agent" className="flex items-center gap-3">
             {config.logoUrl ? (
               <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" />
             ) : (
-              <div className="w-9 h-9 rounded-lg gradient-hero flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-primary-foreground" />
+              <div className="w-10 h-10 rounded-xl gradient-orange flex items-center justify-center shadow-glow-sm">
+                <Building2 className="w-5 h-5 text-accent-foreground" />
               </div>
             )}
             <span className="font-display text-xl font-bold text-foreground hidden sm:block">
@@ -111,9 +111,9 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
                     isActive
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-accent text-accent-foreground shadow-glow-sm"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
@@ -129,16 +129,16 @@ export function AgentLayout({ children }: AgentLayoutProps) {
             {/* Notifications */}
             <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
+                <Button variant="ghost" size="icon" className="relative rounded-full">
                   <Bell className="w-5 h-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full" />
+                    <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-accent rounded-full animate-pulse" />
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-80 p-0">
-                <div className="p-3 border-b border-border">
-                  <h4 className="font-semibold text-sm">Notifications</h4>
+              <PopoverContent align="end" className="w-80 p-0 bg-card border-border">
+                <div className="p-4 border-b border-border">
+                  <h4 className="font-display font-bold text-foreground">Notifications</h4>
                   {unreadCount > 0 && (
                     <p className="text-xs text-muted-foreground">{unreadCount} unread</p>
                   )}
@@ -161,7 +161,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                           onClick={() => handleNotificationClick(notification)}
                           className={cn(
                             "p-3 hover:bg-muted/50 cursor-pointer transition-colors",
-                            !notification.read && "bg-primary/5"
+                            !notification.read && "bg-accent/5 border-l-2 border-accent"
                           )}
                         >
                           <div className="flex items-start gap-3">
@@ -171,7 +171,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                             <div className="flex-1 min-w-0">
                               <p className={cn(
                                 "text-sm",
-                                !notification.read ? "font-medium text-foreground" : "text-muted-foreground"
+                                !notification.read ? "font-semibold text-foreground" : "text-muted-foreground"
                               )}>
                                 {notification.title}
                               </p>
@@ -183,7 +183,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                               </p>
                             </div>
                             {!notification.read && (
-                              <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-2" />
+                              <div className="w-2 h-2 rounded-full bg-accent shrink-0 mt-2" />
                             )}
                           </div>
                         </div>
@@ -191,11 +191,11 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                     </div>
                   )}
                 </ScrollArea>
-                <div className="p-2 border-t border-border">
+                <div className="p-3 border-t border-border">
                   <Link 
                     to="/agent/notifications" 
                     onClick={() => setNotificationsOpen(false)}
-                    className="block text-center text-sm text-primary hover:underline py-1"
+                    className="block text-center text-sm text-accent hover:text-accent/80 font-medium py-1"
                   >
                     View all notifications
                   </Link>
@@ -206,23 +206,23 @@ export function AgentLayout({ children }: AgentLayoutProps) {
             {/* Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="hidden md:flex items-center gap-2 px-2">
+                <Button variant="ghost" className="hidden md:flex items-center gap-2 px-2 rounded-full">
                   <Avatar className="w-8 h-8">
                     <AvatarImage src="" />
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                    <AvatarFallback className="bg-accent/20 text-accent text-sm font-bold">
                       AG
                     </AvatarFallback>
                   </Avatar>
                   <ChevronDown className="w-4 h-4 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-48 bg-card border-border">
                 <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">Demo Agent</p>
+                  <p className="text-sm font-semibold text-foreground">Demo Agent</p>
                   <p className="text-xs text-muted-foreground">Prototype Mode</p>
                 </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleGoHome}>
+                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuItem onClick={handleGoHome} className="cursor-pointer">
                   <Home className="w-4 h-4 mr-2" />
                   Back to Home
                 </DropdownMenuItem>
@@ -233,7 +233,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden rounded-full"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -252,9 +252,9 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all",
                     isActive
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-accent text-accent-foreground"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
@@ -265,7 +265,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
             })}
             <button
               onClick={handleGoHome}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted w-full"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted w-full"
             >
               <Home className="w-5 h-5" />
               Back to Home

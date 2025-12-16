@@ -26,7 +26,6 @@ import {
   ArrowRight,
   MapPin,
   Users,
-  Building,
   Menu,
   X,
   Facebook,
@@ -37,8 +36,8 @@ import {
   Camera,
   Gavel,
   TrendingUp,
+  Sparkles,
 } from 'lucide-react';
-import heroImage from '@/assets/hero-home.jpg';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -201,24 +200,20 @@ export default function Landing() {
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? 'bg-background/95 backdrop-blur-md shadow-md'
+            ? 'bg-background/95 backdrop-blur-md border-b border-border'
             : 'bg-transparent'
         }`}
       >
         <div className="container flex items-center justify-between h-16 md:h-20">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-3">
             {config.logoUrl ? (
               <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" />
             ) : (
-              <div className="w-9 h-9 rounded-lg gradient-hero flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-primary-foreground" />
+              <div className="w-10 h-10 rounded-xl gradient-orange flex items-center justify-center shadow-glow-sm">
+                <Building2 className="w-5 h-5 text-accent-foreground" />
               </div>
             )}
-            <span
-              className={`font-display text-xl font-semibold transition-colors ${
-                isScrolled ? 'text-foreground' : 'text-primary-foreground'
-              }`}
-            >
+            <span className="font-display text-xl font-bold text-foreground">
               {config.agencyName}
             </span>
           </Link>
@@ -227,33 +222,25 @@ export default function Landing() {
           <div className="hidden md:flex items-center gap-8">
             <Link
               to="/browse"
-              className={`text-sm font-medium transition-colors hover:text-accent ${
-                isScrolled ? 'text-foreground' : 'text-primary-foreground'
-              }`}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Browse Properties
+              Properties
             </Link>
             <Link
               to="/auctions"
-              className={`text-sm font-medium transition-colors hover:text-accent ${
-                isScrolled ? 'text-foreground' : 'text-primary-foreground'
-              }`}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Live Auctions
+              Auctions
             </Link>
             <a
               href="#how-it-works"
-              className={`text-sm font-medium transition-colors hover:text-accent ${
-                isScrolled ? 'text-foreground' : 'text-primary-foreground'
-              }`}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              About
+              How It Works
             </a>
             <a
               href="#footer"
-              className={`text-sm font-medium transition-colors hover:text-accent ${
-                isScrolled ? 'text-foreground' : 'text-primary-foreground'
-              }`}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Contact
             </a>
@@ -262,28 +249,22 @@ export default function Landing() {
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <Link to="/auth">
-              <Button
-                variant="ghost"
-                className={isScrolled ? 'text-foreground' : 'text-primary-foreground hover:bg-primary-foreground/10'}
-              >
-                Sign In
-              </Button>
+              <Button variant="ghost">Sign In</Button>
             </Link>
             <Link to="/auth">
-              <Button variant="gold">Get Started</Button>
+              <Button variant="accent">
+                Get Started
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
             </Link>
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 text-foreground"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? (
-              <X className={isScrolled ? 'text-foreground' : 'text-primary-foreground'} />
-            ) : (
-              <Menu className={isScrolled ? 'text-foreground' : 'text-primary-foreground'} />
-            )}
+            {mobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
 
@@ -296,21 +277,21 @@ export default function Landing() {
                 className="text-foreground font-medium py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Browse Properties
+                Properties
               </Link>
               <Link
                 to="/auctions"
                 className="text-foreground font-medium py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Live Auctions
+                Auctions
               </Link>
               <a
                 href="#how-it-works"
                 className="text-foreground font-medium py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                About
+                How It Works
               </a>
               <a
                 href="#footer"
@@ -326,7 +307,7 @@ export default function Landing() {
                   </Button>
                 </Link>
                 <Link to="/auth" className="flex-1">
-                  <Button variant="gold" className="w-full">
+                  <Button variant="accent" className="w-full">
                     Get Started
                   </Button>
                 </Link>
@@ -336,109 +317,132 @@ export default function Landing() {
         )}
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-16">
-        <div className="absolute inset-0">
-          <img
-            src={heroImage}
-            alt="Luxury modern home"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/80 via-primary/70 to-primary/90" />
-        </div>
+      {/* Hero Section - Phenomenon Style */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 bg-grid">
+        {/* Background glow effects */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px] animate-float" />
+        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/10 rounded-full blur-[100px] animate-float" style={{ animationDelay: '2s' }} />
+        
+        <div className="relative z-10 container px-4 py-20">
+          <div className="max-w-4xl mx-auto text-center">
+            <Badge className="bg-accent/10 text-accent border-accent/20 mb-6 animate-fade-in">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Australia's Modern Real Estate Platform
+            </Badge>
+            
+            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground mb-6 animate-fade-in leading-tight">
+              Find Your{' '}
+              <span className="text-gradient">Dream Home</span>
+              {' '}Today
+            </h1>
+            
+            <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto animate-slide-up">
+              Browse thousands of properties, attend live auctions, and connect with trusted agents across Australia.
+            </p>
 
-        <div className="relative z-10 container px-4 py-20 text-center">
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground mb-6 animate-fade-in">
-            Find Your Dream Home
-          </h1>
-          <p className="text-lg md:text-xl text-primary-foreground/80 mb-10 max-w-2xl mx-auto animate-slide-up">
-            Browse thousands of properties from trusted agents across Australia
-          </p>
-
-          {/* Search Bar */}
-          <div className="max-w-4xl mx-auto bg-card rounded-xl shadow-xl p-4 md:p-6 animate-scale-in">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="lg:col-span-2 relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  placeholder="Search suburb or postcode..."
-                  value={searchLocation}
-                  onChange={(e) => setSearchLocation(e.target.value)}
-                  className="pl-10 h-12"
-                />
-              </div>
-              <Select value={minPrice} onValueChange={setMinPrice}>
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Min Price" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="200000">$200,000</SelectItem>
-                  <SelectItem value="400000">$400,000</SelectItem>
-                  <SelectItem value="600000">$600,000</SelectItem>
-                  <SelectItem value="800000">$800,000</SelectItem>
-                  <SelectItem value="1000000">$1,000,000</SelectItem>
-                  <SelectItem value="1500000">$1,500,000</SelectItem>
-                  <SelectItem value="2000000">$2,000,000</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={maxPrice} onValueChange={setMaxPrice}>
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Max Price" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="500000">$500,000</SelectItem>
-                  <SelectItem value="750000">$750,000</SelectItem>
-                  <SelectItem value="1000000">$1,000,000</SelectItem>
-                  <SelectItem value="1500000">$1,500,000</SelectItem>
-                  <SelectItem value="2000000">$2,000,000</SelectItem>
-                  <SelectItem value="3000000">$3,000,000</SelectItem>
-                  <SelectItem value="5000000">$5,000,000+</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={bedrooms} onValueChange={setBedrooms}>
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Bedrooms" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="1">1+</SelectItem>
-                  <SelectItem value="2">2+</SelectItem>
-                  <SelectItem value="3">3+</SelectItem>
-                  <SelectItem value="4">4+</SelectItem>
-                  <SelectItem value="5">5+</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-scale-in">
+              <Link to="/browse">
+                <Button variant="accent" size="xl">
+                  Browse Properties
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              </Link>
+              <Link to="/agent">
+                <Button variant="outline" size="xl">
+                  For Agents
+                </Button>
+              </Link>
             </div>
-            <Button
-              onClick={handleSearch}
-              size="lg"
-              variant="gold"
-              className="w-full mt-4 h-12"
-            >
-              <Search className="w-5 h-5 mr-2" />
-              Search Properties
-            </Button>
+
+            {/* Search Bar */}
+            <Card variant="glass" className="max-w-4xl mx-auto animate-scale-in">
+              <CardContent className="p-4 md:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  <div className="lg:col-span-2 relative">
+                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      placeholder="Search suburb or postcode..."
+                      value={searchLocation}
+                      onChange={(e) => setSearchLocation(e.target.value)}
+                      className="pl-10 h-12 bg-muted/50 border-border"
+                    />
+                  </div>
+                  <Select value={minPrice} onValueChange={setMinPrice}>
+                    <SelectTrigger className="h-12 bg-muted/50 border-border">
+                      <SelectValue placeholder="Min Price" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any</SelectItem>
+                      <SelectItem value="200000">$200,000</SelectItem>
+                      <SelectItem value="400000">$400,000</SelectItem>
+                      <SelectItem value="600000">$600,000</SelectItem>
+                      <SelectItem value="800000">$800,000</SelectItem>
+                      <SelectItem value="1000000">$1,000,000</SelectItem>
+                      <SelectItem value="1500000">$1,500,000</SelectItem>
+                      <SelectItem value="2000000">$2,000,000</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={maxPrice} onValueChange={setMaxPrice}>
+                    <SelectTrigger className="h-12 bg-muted/50 border-border">
+                      <SelectValue placeholder="Max Price" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any</SelectItem>
+                      <SelectItem value="500000">$500,000</SelectItem>
+                      <SelectItem value="750000">$750,000</SelectItem>
+                      <SelectItem value="1000000">$1,000,000</SelectItem>
+                      <SelectItem value="1500000">$1,500,000</SelectItem>
+                      <SelectItem value="2000000">$2,000,000</SelectItem>
+                      <SelectItem value="3000000">$3,000,000</SelectItem>
+                      <SelectItem value="5000000">$5,000,000+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={bedrooms} onValueChange={setBedrooms}>
+                    <SelectTrigger className="h-12 bg-muted/50 border-border">
+                      <SelectValue placeholder="Bedrooms" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any</SelectItem>
+                      <SelectItem value="1">1+</SelectItem>
+                      <SelectItem value="2">2+</SelectItem>
+                      <SelectItem value="3">3+</SelectItem>
+                      <SelectItem value="4">4+</SelectItem>
+                      <SelectItem value="5">5+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={handleSearch}
+                  size="lg"
+                  variant="accent"
+                  className="w-full mt-4 h-12"
+                >
+                  <Search className="w-5 h-5 mr-2" />
+                  Search Properties
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Featured Properties */}
-      <section className="py-16 md:py-24 bg-secondary">
+      <section className="py-16 md:py-24 bg-card/50">
         <div className="container px-4">
           <div className="flex items-center justify-between mb-10">
             <div>
+              <Badge className="bg-accent/10 text-accent border-accent/20 mb-3">Featured</Badge>
               <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-                Featured Properties
+                Latest Properties
               </h2>
               <p className="text-muted-foreground">
-                Discover our latest listings
+                Discover our newest listings
               </p>
             </div>
             <Link to="/browse">
               <Button variant="outline" className="hidden md:flex">
-                View All Properties
+                View All
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
@@ -451,7 +455,7 @@ export default function Landing() {
                 to={`/property/${property.id}`}
                 className="group"
               >
-                <Card className="overflow-hidden border-0 shadow-elegant transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
+                <Card variant="property" className="overflow-hidden">
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <img
                       src={property.images?.[0] || '/placeholder.svg'}
@@ -459,15 +463,14 @@ export default function Landing() {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <button
-                      className="absolute top-3 right-3 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-card"
+                      className="absolute top-3 right-3 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-background"
                       onClick={(e) => {
                         e.preventDefault();
-                        // TODO: Implement favorites (requires login)
                       }}
                     >
                       <Heart className="w-5 h-5 text-muted-foreground" />
                     </button>
-                    <Badge className="absolute bottom-3 left-3 bg-primary text-primary-foreground capitalize">
+                    <Badge className="absolute bottom-3 left-3 bg-background/80 backdrop-blur-sm text-foreground capitalize border-0">
                       {property.property_type}
                     </Badge>
                   </div>
@@ -518,7 +521,7 @@ export default function Landing() {
           <div className="container px-4">
             <div className="flex items-center justify-between mb-10">
               <div>
-                <Badge className="bg-red-500/10 text-red-500 mb-3">
+                <Badge className="bg-red-500/10 text-red-500 border-red-500/20 mb-3">
                   <span className="w-2 h-2 bg-red-500 rounded-full mr-2 animate-pulse" />
                   Live Now
                 </Badge>
@@ -558,10 +561,10 @@ export default function Landing() {
                     to={`/auction/live/${auction.id}`}
                     className="group"
                   >
-                    <Card className="overflow-hidden border-0 shadow-elegant transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 relative">
+                    <Card variant="interactive" className="overflow-hidden relative">
                       {auction.status === 'live' && (
                         <div className="absolute top-3 left-3 z-10">
-                          <Badge className="bg-red-500 text-white animate-pulse">
+                          <Badge className="bg-red-500 text-white border-0 animate-pulse">
                             <Gavel className="w-3 h-3 mr-1" />
                             LIVE
                           </Badge>
@@ -569,7 +572,7 @@ export default function Landing() {
                       )}
                       {auction.status === 'pending' && (
                         <div className="absolute top-3 left-3 z-10">
-                          <Badge variant="secondary">
+                          <Badge variant="secondary" className="border-0">
                             Upcoming
                           </Badge>
                         </div>
@@ -580,9 +583,9 @@ export default function Landing() {
                           alt={property?.title || 'Auction Property'}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
                         <div className="absolute bottom-3 left-3 right-3">
-                          <p className="text-white text-sm truncate">
+                          <p className="text-foreground text-sm truncate">
                             {property?.suburb}, {property?.state}
                           </p>
                         </div>
@@ -604,7 +607,7 @@ export default function Landing() {
                           </div>
                         </div>
                         <Button 
-                          variant="gold" 
+                          variant="accent" 
                           size="sm" 
                           className="w-full mt-3"
                         >
@@ -618,7 +621,6 @@ export default function Landing() {
               })}
             </div>
 
-            {/* Mobile View All Button */}
             <div className="mt-8 text-center md:hidden">
               <Link to="/auctions">
                 <Button variant="outline">
@@ -632,9 +634,10 @@ export default function Landing() {
       )}
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-16 md:py-24">
+      <section id="how-it-works" className="py-16 md:py-24 bg-card/50">
         <div className="container px-4">
           <div className="text-center mb-12">
+            <Badge className="bg-accent/10 text-accent border-accent/20 mb-4">Process</Badge>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
               How It Works
             </h2>
@@ -644,51 +647,51 @@ export default function Landing() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center group">
-              <div className="w-20 h-20 rounded-2xl gradient-hero flex items-center justify-center mx-auto mb-6 transition-transform group-hover:scale-110">
-                <Search className="w-10 h-10 text-primary-foreground" />
+            <Card variant="glass" className="text-center p-8 group">
+              <div className="w-16 h-16 rounded-2xl gradient-orange flex items-center justify-center mx-auto mb-6 transition-all group-hover:shadow-glow group-hover:scale-110">
+                <Search className="w-8 h-8 text-accent-foreground" />
               </div>
-              <h3 className="font-display text-xl font-semibold mb-3">
+              <h3 className="font-display text-xl font-bold mb-3 text-foreground">
                 Browse Properties
               </h3>
               <p className="text-muted-foreground">
                 Search thousands of listings by location, price, and features to find homes that match your criteria.
               </p>
-            </div>
+            </Card>
 
-            <div className="text-center group">
-              <div className="w-20 h-20 rounded-2xl gradient-gold flex items-center justify-center mx-auto mb-6 transition-transform group-hover:scale-110">
-                <Calendar className="w-10 h-10 text-accent-foreground" />
+            <Card variant="glass" className="text-center p-8 group">
+              <div className="w-16 h-16 rounded-2xl gradient-orange flex items-center justify-center mx-auto mb-6 transition-all group-hover:shadow-glow group-hover:scale-110">
+                <Calendar className="w-8 h-8 text-accent-foreground" />
               </div>
-              <h3 className="font-display text-xl font-semibold mb-3">
+              <h3 className="font-display text-xl font-bold mb-3 text-foreground">
                 Book Inspections
               </h3>
               <p className="text-muted-foreground">
                 Schedule property viewings at times that suit you, with instant confirmation from agents.
               </p>
-            </div>
+            </Card>
 
-            <div className="text-center group">
-              <div className="w-20 h-20 rounded-2xl gradient-hero flex items-center justify-center mx-auto mb-6 transition-transform group-hover:scale-110">
-                <Home className="w-10 h-10 text-primary-foreground" />
+            <Card variant="glass" className="text-center p-8 group">
+              <div className="w-16 h-16 rounded-2xl gradient-orange flex items-center justify-center mx-auto mb-6 transition-all group-hover:shadow-glow group-hover:scale-110">
+                <Home className="w-8 h-8 text-accent-foreground" />
               </div>
-              <h3 className="font-display text-xl font-semibold mb-3">
+              <h3 className="font-display text-xl font-bold mb-3 text-foreground">
                 Find Your Home
               </h3>
               <p className="text-muted-foreground">
                 Connect directly with agents and secure your dream property with confidence.
               </p>
-            </div>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* Inspection Check-In Section */}
-      <section className="py-16 md:py-24 bg-secondary">
+      <section className="py-16 md:py-24 bg-background">
         <div className="container px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <Badge className="bg-accent/10 text-accent mb-4">Quick Check-In</Badge>
+              <Badge className="bg-accent/10 text-accent border-accent/20 mb-4">Quick Check-In</Badge>
               <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Attending an Inspection?
               </h2>
@@ -698,37 +701,37 @@ export default function Landing() {
               </p>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-3 text-muted-foreground">
-                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                    <QrCode className="w-4 h-4 text-accent" />
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <QrCode className="w-5 h-5 text-accent" />
                   </div>
                   <span>Scan QR code at property</span>
                 </li>
                 <li className="flex items-center gap-3 text-muted-foreground">
-                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                    <Users className="w-4 h-4 text-accent" />
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-accent" />
                   </div>
                   <span>Automatic attendance registration</span>
                 </li>
                 <li className="flex items-center gap-3 text-muted-foreground">
-                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
-                    <Camera className="w-4 h-4 text-accent" />
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <Camera className="w-5 h-5 text-accent" />
                   </div>
                   <span>No app download required</span>
                 </li>
               </ul>
               <Link to="/checkin">
-                <Button variant="gold" size="lg">
+                <Button variant="accent" size="lg">
                   <QrCode className="w-5 h-5 mr-2" />
                   Open Check-In Scanner
                 </Button>
               </Link>
             </div>
             <div className="relative">
-              <Card className="bg-card shadow-xl rounded-2xl p-8 text-center max-w-sm mx-auto">
+              <Card variant="glow" className="p-8 text-center max-w-sm mx-auto">
                 <div className="w-32 h-32 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-6">
                   <QrCode className="w-16 h-16 text-accent" />
                 </div>
-                <h3 className="font-display text-xl font-semibold mb-2">Ready to Check In?</h3>
+                <h3 className="font-display text-xl font-bold mb-2 text-foreground">Ready to Check In?</h3>
                 <p className="text-sm text-muted-foreground mb-6">
                   Look for the QR code displayed at the property entrance
                 </p>
@@ -739,58 +742,59 @@ export default function Landing() {
                   </Button>
                 </Link>
               </Card>
-              <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-accent/5 rounded-full blur-3xl" />
+              <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-accent/10 rounded-full blur-[80px]" />
             </div>
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section ref={statsRef} className="py-16 md:py-24 gradient-hero">
+      <section ref={statsRef} className="py-16 md:py-24 gradient-orange">
         <div className="container px-4">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div>
-              <p className="font-display text-4xl md:text-5xl font-bold text-primary-foreground mb-2">
+              <p className="font-display text-5xl md:text-6xl font-extrabold text-accent-foreground mb-2">
                 <AnimatedNumber value={stats?.activeListings || 0} suffix="+" />
               </p>
-              <p className="text-primary-foreground/70">Active Listings</p>
+              <p className="text-accent-foreground/70 font-medium">Active Listings</p>
             </div>
             <div>
-              <p className="font-display text-4xl md:text-5xl font-bold text-primary-foreground mb-2">
+              <p className="font-display text-5xl md:text-6xl font-extrabold text-accent-foreground mb-2">
                 <AnimatedNumber value={stats?.totalAgents || 0} suffix="+" />
               </p>
-              <p className="text-primary-foreground/70">Trusted Agents</p>
+              <p className="text-accent-foreground/70 font-medium">Trusted Agents</p>
             </div>
             <div>
-              <p className="font-display text-4xl md:text-5xl font-bold text-primary-foreground mb-2">
+              <p className="font-display text-5xl md:text-6xl font-extrabold text-accent-foreground mb-2">
                 <AnimatedNumber value={stats?.citiesCovered || 0} suffix="+" />
               </p>
-              <p className="text-primary-foreground/70">Cities Covered</p>
+              <p className="text-accent-foreground/70 font-medium">Cities Covered</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-16 md:py-24 bg-card/50">
         <div className="container px-4">
-          <Card className="gradient-gold rounded-2xl overflow-hidden border-0">
+          <Card variant="glow" className="overflow-hidden border-accent/30">
             <CardContent className="p-8 md:p-12 text-center">
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-accent-foreground mb-4">
-                Ready to Find Your Perfect Home?
+              <h2 className="font-display text-2xl md:text-4xl font-bold text-foreground mb-4">
+                Ready to Find Your{' '}
+                <span className="text-gradient">Perfect Home</span>?
               </h2>
-              <p className="text-accent-foreground/80 mb-8 max-w-xl mx-auto">
+              <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
                 Join thousands of buyers who have found their dream property with {config.agencyName}.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link to="/browse">
-                  <Button size="lg" variant="default" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button size="lg" variant="accent">
                     <Search className="w-4 h-4 mr-2" />
                     Browse Properties
                   </Button>
                 </Link>
                 <Link to="/auth">
-                  <Button size="lg" variant="outline" className="border-accent-foreground/30 text-accent-foreground hover:bg-accent-foreground/10">
+                  <Button size="lg" variant="outline">
                     Create Account
                   </Button>
                 </Link>
@@ -801,58 +805,58 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer id="footer" className="bg-primary py-12 md:py-16">
+      <footer id="footer" className="bg-card border-t border-border py-12 md:py-16">
         <div className="container px-4">
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div className="md:col-span-2">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-3 mb-4">
                 {config.logoUrl ? (
                   <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" />
                 ) : (
-                  <div className="w-9 h-9 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-primary-foreground" />
+                  <div className="w-10 h-10 rounded-xl gradient-orange flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-accent-foreground" />
                   </div>
                 )}
-                <span className="font-display text-xl font-semibold text-primary-foreground">
+                <span className="font-display text-xl font-bold text-foreground">
                   {config.agencyName}
                 </span>
               </div>
-              <p className="text-primary-foreground/70 max-w-sm mb-6">
+              <p className="text-muted-foreground max-w-sm mb-6">
                 Your trusted platform for finding the perfect property. Connect with agents and discover your dream home today.
               </p>
-              <div className="flex gap-4">
-                <a href="#" className="w-10 h-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors">
-                  <Facebook className="w-5 h-5 text-primary-foreground" />
+              <div className="flex gap-3">
+                <a href="#" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
+                  <Facebook className="w-5 h-5" />
                 </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors">
-                  <Twitter className="w-5 h-5 text-primary-foreground" />
+                <a href="#" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
+                  <Twitter className="w-5 h-5" />
                 </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors">
-                  <Instagram className="w-5 h-5 text-primary-foreground" />
+                <a href="#" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
+                  <Instagram className="w-5 h-5" />
                 </a>
-                <a href="#" className="w-10 h-10 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary-foreground/20 transition-colors">
-                  <Linkedin className="w-5 h-5 text-primary-foreground" />
+                <a href="#" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
+                  <Linkedin className="w-5 h-5" />
                 </a>
               </div>
             </div>
 
             <div>
-              <h4 className="font-display font-semibold text-primary-foreground mb-4">
+              <h4 className="font-display font-bold text-foreground mb-4">
                 Quick Links
               </h4>
               <ul className="space-y-3">
                 <li>
-                  <Link to="/browse" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  <Link to="/browse" className="text-muted-foreground hover:text-accent transition-colors">
                     Browse Properties
                   </Link>
                 </li>
                 <li>
-                  <Link to="/agent" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  <Link to="/agent" className="text-muted-foreground hover:text-accent transition-colors">
                     For Agents
                   </Link>
                 </li>
                 <li>
-                  <Link to="/calculator" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  <Link to="/calculator" className="text-muted-foreground hover:text-accent transition-colors">
                     Affordability Calculator
                   </Link>
                 </li>
@@ -860,22 +864,22 @@ export default function Landing() {
             </div>
 
             <div>
-              <h4 className="font-display font-semibold text-primary-foreground mb-4">
+              <h4 className="font-display font-bold text-foreground mb-4">
                 Legal
               </h4>
               <ul className="space-y-3">
                 <li>
-                  <a href="#" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
                     Privacy Policy
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
                     Terms of Service
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
+                  <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
                     Cookie Policy
                   </a>
                 </li>
@@ -883,31 +887,30 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="border-t border-primary-foreground/20 pt-8">
-            <p className="text-center text-primary-foreground/60 text-sm">
+          <div className="border-t border-border pt-8 text-center">
+            <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} {config.agencyName}. All rights reserved.
             </p>
           </div>
         </div>
       </footer>
+
       {/* Floating Check-In Button */}
-      <Link
-        to="/checkin"
-        className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${
-          showFloatingCheckIn 
-            ? 'opacity-100 translate-y-0' 
-            : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <Button 
-          variant="gold" 
-          size="lg" 
-          className="shadow-xl rounded-full px-6 gap-2"
+      {showFloatingCheckIn && (
+        <Link
+          to="/checkin"
+          className="fixed bottom-6 right-6 z-40"
         >
-          <QrCode className="w-5 h-5" />
-          <span className="hidden sm:inline">Check In</span>
-        </Button>
-      </Link>
+          <Button
+            variant="accent"
+            size="lg"
+            className="rounded-full shadow-glow animate-pulse-glow"
+          >
+            <QrCode className="w-5 h-5 mr-2" />
+            Check In
+          </Button>
+        </Link>
+      )}
     </div>
   );
 }
