@@ -131,8 +131,8 @@ export default function AgentNotifications() {
       <div className="container py-6 px-4 max-w-4xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Notifications</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl font-bold text-foreground font-display">Notifications</h1>
+            <p className="text-muted-foreground font-body">
               {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All caught up!'}
             </p>
           </div>
@@ -140,7 +140,7 @@ export default function AgentNotifications() {
             <Button 
               variant="outline" 
               onClick={handleMarkAllAsRead}
-              className="gap-2"
+              className="gap-2 font-body hover:border-primary/50"
             >
               <CheckCheck className="w-4 h-4" />
               Mark all as read
@@ -149,29 +149,29 @@ export default function AgentNotifications() {
         </div>
 
         {/* Filters */}
-        <Card className="mb-6">
+        <Card className="mb-6 border-border/50 bg-card/50 backdrop-blur-sm">
           <CardContent className="pt-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex items-center gap-2 flex-1">
-                <Filter className="w-4 h-4 text-muted-foreground" />
+                <Filter className="w-4 h-4 text-primary" />
                 <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as NotificationType)}>
-                  <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectTrigger className="w-full sm:w-[200px] font-body">
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="viewing_request">Viewing Requests</SelectItem>
-                    <SelectItem value="inspection_reminder">Inspection Reminders</SelectItem>
-                    <SelectItem value="status_update">Status Updates</SelectItem>
-                    <SelectItem value="message">Messages</SelectItem>
+                    <SelectItem value="all" className="font-body">All Types</SelectItem>
+                    <SelectItem value="viewing_request" className="font-body">Viewing Requests</SelectItem>
+                    <SelectItem value="inspection_reminder" className="font-body">Inspection Reminders</SelectItem>
+                    <SelectItem value="status_update" className="font-body">Status Updates</SelectItem>
+                    <SelectItem value="message" className="font-body">Messages</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <Tabs value={readFilter} onValueChange={(v) => setReadFilter(v as ReadFilter)} className="w-full sm:w-auto">
-                <TabsList>
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="unread">Unread</TabsTrigger>
-                  <TabsTrigger value="read">Read</TabsTrigger>
+                <TabsList className="bg-card/50 border border-border/50">
+                  <TabsTrigger value="all" className="font-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">All</TabsTrigger>
+                  <TabsTrigger value="unread" className="font-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Unread</TabsTrigger>
+                  <TabsTrigger value="read" className="font-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Read</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -179,61 +179,63 @@ export default function AgentNotifications() {
         </Card>
 
         {/* Notifications List */}
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl overflow-hidden">
           <CardHeader>
-            <CardTitle className="text-lg">
+            <CardTitle className="text-lg font-display">
               {filteredNotifications.length} notification{filteredNotifications.length !== 1 ? 's' : ''}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-8 text-center text-muted-foreground">
+              <div className="p-8 text-center text-muted-foreground font-body">
                 Loading notifications...
               </div>
             ) : filteredNotifications.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="font-medium">No notifications found</p>
-                <p className="text-sm">Try adjusting your filters</p>
+                <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <Bell className="w-8 h-8 text-primary" />
+                </div>
+                <p className="font-medium font-display">No notifications found</p>
+                <p className="text-sm font-body">Try adjusting your filters</p>
               </div>
             ) : (
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-border/50">
                 {filteredNotifications.map((notification) => (
                   <div
                     key={notification.id}
                     onClick={() => !notification.read && markAsRead.mutate(notification.id)}
                     className={cn(
-                      "p-4 hover:bg-muted/50 cursor-pointer transition-colors",
-                      !notification.read && "bg-primary/5"
+                      "p-4 hover:bg-primary/5 cursor-pointer transition-colors",
+                      !notification.read && "bg-primary/10 border-l-2 border-l-primary"
                     )}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                         {getNotificationIcon(notification.type)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
                             <p className={cn(
-                              "text-sm",
+                              "text-sm font-body",
                               !notification.read ? "font-semibold text-foreground" : "text-foreground"
                             )}>
                               {notification.title}
                             </p>
-                            <p className="text-sm text-muted-foreground mt-1">
+                            <p className="text-sm text-muted-foreground mt-1 font-body">
                               {notification.message}
                             </p>
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
                             {!notification.read && (
-                              <div className="w-2 h-2 rounded-full bg-primary" />
+                              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                             )}
-                            <Badge variant={getTypeBadgeVariant(notification.type)} className="text-xs">
+                            <Badge variant={getTypeBadgeVariant(notification.type)} className="text-xs font-body">
                               {formatType(notification.type)}
                             </Badge>
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-2">
+                        <p className="text-xs text-muted-foreground mt-2 font-body">
                           {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                           <span className="mx-2">•</span>
                           {format(new Date(notification.created_at), 'MMM d, yyyy h:mm a')}

@@ -55,21 +55,21 @@ export default function AgentAppraisals() {
             <h1 className="font-display text-2xl font-bold text-foreground mb-1">
               Appraisals
             </h1>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-sm font-body">
               Property value estimates
             </p>
           </div>
-          <Button variant="gold">
+          <Button className="shadow-glow-sm font-body">
             <Plus className="w-4 h-4 mr-2" />
             New Appraisal
           </Button>
         </div>
 
         {/* Disclaimer */}
-        <Card variant="glass" className="mb-6">
+        <Card className="mb-6 border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
           <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground">
-              <strong>Disclaimer:</strong> Appraisals are indicative only and not a formal valuation. 
+            <p className="text-xs text-muted-foreground font-body">
+              <strong className="text-primary">Disclaimer:</strong> Appraisals are indicative only and not a formal valuation. 
               These estimates are based on comparable sales and market conditions at the time of assessment. 
               For legal or financial purposes, please obtain a licensed valuation.
             </p>
@@ -79,31 +79,31 @@ export default function AgentAppraisals() {
         {/* Appraisal List */}
         <div className="space-y-4">
           {appraisals.map((appraisal) => (
-            <Card key={appraisal.id} variant="elevated">
+            <Card key={appraisal.id} className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl hover:border-primary/30 transition-colors">
               <CardContent className="pt-5">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
-                    <FileText className="w-5 h-5 text-accent" />
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                      <MapPin className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 font-body">
+                      <MapPin className="w-4 h-4 text-primary" />
                       <span className="truncate">{appraisal.address}</span>
                     </div>
                     <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-4 h-4 text-accent" />
+                      <DollarSign className="w-4 h-4 text-primary" />
                       <span className="font-display text-lg font-bold">
                         {formatCurrency(appraisal.priceFrom)} - {formatCurrency(appraisal.priceTo)}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm text-muted-foreground">Confidence:</span>
-                      <span className={`text-sm font-medium capitalize ${confidenceColors[appraisal.confidence as keyof typeof confidenceColors]}`}>
+                      <span className="text-sm text-muted-foreground font-body">Confidence:</span>
+                      <span className={`text-sm font-medium capitalize font-body ${confidenceColors[appraisal.confidence as keyof typeof confidenceColors]}`}>
                         {appraisal.confidence}
                       </span>
                     </div>
                     {appraisal.notes && (
-                      <p className="text-sm text-muted-foreground bg-secondary rounded-lg p-3">
+                      <p className="text-sm text-muted-foreground bg-muted/30 border border-border/50 rounded-xl p-3 font-body">
                         {appraisal.notes}
                       </p>
                     )}
