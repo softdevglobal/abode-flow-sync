@@ -16,6 +16,8 @@ import { InspectionTimes } from '@/components/property/InspectionTimes';
 import { PropertyMap } from '@/components/property/PropertyMap';
 import { InspectionRequestDialog } from '@/components/property/InspectionRequestDialog';
 import { supabase } from '@/integrations/supabase/client';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Property = Tables<'properties'>;
@@ -23,9 +25,12 @@ type Inspection = Tables<'inspections'>;
 
 export default function PropertyDetail() {
   const { id } = useParams();
-  const [isSaved, setIsSaved] = useState(false);
+  const { user } = useAuth();
+  const { isFavorited, toggleFavorite, isToggling } = useFavorites();
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [showInspectionDialog, setShowInspectionDialog] = useState(false);
+
+  const isSaved = id ? isFavorited(id) : false;
 
   // Fetch property from database
   const { data: property, isLoading: propertyLoading } = useQuery({
@@ -116,8 +121,13 @@ export default function PropertyDetail() {
   }
 
   const handleSave = () => {
-    setIsSaved(!isSaved);
-    toast.success(isSaved ? 'Removed from saved' : 'Saved to your list');
+    if (!user) {
+      toast.error('Please sign in to save properties');
+      return;
+    }
+    if (id) {
+      toggleFavorite(id);
+    }
   };
 
   const handleShare = async () => {
@@ -211,6 +221,7 @@ export default function PropertyDetail() {
           size="icon" 
           className="shadow-lg"
           onClick={handleSave}
+          disabled={isToggling}
         >
           <Heart className={`w-5 h-5 ${isSaved ? 'fill-destructive text-destructive' : ''}`} />
         </Button>
