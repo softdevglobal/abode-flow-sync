@@ -158,28 +158,28 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
   return (
     <div className="space-y-6">
       {/* Date Range Filter */}
-      <Card>
+      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <CalendarDays className="w-5 h-5 text-muted-foreground" />
-              <span className="text-sm font-medium">Time Period:</span>
+              <CalendarDays className="w-5 h-5 text-primary" />
+              <span className="text-sm font-medium font-body">Time Period:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DateRangePreset)}>
-                <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px] font-body">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {DATE_PRESETS.map(preset => (
-                    <SelectItem key={preset.value} value={preset.value}>
+                    <SelectItem key={preset.value} value={preset.value} className="font-body">
                       {preset.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               {dateRange && (
-                <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
+                <Badge variant="secondary" className="text-xs hidden sm:inline-flex font-body">
                   {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d, yyyy')}
                 </Badge>
               )}
@@ -188,7 +188,7 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
                 size="sm"
                 onClick={() => exportMetricsToCSV(metrics, customers, datePreset)}
                 disabled={!metrics}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto font-body hover:border-primary/50 transition-colors"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export
@@ -200,14 +200,14 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
 
       {/* Key Metrics */}
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-colors">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                <p className="text-xs sm:text-sm text-muted-foreground truncate font-body">
                   {datePreset === 'all' ? 'Total Leads' : 'Active Leads'}
                 </p>
-                <p className="text-2xl sm:text-3xl font-bold">{metrics?.totalLeads ?? 0}</p>
+                <p className="text-2xl sm:text-3xl font-bold font-display">{metrics?.totalLeads ?? 0}</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
@@ -216,12 +216,12 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-red-500/30 transition-colors">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-xs sm:text-sm text-muted-foreground">Hot Leads</p>
-                <p className="text-2xl sm:text-3xl font-bold text-red-500">{hotLeads}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground font-body">Hot Leads</p>
+                <p className="text-2xl sm:text-3xl font-bold text-red-500 font-display">{hotLeads}</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
                 <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
@@ -230,26 +230,26 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-colors">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-xs sm:text-sm text-muted-foreground">Avg Lead Score</p>
-                <p className="text-2xl sm:text-3xl font-bold">{avgLeadScore}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground font-body">Avg Lead Score</p>
+                <p className="text-2xl sm:text-3xl font-bold font-display">{avgLeadScore}</p>
               </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-                <Target className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Target className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-green-500/30 transition-colors">
           <CardContent className="p-4 sm:p-6">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <p className="text-xs sm:text-sm text-muted-foreground">Multi-Engaged</p>
-                <p className="text-2xl sm:text-3xl font-bold">{customersWithMultipleEngagements}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground font-body">Multi-Engaged</p>
+                <p className="text-2xl sm:text-3xl font-bold font-display">{customersWithMultipleEngagements}</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
                 <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
@@ -260,13 +260,13 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
       </div>
 
       {/* Lead Funnel */}
-      <Card>
+      <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
+          <CardTitle className="flex items-center gap-2 font-display">
+            <BarChart3 className="w-5 h-5 text-primary" />
             Lead Funnel
             {datePreset !== 'all' && (
-              <Badge variant="outline" className="ml-2 text-xs font-normal">
+              <Badge variant="outline" className="ml-2 text-xs font-normal font-body">
                 {DATE_PRESETS.find(p => p.value === datePreset)?.label}
               </Badge>
             )}
@@ -279,20 +279,20 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
               {/* Stage 1: Inspections */}
               <div className="flex-shrink-0 w-[100px] sm:w-auto sm:flex-1">
                 <div 
-                  className="relative bg-blue-500/20 rounded-lg p-3 sm:p-4 text-center"
+                  className="relative bg-blue-500/20 rounded-xl p-3 sm:p-4 text-center border border-blue-500/20"
                   style={{ minHeight: '100px' }}
                 >
                   <Calendar className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-blue-500 mb-1 sm:mb-2" />
-                  <p className="text-xl sm:text-3xl font-bold text-blue-600">{metrics?.customersWithInspections ?? 0}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Inspections</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{metrics?.totalInspections ?? 0} total</p>
+                  <p className="text-xl sm:text-3xl font-bold text-blue-400 font-display">{metrics?.customersWithInspections ?? 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground font-body">Inspections</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 font-body">{metrics?.totalInspections ?? 0} total</p>
                 </div>
               </div>
 
               {/* Arrow with conversion rate */}
               <div className="flex flex-col items-center gap-0.5 sm:gap-1 flex-shrink-0">
-                <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 text-muted-foreground" />
-                <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2">
+                <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
+                <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2 border-primary/50 font-body">
                   {metrics?.inspectionToViewingRate ?? 0}%
                 </Badge>
               </div>
@@ -300,20 +300,20 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
               {/* Stage 2: Viewings */}
               <div className="flex-shrink-0 w-[100px] sm:w-auto sm:flex-1">
                 <div 
-                  className="relative bg-green-500/20 rounded-lg p-3 sm:p-4 text-center"
+                  className="relative bg-green-500/20 rounded-xl p-3 sm:p-4 text-center border border-green-500/20"
                   style={{ minHeight: '100px' }}
                 >
                   <Eye className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-green-500 mb-1 sm:mb-2" />
-                  <p className="text-xl sm:text-3xl font-bold text-green-600">{metrics?.customersWithViewings ?? 0}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Viewings</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{metrics?.totalViewings ?? 0} total</p>
+                  <p className="text-xl sm:text-3xl font-bold text-green-400 font-display">{metrics?.customersWithViewings ?? 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground font-body">Viewings</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 font-body">{metrics?.totalViewings ?? 0} total</p>
                 </div>
               </div>
 
               {/* Arrow with conversion rate */}
               <div className="flex flex-col items-center gap-0.5 sm:gap-1 flex-shrink-0">
-                <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 text-muted-foreground" />
-                <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2">
+                <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
+                <Badge variant="outline" className="text-[10px] sm:text-xs px-1 sm:px-2 border-primary/50 font-body">
                   {metrics?.viewingToBidRate ?? 0}%
                 </Badge>
               </div>
@@ -321,30 +321,30 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
               {/* Stage 3: Bids */}
               <div className="flex-shrink-0 w-[100px] sm:w-auto sm:flex-1">
                 <div 
-                  className="relative bg-purple-500/20 rounded-lg p-3 sm:p-4 text-center"
+                  className="relative bg-purple-500/20 rounded-xl p-3 sm:p-4 text-center border border-purple-500/20"
                   style={{ minHeight: '100px' }}
                 >
                   <Gavel className="w-6 h-6 sm:w-8 sm:h-8 mx-auto text-purple-500 mb-1 sm:mb-2" />
-                  <p className="text-xl sm:text-3xl font-bold text-purple-600">{metrics?.customersWithBids ?? 0}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Bidders</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1">{metrics?.totalBids ?? 0} total</p>
+                  <p className="text-xl sm:text-3xl font-bold text-purple-400 font-display">{metrics?.customersWithBids ?? 0}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground font-body">Bidders</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 font-body">{metrics?.totalBids ?? 0} total</p>
                 </div>
               </div>
             </div>
 
             {/* Conversion Summary */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-3 sm:pt-4 border-t">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-3 sm:pt-4 border-t border-border/50">
               <div className="text-center">
-                <p className="text-lg sm:text-2xl font-bold text-blue-600">{metrics?.inspectionToViewingRate ?? 0}%</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Inspection → Viewing</p>
+                <p className="text-lg sm:text-2xl font-bold text-blue-400 font-display">{metrics?.inspectionToViewingRate ?? 0}%</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-body">Inspection → Viewing</p>
               </div>
               <div className="text-center">
-                <p className="text-lg sm:text-2xl font-bold text-green-600">{metrics?.viewingToBidRate ?? 0}%</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Viewing → Bid</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-400 font-display">{metrics?.viewingToBidRate ?? 0}%</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-body">Viewing → Bid</p>
               </div>
               <div className="text-center">
-                <p className="text-lg sm:text-2xl font-bold text-purple-600">{metrics?.inspectionToBidRate ?? 0}%</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Inspection → Bid</p>
+                <p className="text-lg sm:text-2xl font-bold text-purple-400 font-display">{metrics?.inspectionToBidRate ?? 0}%</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground font-body">Inspection → Bid</p>
               </div>
             </div>
           </div>
@@ -353,10 +353,10 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
 
       {/* Lead Score Distribution */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Flame className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 font-display">
+              <Flame className="w-5 h-5 text-primary" />
               Lead Score Distribution
             </CardTitle>
           </CardHeader>
@@ -367,9 +367,9 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-red-500" />
-                    <span className="text-sm font-medium">Hot (60+)</span>
+                    <span className="text-sm font-medium font-body">Hot (60+)</span>
                   </div>
-                  <span className="text-sm font-bold">{hotLeads}</span>
+                  <span className="text-sm font-bold font-display">{hotLeads}</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div 
@@ -383,14 +383,14 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-orange-500" />
-                    <span className="text-sm font-medium">Warm (30-59)</span>
+                    <div className="w-3 h-3 rounded-full bg-primary" />
+                    <span className="text-sm font-medium font-body">Warm (30-59)</span>
                   </div>
-                  <span className="text-sm font-bold">{warmLeads}</span>
+                  <span className="text-sm font-bold font-display">{warmLeads}</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-orange-500 transition-all"
+                    className="h-full bg-primary transition-all"
                     style={{ width: `${totalCustomers > 0 ? (warmLeads / totalCustomers) * 100 : 0}%` }}
                   />
                 </div>
@@ -401,9 +401,9 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full bg-blue-500" />
-                    <span className="text-sm font-medium">Cool (10-29)</span>
+                    <span className="text-sm font-medium font-body">Cool (10-29)</span>
                   </div>
-                  <span className="text-sm font-bold">{coolLeads}</span>
+                  <span className="text-sm font-bold font-display">{coolLeads}</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div 
@@ -417,14 +417,14 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-gray-500" />
-                    <span className="text-sm font-medium">New (0-9)</span>
+                    <div className="w-3 h-3 rounded-full bg-muted-foreground" />
+                    <span className="text-sm font-medium font-body">New (0-9)</span>
                   </div>
-                  <span className="text-sm font-bold">{newLeads}</span>
+                  <span className="text-sm font-bold font-display">{newLeads}</span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gray-500 transition-all"
+                    className="h-full bg-muted-foreground transition-all"
                     style={{ width: `${totalCustomers > 0 ? (newLeads / totalCustomers) * 100 : 0}%` }}
                   />
                 </div>
@@ -434,13 +434,13 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
         </Card>
 
         {/* Activity Summary */}
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
+            <CardTitle className="flex items-center gap-2 font-display">
+              <TrendingUp className="w-5 h-5 text-primary" />
               Activity Summary
               {datePreset !== 'all' && (
-                <Badge variant="outline" className="ml-2 text-xs font-normal">
+                <Badge variant="outline" className="ml-2 text-xs font-normal font-body">
                   {DATE_PRESETS.find(p => p.value === datePreset)?.label}
                 </Badge>
               )}
@@ -448,37 +448,37 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
                 <div className="flex items-center gap-3">
                   <Calendar className="w-5 h-5 text-blue-500" />
                   <div>
-                    <p className="font-medium">Inspections</p>
-                    <p className="text-xs text-muted-foreground">{metrics?.customersWithInspections ?? 0} customers</p>
+                    <p className="font-medium font-body">Inspections</p>
+                    <p className="text-xs text-muted-foreground font-body">{metrics?.customersWithInspections ?? 0} customers</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-blue-600">{metrics?.totalInspections ?? 0}</p>
+                <p className="text-2xl font-bold text-blue-400 font-display">{metrics?.totalInspections ?? 0}</p>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-green-500/10 rounded-xl border border-green-500/20">
                 <div className="flex items-center gap-3">
                   <Eye className="w-5 h-5 text-green-500" />
                   <div>
-                    <p className="font-medium">Viewing Requests</p>
-                    <p className="text-xs text-muted-foreground">{metrics?.customersWithViewings ?? 0} customers</p>
+                    <p className="font-medium font-body">Viewing Requests</p>
+                    <p className="text-xs text-muted-foreground font-body">{metrics?.customersWithViewings ?? 0} customers</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-green-600">{metrics?.totalViewings ?? 0}</p>
+                <p className="text-2xl font-bold text-green-400 font-display">{metrics?.totalViewings ?? 0}</p>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-xl border border-purple-500/20">
                 <div className="flex items-center gap-3">
                   <Gavel className="w-5 h-5 text-purple-500" />
                   <div>
-                    <p className="font-medium">Bids Placed</p>
-                    <p className="text-xs text-muted-foreground">{metrics?.customersWithBids ?? 0} customers</p>
+                    <p className="font-medium font-body">Bids Placed</p>
+                    <p className="text-xs text-muted-foreground font-body">{metrics?.customersWithBids ?? 0} customers</p>
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-purple-600">{metrics?.totalBids ?? 0}</p>
+                <p className="text-2xl font-bold text-purple-400 font-display">{metrics?.totalBids ?? 0}</p>
               </div>
             </div>
           </CardContent>
@@ -487,9 +487,9 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
 
       {/* Top Hot Leads */}
       {hotLeads > 0 && (
-        <Card>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-display">
               <Flame className="w-5 h-5 text-red-500" />
               Top Hot Leads
             </CardTitle>
@@ -505,26 +505,26 @@ export function CRMDashboard({ customers, isLoading, agentId }: CRMDashboardProp
                   return (
                     <div 
                       key={customer.id}
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border/50 hover:border-red-500/30 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium font-display">
                           {customer.first_name?.[0] || customer.email[0].toUpperCase()}
                           {customer.last_name?.[0] || ''}
                         </div>
                         <div>
-                          <p className="font-medium">
+                          <p className="font-medium font-body">
                             {customer.first_name || customer.last_name
                               ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
                               : customer.email}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-muted-foreground font-body">
                             {customer.inspection_count} inspections · {customer.viewing_count} viewings · {customer.bid_count} bids
                           </p>
                         </div>
                       </div>
                       <Badge 
-                        className="text-white"
+                        className="text-white font-display"
                         style={{ backgroundColor: scoreInfo.color }}
                       >
                         {customer.lead_score} pts
