@@ -191,6 +191,15 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                     </div>
                   )}
                 </ScrollArea>
+                <div className="p-2 border-t border-border">
+                  <Link 
+                    to="/agent/notifications" 
+                    onClick={() => setNotificationsOpen(false)}
+                    className="block text-center text-sm text-primary hover:underline py-1"
+                  >
+                    View all notifications
+                  </Link>
+                </div>
               </PopoverContent>
             </Popover>
 

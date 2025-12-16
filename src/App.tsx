@@ -30,6 +30,7 @@ import AgentAppraisals from "./pages/agent/Appraisals";
 import AgentAuctions from "./pages/agent/Auctions";
 import AuctionConsole from "./pages/agent/AuctionConsole";
 import AgentCRM from "./pages/agent/CRM";
+import AgentNotifications from "./pages/agent/Notifications";
 
 import NotFound from "./pages/NotFound";
 
@@ -77,6 +78,7 @@ const App = () => (
               <Route path="/agent/auctions" element={<AgentAuctions />} />
               <Route path="/agent/auction/:id/run" element={<AuctionConsole />} />
               <Route path="/agent/crm" element={<AgentCRM />} />
+              <Route path="/agent/notifications" element={<AgentNotifications />} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
