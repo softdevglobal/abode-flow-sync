@@ -32,7 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useAgencyTheme } from '@/contexts/AgencyThemeContext';
-import { useAgentNotifications } from '@/hooks/useAgentDashboard';
+import { useAgentNotifications, useMarkNotificationRead } from '@/hooks/useAgentDashboard';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -56,8 +56,15 @@ export function AgentLayout({ children }: AgentLayoutProps) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const config = useAgencyTheme();
   const { data: notifications = [], isLoading: notificationsLoading } = useAgentNotifications(10);
+  const markAsRead = useMarkNotificationRead();
   
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleNotificationClick = (notification: typeof notifications[0]) => {
+    if (!notification.read) {
+      markAsRead.mutate(notification.id);
+    }
+  };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -151,6 +158,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                       {notifications.map((notification) => (
                         <div
                           key={notification.id}
+                          onClick={() => handleNotificationClick(notification)}
                           className={cn(
                             "p-3 hover:bg-muted/50 cursor-pointer transition-colors",
                             !notification.read && "bg-primary/5"
