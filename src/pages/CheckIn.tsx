@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Header, MobileNav } from '@/components/layout/MobileNav';
+import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -155,7 +155,6 @@ export default function CheckIn() {
   const handleScanResult = (result: string) => {
     try {
       // Expected format: URL with inspectionId query param
-      // e.g., https://app.example.com/checkin?inspectionId=xxx
       const url = new URL(result);
       const scannedInspectionId = url.searchParams.get('inspectionId');
       
@@ -210,17 +209,18 @@ export default function CheckIn() {
   // Loading auth state
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <BuyerLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </BuyerLayout>
     );
   }
 
   // Not logged in
   if (!user) {
     return (
-      <div className="min-h-screen bg-background pb-20 md:pb-0">
-        <Header userRole="customer" />
+      <BuyerLayout>
         <main className="container px-4 py-6 max-w-lg mx-auto">
           <Card className="text-center">
             <CardContent className="pt-8 pb-8">
@@ -238,15 +238,12 @@ export default function CheckIn() {
             </CardContent>
           </Card>
         </main>
-        <MobileNav userRole="customer" />
-      </div>
+      </BuyerLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <Header userRole="customer" />
-
+    <BuyerLayout>
       <main className="container px-4 py-6 max-w-lg mx-auto">
         <div className="mb-8 text-center">
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">
@@ -469,9 +466,7 @@ export default function CheckIn() {
           </Card>
         )}
       </main>
-
-      <MobileNav userRole="customer" />
-    </div>
+    </BuyerLayout>
   );
 }
 
@@ -482,11 +477,11 @@ function QRScanner({ onResult }: { onResult: (result: string) => void }) {
 
   useEffect(() => {
     // Check for camera permission
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+    navigator.mediaDevices?.getUserMedia({ video: true })
       .then(() => setHasPermission(true))
       .catch(() => {
         setHasPermission(false);
-        setError('Camera access denied. Please enable camera permissions.');
+        setError('Camera permission denied');
       });
   }, []);
 
@@ -499,42 +494,34 @@ function QRScanner({ onResult }: { onResult: (result: string) => void }) {
     );
   }
 
-  if (hasPermission === false || error) {
+  if (hasPermission === false) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-        <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
-        <p className="text-sm text-muted-foreground mb-4">
-          {error || 'Camera not available'}
-        </p>
+        <AlertCircle className="w-12 h-12 text-destructive mb-3" />
+        <p className="text-sm font-medium mb-1">Camera Access Denied</p>
         <p className="text-xs text-muted-foreground">
-          Please use the manual entry option instead
+          Please enable camera access in your browser settings to scan QR codes.
         </p>
       </div>
     );
   }
 
-  // Use dynamic import for QR scanner to avoid SSR issues
   return <QRScannerInner onResult={onResult} />;
 }
 
-// Inner scanner component that uses the library
 function QRScannerInner({ onResult }: { onResult: (result: string) => void }) {
   const [Scanner, setScanner] = useState<any>(null);
 
   useEffect(() => {
-    // Dynamically import the QR scanner
     import('@yudiel/react-qr-scanner').then((module) => {
       setScanner(() => module.Scanner);
-    }).catch(() => {
-      console.error('Failed to load QR scanner');
     });
   }, []);
 
   if (!Scanner) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-8">
-        <Loader2 className="w-8 h-8 animate-spin text-primary mb-2" />
-        <p className="text-sm text-muted-foreground">Loading scanner...</p>
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -546,7 +533,6 @@ function QRScannerInner({ onResult }: { onResult: (result: string) => void }) {
           onResult(result[0].rawValue);
         }
       }}
-      onError={(error: any) => console.error('Scanner error:', error)}
       styles={{
         container: { width: '100%', height: '100%' },
         video: { width: '100%', height: '100%', objectFit: 'cover' },

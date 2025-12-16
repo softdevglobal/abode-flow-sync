@@ -36,8 +36,8 @@ import { useAuth } from '@/hooks/useAuth';
 const primaryNavItems = [
   { icon: Home, label: 'Home', path: '/' },
   { icon: Search, label: 'Browse', path: '/browse' },
+  { icon: Calendar, label: 'Inspections', path: '/inspections' },
   { icon: Gavel, label: 'Auctions', path: '/auctions' },
-  { icon: Heart, label: 'Saved', path: '/saved' },
   { icon: User, label: 'Profile', path: '/profile' },
 ];
 
