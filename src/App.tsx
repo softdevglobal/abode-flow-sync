@@ -88,6 +88,7 @@ const AnimatedRoutes = () => {
   );
 };
 
+// Main App component with providers
 const App = () => (
   <ThemeProvider>
     <AgencyThemeProvider>
