@@ -252,8 +252,8 @@ export default function CRM() {
               Manage customer relationships and track interactions
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-sm">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="secondary" className="text-sm font-body bg-primary/10 text-primary border-primary/20">
               <Users className="w-4 h-4 mr-1" />
               {customers.length} Customers
             </Badge>
@@ -262,6 +262,7 @@ export default function CRM() {
               size="sm"
               onClick={() => exportCustomersToCSV(customers, customerTagsMap, tags)}
               disabled={customers.length === 0}
+              className="font-body hover:border-primary/50 transition-colors"
             >
               <Download className="w-4 h-4 mr-2" />
               Export CSV
@@ -276,12 +277,12 @@ export default function CRM() {
         </div>
 
         {/* View Tabs */}
-        <div className="flex items-center gap-2 border-b">
+        <div className="flex items-center gap-2 border-b border-border/50">
           <Button
             variant={activeView === 'dashboard' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveView('dashboard')}
-            className="rounded-b-none"
+            className={`rounded-b-none font-body ${activeView === 'dashboard' ? 'shadow-glow-sm' : ''}`}
           >
             <LayoutDashboard className="w-4 h-4 mr-2" />
             Dashboard
@@ -290,7 +291,7 @@ export default function CRM() {
             variant={activeView === 'customers' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveView('customers')}
-            className="rounded-b-none"
+            className={`rounded-b-none font-body ${activeView === 'customers' ? 'shadow-glow-sm' : ''}`}
           >
             <UserSearch className="w-4 h-4 mr-2" />
             Customers
@@ -310,18 +311,18 @@ export default function CRM() {
               placeholder="Search by name, email, or phone..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 font-body"
             />
           </div>
           <Select value={filterTag || 'all'} onValueChange={(v) => setFilterTag(v === 'all' ? null : v)}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px] font-body">
               <Tag className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Filter by tag" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Customers</SelectItem>
+              <SelectItem value="all" className="font-body">All Customers</SelectItem>
               {tags.map((tag) => (
-                <SelectItem key={tag.id} value={tag.id}>
+                <SelectItem key={tag.id} value={tag.id} className="font-body">
                   <div className="flex items-center gap-2">
                     <div 
                       className="w-3 h-3 rounded-full" 
@@ -334,24 +335,24 @@ export default function CRM() {
             </SelectContent>
           </Select>
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-            <SelectTrigger className="w-full sm:w-[160px]">
+            <SelectTrigger className="w-full sm:w-[160px] font-body">
               <ArrowUpDown className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="score">
+              <SelectItem value="score" className="font-body">
                 <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-orange-500" />
+                  <Flame className="w-4 h-4 text-primary" />
                   Lead Score
                 </div>
               </SelectItem>
-              <SelectItem value="recent">
+              <SelectItem value="recent" className="font-body">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
                   Most Recent
                 </div>
               </SelectItem>
-              <SelectItem value="name">
+              <SelectItem value="name" className="font-body">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
                   Name
@@ -365,7 +366,7 @@ export default function CRM() {
         {customersLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i}>
+              <Card key={i} className="border-border/50 bg-card/50">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <Skeleton className="w-12 h-12 rounded-full" />
@@ -380,9 +381,11 @@ export default function CRM() {
             ))}
           </div>
         ) : filteredCustomers.length === 0 ? (
-          <Card>
+          <Card className="border-border/50 bg-card/50">
             <CardContent className="py-12 text-center">
-              <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Users className="w-8 h-8 text-primary" />
+              </div>
               <h3 className="font-display text-lg font-medium text-foreground mb-2">No customers found</h3>
               <p className="text-muted-foreground font-body">
                 {filterTag ? 'No customers match the selected tag filter' : 'Customers will appear here when they interact with your properties'}
@@ -397,13 +400,13 @@ export default function CRM() {
               return (
                 <Card
                   key={customer.id}
-                  className="cursor-pointer hover:bg-accent/50 transition-colors relative"
+                  className="cursor-pointer hover:border-primary/30 transition-all relative border-border/50 bg-card/50 backdrop-blur-sm"
                   onClick={() => handleCustomerClick(customer)}
                 >
                   <CardContent className="p-4">
                     {/* Lead Score Badge */}
                     <div 
-                      className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold text-white"
+                      className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold text-white font-body"
                       style={{ backgroundColor: scoreInfo.color }}
                     >
                       <Flame className="w-3 h-3" />
@@ -412,21 +415,21 @@ export default function CRM() {
                     </div>
 
                     <div className="flex items-start gap-3 pr-20">
-                      <Avatar className="w-12 h-12">
+                      <Avatar className="w-12 h-12 border-2 border-primary/20">
                         <AvatarImage src={customer.avatar_url || undefined} />
-                        <AvatarFallback className="bg-primary text-primary-foreground">
+                        <AvatarFallback className="bg-primary/10 text-primary font-display">
                           {getInitials(customer)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-foreground truncate">
+                        <h3 className="font-medium text-foreground truncate font-body">
                           {customer.first_name || customer.last_name
                             ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim()
                             : 'Unknown'}
                         </h3>
-                        <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
+                        <p className="text-sm text-muted-foreground truncate font-body">{customer.email}</p>
                         {customer.phone && (
-                          <p className="text-sm text-muted-foreground">{customer.phone}</p>
+                          <p className="text-sm text-muted-foreground font-body">{customer.phone}</p>
                         )}
                       </div>
                     </div>
@@ -437,7 +440,7 @@ export default function CRM() {
                         {customerTags.map((tag) => (
                           <span
                             key={tag.id}
-                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white"
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white font-body"
                             style={{ backgroundColor: tag.color }}
                           >
                             {tag.name}
@@ -448,19 +451,19 @@ export default function CRM() {
 
                     <div className="flex items-center gap-2 mt-3 flex-wrap">
                       {customer.inspection_count > 0 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs font-body border-blue-500/30 text-blue-400">
                           <Calendar className="w-3 h-3 mr-1" />
                           {customer.inspection_count}
                         </Badge>
                       )}
                       {customer.viewing_count > 0 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs font-body border-green-500/30 text-green-400">
                           <Eye className="w-3 h-3 mr-1" />
                           {customer.viewing_count}
                         </Badge>
                       )}
                       {customer.bid_count > 0 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs font-body border-purple-500/30 text-purple-400">
                           <Gavel className="w-3 h-3 mr-1" />
                           {customer.bid_count}
                         </Badge>
@@ -468,7 +471,7 @@ export default function CRM() {
                     </div>
 
                     {customer.last_interaction && (
-                      <p className="text-xs text-muted-foreground mt-2">
+                      <p className="text-xs text-muted-foreground mt-2 font-body">
                         Last: {formatDistanceToNow(new Date(customer.last_interaction), { addSuffix: true })}
                       </p>
                     )}
