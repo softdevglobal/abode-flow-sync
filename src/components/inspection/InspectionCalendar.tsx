@@ -37,17 +37,17 @@ export function InspectionCalendar({ inspections, onSelectDate, selectedDate }: 
   };
 
   return (
-    <div className="bg-card rounded-lg border border-border p-4">
+    <div className="bg-card/50 rounded-xl border border-border/50 p-4 backdrop-blur-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-foreground">
+        <h3 className="font-semibold text-foreground font-display">
           {format(currentMonth, 'MMMM yyyy')}
         </h3>
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" onClick={prevMonth}>
+          <Button variant="ghost" size="icon" onClick={prevMonth} className="hover:bg-primary/10 hover:text-primary">
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" onClick={nextMonth}>
+          <Button variant="ghost" size="icon" onClick={nextMonth} className="hover:bg-primary/10 hover:text-primary">
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
@@ -56,7 +56,7 @@ export function InspectionCalendar({ inspections, onSelectDate, selectedDate }: 
       {/* Day Headers */}
       <div className="grid grid-cols-7 gap-1 mb-2">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
+          <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2 font-body">
             {day}
           </div>
         ))}
@@ -78,11 +78,11 @@ export function InspectionCalendar({ inspections, onSelectDate, selectedDate }: 
               key={day.toISOString()}
               onClick={() => onSelectDate(day)}
               className={cn(
-                "aspect-square rounded-lg flex flex-col items-center justify-center text-sm transition-colors relative",
+                "aspect-square rounded-lg flex flex-col items-center justify-center text-sm transition-colors relative font-body",
                 !isSameMonth(day, currentMonth) && "text-muted-foreground/50",
-                isToday(day) && "bg-primary/10 font-semibold",
-                isSelected && "bg-primary text-primary-foreground",
-                !isSelected && "hover:bg-muted"
+                isToday(day) && "bg-primary/10 font-semibold text-primary",
+                isSelected && "bg-primary text-primary-foreground shadow-glow-sm",
+                !isSelected && "hover:bg-muted/50 hover:border-primary/30"
               )}
             >
               <span>{format(day, 'd')}</span>

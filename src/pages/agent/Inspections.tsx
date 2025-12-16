@@ -123,11 +123,16 @@ export default function AgentInspections() {
             <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
               Inspections
             </h1>
-            <p className="text-muted-foreground text-sm font-body">
-              {upcomingCount} upcoming • {todayCount} today
-            </p>
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="font-body bg-primary/10 text-primary border-primary/20">
+                {upcomingCount} upcoming
+              </Badge>
+              <Badge variant="secondary" className="font-body bg-green-500/10 text-green-400 border-green-500/20">
+                {todayCount} today
+              </Badge>
+            </div>
           </div>
-          <Button onClick={() => setIsScheduleOpen(true)} className="shadow-glow-sm">
+          <Button onClick={() => setIsScheduleOpen(true)} className="shadow-glow-sm font-body">
             <Plus className="w-4 h-4 mr-2" />
             Schedule Inspection
           </Button>
@@ -140,6 +145,7 @@ export default function AgentInspections() {
               variant={viewMode === 'list' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('list')}
+              className={`font-body ${viewMode === 'list' ? 'shadow-glow-sm' : 'hover:border-primary/50'}`}
             >
               <List className="w-4 h-4 mr-2" />
               List
@@ -148,6 +154,7 @@ export default function AgentInspections() {
               variant={viewMode === 'calendar' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('calendar')}
+              className={`font-body ${viewMode === 'calendar' ? 'shadow-glow-sm' : 'hover:border-primary/50'}`}
             >
               <CalendarIcon className="w-4 h-4 mr-2" />
               Calendar
@@ -155,12 +162,12 @@ export default function AgentInspections() {
           </div>
 
           <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)} className="w-full sm:w-auto">
-            <TabsList className="grid grid-cols-5 w-full sm:w-auto">
-              <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
-              <TabsTrigger value="upcoming" className="text-xs sm:text-sm">Upcoming</TabsTrigger>
-              <TabsTrigger value="today" className="text-xs sm:text-sm">Today</TabsTrigger>
-              <TabsTrigger value="past" className="text-xs sm:text-sm">Past</TabsTrigger>
-              <TabsTrigger value="cancelled" className="text-xs sm:text-sm">Cancelled</TabsTrigger>
+            <TabsList className="grid grid-cols-5 w-full sm:w-auto bg-card/50 border border-border/50">
+              <TabsTrigger value="all" className="text-xs sm:text-sm font-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">All</TabsTrigger>
+              <TabsTrigger value="upcoming" className="text-xs sm:text-sm font-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Upcoming</TabsTrigger>
+              <TabsTrigger value="today" className="text-xs sm:text-sm font-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Today</TabsTrigger>
+              <TabsTrigger value="past" className="text-xs sm:text-sm font-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Past</TabsTrigger>
+              <TabsTrigger value="cancelled" className="text-xs sm:text-sm font-body data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Cancelled</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -168,7 +175,7 @@ export default function AgentInspections() {
         {/* Content */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : (
           <div className={viewMode === 'calendar' ? 'grid lg:grid-cols-[350px_1fr] gap-6' : ''}>
@@ -181,11 +188,11 @@ export default function AgentInspections() {
                   onSelectDate={setSelectedDate}
                 />
                 {selectedDate && (
-                  <div className="mt-4 p-3 bg-muted rounded-lg">
-                    <p className="text-sm font-medium">
+                  <div className="mt-4 p-3 bg-card/50 border border-border/50 rounded-xl backdrop-blur-sm">
+                    <p className="text-sm font-medium font-display">
                       {format(selectedDate, 'EEEE, MMMM d, yyyy')}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground font-body">
                       {filteredInspections.length} inspection{filteredInspections.length !== 1 ? 's' : ''}
                     </p>
                   </div>
@@ -196,14 +203,16 @@ export default function AgentInspections() {
             {/* Inspection List */}
             <div className="space-y-3">
               {filteredInspections.length === 0 ? (
-                <div className="text-center py-12 bg-muted/50 rounded-lg">
-                  <CalendarIcon className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground">
+                <div className="text-center py-12 bg-card/50 border border-border/50 rounded-xl backdrop-blur-sm">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <CalendarIcon className="w-8 h-8 text-primary" />
+                  </div>
+                  <p className="text-muted-foreground font-body">
                     {viewMode === 'calendar' && selectedDate
                       ? `No inspections on ${format(selectedDate, 'MMM d, yyyy')}`
                       : 'No inspections found'}
                   </p>
-                  <Button variant="outline" className="mt-4" onClick={() => setIsScheduleOpen(true)}>
+                  <Button variant="outline" className="mt-4 font-body hover:border-primary/50" onClick={() => setIsScheduleOpen(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Schedule Inspection
                   </Button>

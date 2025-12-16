@@ -114,9 +114,9 @@ export function ScheduleInspectionModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg bg-background/95 backdrop-blur-sm border-border/50">
         <DialogHeader>
-          <DialogTitle>Schedule Inspection</DialogTitle>
+          <DialogTitle className="font-display">Schedule Inspection</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -126,16 +126,16 @@ export function ScheduleInspectionModal({
               name="property_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Property *</FormLabel>
+                  <FormLabel className="font-body">Property *</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="font-body">
                         <SelectValue placeholder="Select a property" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {activeProperties.map((property) => (
-                        <SelectItem key={property.id} value={property.id}>
+                        <SelectItem key={property.id} value={property.id} className="font-body">
                           <span className="line-clamp-1">
                             {property.address}, {property.suburb}
                           </span>
@@ -143,7 +143,7 @@ export function ScheduleInspectionModal({
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
+                  <FormMessage className="font-body" />
                 </FormItem>
               )}
             />
@@ -154,14 +154,14 @@ export function ScheduleInspectionModal({
                 name="date"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Date *</FormLabel>
+                    <FormLabel className="font-body">Date *</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full pl-3 text-left font-normal",
+                              "w-full pl-3 text-left font-body hover:border-primary/50",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -174,7 +174,7 @@ export function ScheduleInspectionModal({
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0 bg-background/95 backdrop-blur-sm border-border/50" align="start">
                         <Calendar
                           mode="single"
                           selected={field.value}
@@ -185,7 +185,7 @@ export function ScheduleInspectionModal({
                         />
                       </PopoverContent>
                     </Popover>
-                    <FormMessage />
+                    <FormMessage className="font-body" />
                   </FormItem>
                 )}
               />
@@ -195,22 +195,22 @@ export function ScheduleInspectionModal({
                 name="time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Time *</FormLabel>
+                    <FormLabel className="font-body">Time *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="font-body">
                           <SelectValue placeholder="Select time" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {timeSlots.map((time) => (
-                          <SelectItem key={time} value={time}>
+                          <SelectItem key={time} value={time} className="font-body">
                             {time}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="font-body" />
                   </FormItem>
                 )}
               />
@@ -222,22 +222,22 @@ export function ScheduleInspectionModal({
                 name="duration"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Duration *</FormLabel>
+                    <FormLabel className="font-body">Duration *</FormLabel>
                     <Select onValueChange={(v) => field.onChange(Number(v))} value={String(field.value)}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="font-body">
                           <SelectValue placeholder="Select duration" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {durationOptions.map((option) => (
-                          <SelectItem key={option.value} value={String(option.value)}>
+                          <SelectItem key={option.value} value={String(option.value)} className="font-body">
                             {option.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="font-body" />
                   </FormItem>
                 )}
               />
@@ -247,11 +247,11 @@ export function ScheduleInspectionModal({
                 name="max_attendees"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Max Attendees</FormLabel>
+                    <FormLabel className="font-body">Max Attendees</FormLabel>
                     <FormControl>
-                      <Input type="number" min={1} max={100} {...field} />
+                      <Input type="number" min={1} max={100} {...field} className="font-body" />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="font-body" />
                   </FormItem>
                 )}
               />
@@ -262,24 +262,24 @@ export function ScheduleInspectionModal({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel className="font-body">Notes</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Any special instructions or notes..."
-                      className="resize-none"
+                      className="resize-none font-body"
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="font-body" />
                 </FormItem>
               )}
             />
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="font-body hover:border-primary/50">
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting} className="font-body shadow-glow-sm">
                 {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Schedule Inspection
               </Button>
