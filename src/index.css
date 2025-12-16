@@ -6,36 +6,33 @@
 
 @layer base {
   :root {
-    /* Phenomenon Dark Theme */
-    --background: 0 0% 4%;
-    --foreground: 0 0% 98%;
+    /* Light Theme */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 8%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 8%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
 
-    /* White Primary for Dark Theme */
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 4%;
+    --primary: 0 0% 8%;
+    --primary-foreground: 0 0% 98%;
 
-    /* Darker Secondary */
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 0% 15%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Vibrant Orange Accent */
     --accent: 24 95% 53%;
-    --accent-foreground: 0 0% 4%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
     --ring: 24 95% 53%;
 
     --radius: 1rem;
@@ -48,36 +45,36 @@
     --info: 210 80% 55%;
     --info-foreground: 0 0% 100%;
 
-    /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(0 0% 4%) 0%, hsl(0 0% 10%) 100%);
+    /* Gradients - Light */
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 98%) 0%, hsl(0 0% 94%) 100%);
     --gradient-orange: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(30 95% 58%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%);
-    --gradient-glow: radial-gradient(ellipse at center, hsl(24 95% 53% / 0.15), transparent 70%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(0 0% 98%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(24 95% 53% / 0.1), transparent 70%);
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.4), 0 8px 10px -6px hsl(0 0% 0% / 0.3);
-    --shadow-glow: 0 0 40px hsl(24 95% 53% / 0.4);
-    --shadow-glow-sm: 0 0 20px hsl(24 95% 53% / 0.3);
+    /* Shadows - Light */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.08), 0 2px 4px -2px hsl(0 0% 0% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.08), 0 4px 6px -4px hsl(0 0% 0% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.08), 0 8px 10px -6px hsl(0 0% 0% / 0.05);
+    --shadow-glow: 0 0 40px hsl(24 95% 53% / 0.25);
+    --shadow-glow-sm: 0 0 20px hsl(24 95% 53% / 0.2);
 
     /* Typography */
     --font-display: 'Manrope', system-ui, sans-serif;
     --font-body: 'Inter', system-ui, sans-serif;
 
-    --sidebar-background: 0 0% 6%;
-    --sidebar-foreground: 0 0% 95%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 0 0% 15%;
     --sidebar-primary: 24 95% 53%;
-    --sidebar-primary-foreground: 0 0% 4%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 15%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 94%;
+    --sidebar-accent-foreground: 0 0% 15%;
+    --sidebar-border: 0 0% 88%;
     --sidebar-ring: 24 95% 53%;
   }
 
   .dark {
-    /* Dark mode is now default, so these are the same */
+    /* Phenomenon Dark Theme */
     --background: 0 0% 4%;
     --foreground: 0 0% 98%;
 
@@ -105,6 +102,29 @@
     --border: 0 0% 18%;
     --input: 0 0% 18%;
     --ring: 24 95% 53%;
+
+    /* Gradients - Dark */
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 4%) 0%, hsl(0 0% 10%) 100%);
+    --gradient-orange: linear-gradient(135deg, hsl(24 95% 53%) 0%, hsl(30 95% 58%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 10%) 0%, hsl(0 0% 6%) 100%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(24 95% 53% / 0.15), transparent 70%);
+
+    /* Shadows - Dark */
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.4), 0 8px 10px -6px hsl(0 0% 0% / 0.3);
+    --shadow-glow: 0 0 40px hsl(24 95% 53% / 0.4);
+    --shadow-glow-sm: 0 0 20px hsl(24 95% 53% / 0.3);
+
+    --sidebar-background: 0 0% 6%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 24 95% 53%;
+    --sidebar-primary-foreground: 0 0% 4%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 24 95% 53%;
   }
 }
 

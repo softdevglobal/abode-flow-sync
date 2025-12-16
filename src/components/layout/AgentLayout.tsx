@@ -35,6 +35,7 @@ import { useAgencyTheme } from '@/contexts/AgencyThemeContext';
 import { useAgentNotifications, useMarkNotificationRead } from '@/hooks/useAgentDashboard';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/agent' },
@@ -125,7 +126,10 @@ export function AgentLayout({ children }: AgentLayoutProps) {
           </nav>
 
           {/* Right Side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {/* Notifications */}
             <Popover open={notificationsOpen} onOpenChange={setNotificationsOpen}>
               <PopoverTrigger asChild>
