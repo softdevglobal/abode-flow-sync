@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAgencyTheme } from '@/contexts/AgencyThemeContext';
 import { Button } from '@/components/ui/button';
@@ -53,7 +53,16 @@ export default function Landing() {
   const [maxPrice, setMaxPrice] = useState('');
   const [bedrooms, setBedrooms] = useState('');
   const statsRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
   const [statsVisible, setStatsVisible] = useState(false);
+
+  // Parallax scroll effect
+  const { scrollY } = useScroll();
+  const parallaxY1 = useTransform(scrollY, [0, 500], [0, -150]);
+  const parallaxY2 = useTransform(scrollY, [0, 500], [0, -100]);
+  const parallaxY3 = useTransform(scrollY, [0, 500], [0, -200]);
+  const parallaxScale = useTransform(scrollY, [0, 300], [1, 1.2]);
+  const parallaxOpacity = useTransform(scrollY, [0, 400], [1, 0]);
 
   // Handle scroll for sticky nav and floating button
   useEffect(() => {
@@ -321,11 +330,43 @@ export default function Landing() {
         )}
       </nav>
 
-      {/* Hero Section - Phenomenon Style */}
-      <section className="relative min-h-screen flex items-center overflow-hidden pt-16 bg-grid">
-        {/* Background glow effects */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px] animate-float" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/10 rounded-full blur-[100px] animate-float" style={{ animationDelay: '2s' }} />
+      {/* Hero Section - Phenomenon Style with Parallax */}
+      <section ref={heroRef} className="relative min-h-screen flex items-center overflow-hidden pt-16 bg-grid">
+        {/* Parallax Background glow effects */}
+        <motion.div 
+          className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px]"
+          style={{ y: parallaxY1, scale: parallaxScale }}
+        />
+        <motion.div 
+          className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/10 rounded-full blur-[100px]"
+          style={{ y: parallaxY2, scale: parallaxScale }}
+        />
+        <motion.div 
+          className="absolute top-1/2 right-1/3 w-64 h-64 bg-primary/10 rounded-full blur-[80px]"
+          style={{ y: parallaxY3 }}
+        />
+        <motion.div 
+          className="absolute bottom-1/3 left-1/3 w-48 h-48 bg-accent/15 rounded-full blur-[60px]"
+          style={{ y: parallaxY1 }}
+        />
+        
+        {/* Floating particles with parallax */}
+        <motion.div 
+          className="absolute top-20 left-[10%] w-2 h-2 bg-accent/40 rounded-full"
+          style={{ y: parallaxY3, opacity: parallaxOpacity }}
+        />
+        <motion.div 
+          className="absolute top-32 right-[15%] w-3 h-3 bg-accent/30 rounded-full"
+          style={{ y: parallaxY2, opacity: parallaxOpacity }}
+        />
+        <motion.div 
+          className="absolute top-48 left-[20%] w-1.5 h-1.5 bg-primary/40 rounded-full"
+          style={{ y: parallaxY1, opacity: parallaxOpacity }}
+        />
+        <motion.div 
+          className="absolute top-64 right-[25%] w-2.5 h-2.5 bg-accent/25 rounded-full"
+          style={{ y: parallaxY3, opacity: parallaxOpacity }}
+        />
         
         <div className="relative z-10 container px-4 py-20">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
