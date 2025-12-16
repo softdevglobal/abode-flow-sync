@@ -362,75 +362,96 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Right - Hero Image with Animations */}
+            {/* Hero Image with Touch-Friendly Animations - Visible on all screens */}
             <motion.div 
-              className="relative hidden lg:block"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
+              className="relative order-first lg:order-last mb-8 lg:mb-0"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
               <motion.div
-                className="relative rounded-3xl overflow-hidden shadow-2xl"
+                className="relative rounded-2xl lg:rounded-3xl overflow-hidden shadow-2xl cursor-pointer"
                 whileHover={{ 
                   scale: 1.02,
-                  rotateY: 5,
-                  rotateX: -2,
+                  rotateY: 3,
+                  rotateX: -1,
                 }}
                 whileTap={{ 
-                  scale: 0.98,
+                  scale: 0.97,
+                  rotateY: 0,
+                  rotateX: 0,
                 }}
                 transition={{ 
                   type: "spring", 
-                  stiffness: 300, 
-                  damping: 20 
+                  stiffness: 400, 
+                  damping: 25 
                 }}
                 style={{ transformStyle: "preserve-3d", perspective: 1000 }}
               >
                 <motion.img
                   src={heroImage}
                   alt="Beautiful modern home"
-                  className="w-full h-[500px] object-cover"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.4 }}
+                  className="w-full h-[280px] sm:h-[350px] lg:h-[500px] object-cover"
+                  initial={{ scale: 1.1 }}
+                  animate={{ scale: 1 }}
+                  whileTap={{ scale: 1.05 }}
+                  transition={{ duration: 0.6 }}
                 />
                 {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-background/20 to-transparent" />
                 
-                {/* Floating badge */}
+                {/* Floating badge - responsive sizing */}
                 <motion.div 
-                  className="absolute bottom-6 left-6 right-6"
+                  className="absolute bottom-4 left-4 right-4 lg:bottom-6 lg:left-6 lg:right-6"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.5 }}
                 >
-                  <div className="bg-card/90 backdrop-blur-md rounded-2xl p-4 border border-border/50">
+                  <motion.div 
+                    className="bg-card/90 backdrop-blur-md rounded-xl lg:rounded-2xl p-3 lg:p-4 border border-border/50"
+                    whileTap={{ scale: 0.98 }}
+                  >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl gradient-orange flex items-center justify-center">
-                        <Home className="w-6 h-6 text-accent-foreground" />
+                      <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-lg lg:rounded-xl gradient-orange flex items-center justify-center shrink-0">
+                        <Home className="w-5 h-5 lg:w-6 lg:h-6 text-accent-foreground" />
                       </div>
-                      <div>
-                        <p className="font-semibold text-foreground">Dream Homes Await</p>
-                        <p className="text-sm text-muted-foreground">Discover {stats?.activeListings || 0}+ properties</p>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-foreground text-sm lg:text-base">Dream Homes Await</p>
+                        <p className="text-xs lg:text-sm text-muted-foreground">Discover {stats?.activeListings || 0}+ properties</p>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 </motion.div>
 
-                {/* Glow effect on hover */}
+                {/* Touch ripple effect overlay */}
                 <motion.div 
-                  className="absolute inset-0 rounded-3xl pointer-events-none"
+                  className="absolute inset-0 rounded-2xl lg:rounded-3xl pointer-events-none"
+                  initial={{ opacity: 0 }}
+                  whileTap={{ 
+                    opacity: 1,
+                    transition: { duration: 0.1 }
+                  }}
+                  style={{
+                    background: "radial-gradient(circle at center, rgba(249, 115, 22, 0.2) 0%, transparent 70%)"
+                  }}
+                />
+
+                {/* Glow effect on hover/tap */}
+                <motion.div 
+                  className="absolute inset-0 rounded-2xl lg:rounded-3xl pointer-events-none"
                   initial={{ opacity: 0 }}
                   whileHover={{ opacity: 1 }}
+                  whileTap={{ opacity: 0.8 }}
                   transition={{ duration: 0.3 }}
                   style={{
-                    boxShadow: "inset 0 0 60px rgba(249, 115, 22, 0.15), 0 0 40px rgba(249, 115, 22, 0.1)"
+                    boxShadow: "inset 0 0 40px rgba(249, 115, 22, 0.15), 0 0 30px rgba(249, 115, 22, 0.1)"
                   }}
                 />
               </motion.div>
 
-              {/* Decorative elements */}
+              {/* Decorative elements - smaller on mobile */}
               <motion.div 
-                className="absolute -top-4 -right-4 w-24 h-24 bg-accent/20 rounded-full blur-xl"
+                className="absolute -top-2 -right-2 lg:-top-4 lg:-right-4 w-16 h-16 lg:w-24 lg:h-24 bg-accent/20 rounded-full blur-xl"
                 animate={{ 
                   scale: [1, 1.2, 1],
                   opacity: [0.5, 0.8, 0.5]
@@ -442,7 +463,7 @@ export default function Landing() {
                 }}
               />
               <motion.div 
-                className="absolute -bottom-4 -left-4 w-32 h-32 bg-accent/15 rounded-full blur-xl"
+                className="absolute -bottom-2 -left-2 lg:-bottom-4 lg:-left-4 w-20 h-20 lg:w-32 lg:h-32 bg-accent/15 rounded-full blur-xl"
                 animate={{ 
                   scale: [1, 1.3, 1],
                   opacity: [0.4, 0.7, 0.4]
