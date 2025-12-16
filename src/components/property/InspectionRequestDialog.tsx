@@ -141,7 +141,7 @@ export function InspectionRequestDialog({
   if (!authLoading && !user) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-background border-border">
           <DialogHeader>
             <DialogTitle>Sign in required</DialogTitle>
             <DialogDescription>
@@ -170,7 +170,7 @@ export function InspectionRequestDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-background border-border">
         <DialogHeader>
           <DialogTitle>Request Inspection</DialogTitle>
           <DialogDescription>

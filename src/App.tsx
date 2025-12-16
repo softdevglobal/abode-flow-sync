@@ -18,6 +18,8 @@ import CheckIn from "./pages/CheckIn";
 import MyViewings from "./pages/MyViewings";
 import MyInspections from "./pages/MyInspections";
 import Auth from "./pages/Auth";
+import Contact from "./pages/Contact";
+import HowItWorks from "./pages/HowItWorks";
 
 // Buyer Pages
 import LiveAuction from "./pages/buyer/LiveAuction";
@@ -55,6 +57,8 @@ const AnimatedRoutes = () => {
         {/* Landing / Home */}
         <Route path="/" element={<PageTransition><Landing /></PageTransition>} />
         <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+        <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+        <Route path="/how-it-works" element={<PageTransition><HowItWorks /></PageTransition>} />
 
         {/* Buyer View Routes */}
         <Route path="/browse" element={<PageTransition><Browse /></PageTransition>} />

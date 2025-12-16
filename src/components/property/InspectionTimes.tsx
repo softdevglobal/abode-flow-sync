@@ -58,7 +58,10 @@ export function InspectionTimes({ inspections }: InspectionTimesProps) {
 
   const handleRSVP = async (inspection: Inspection) => {
     if (!user) {
-      // Store redirect and go to auth
+      // Show message and store redirect
+      toast.info('Please sign in to RSVP for inspections', {
+        description: 'Create an account to book inspections and track your viewings.',
+      });
       sessionStorage.setItem('redirectAfterAuth', window.location.pathname);
       navigate('/auth');
       return;
