@@ -128,22 +128,29 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/50 p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-grid opacity-30" />
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+      
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Building2 className="h-8 w-8 text-primary" />
-            <span className="text-2xl font-bold text-foreground">PropertyPro</span>
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div className="w-12 h-12 rounded-xl gradient-orange flex items-center justify-center shadow-glow-sm">
+              <Building2 className="h-6 w-6 text-white" />
+            </div>
+            <span className="font-display text-3xl font-bold text-foreground">Abode</span>
           </div>
-          <p className="text-muted-foreground">Your trusted real estate platform</p>
+          <p className="text-muted-foreground font-body">Your trusted real estate platform</p>
         </div>
 
-        <Card className="border-border/50 shadow-lg">
+        <Card className="border-border shadow-xl backdrop-blur-sm">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <CardHeader className="pb-4">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-muted/50">
+                <TabsTrigger value="login" className="font-medium">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="font-medium">Sign Up</TabsTrigger>
               </TabsList>
             </CardHeader>
 

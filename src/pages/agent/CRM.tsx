@@ -247,8 +247,8 @@ export default function CRM() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Customer CRM</h1>
-            <p className="text-muted-foreground">
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">Customer CRM</h1>
+            <p className="text-muted-foreground font-body">
               Manage customer relationships and track interactions
             </p>
           </div>
@@ -383,8 +383,8 @@ export default function CRM() {
           <Card>
             <CardContent className="py-12 text-center">
               <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">No customers found</h3>
-              <p className="text-muted-foreground">
+              <h3 className="font-display text-lg font-medium text-foreground mb-2">No customers found</h3>
+              <p className="text-muted-foreground font-body">
                 {filterTag ? 'No customers match the selected tag filter' : 'Customers will appear here when they interact with your properties'}
               </p>
             </CardContent>

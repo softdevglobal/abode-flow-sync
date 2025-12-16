@@ -73,7 +73,7 @@ export default function AgentDashboard() {
           <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
             Welcome back!
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground font-body">
             Here's an overview of your real estate portfolio.
           </p>
         </div>
@@ -217,15 +217,15 @@ export default function AgentDashboard() {
         </div>
 
         {/* CTA Card */}
-        <Card className="border-border gradient-hero text-primary-foreground mb-8">
+        <Card className="border-border gradient-orange text-white mb-8 shadow-glow-sm">
           <CardContent className="pt-6">
             <h3 className="font-display text-xl font-bold mb-2">
               Add a New Listing
             </h3>
-            <p className="text-primary-foreground/80 mb-4">
+            <p className="text-white/80 mb-4 font-body">
               List a new property and start receiving enquiries from potential buyers.
             </p>
-            <Button asChild variant="secondary">
+            <Button asChild variant="secondary" className="bg-white text-accent hover:bg-white/90">
               <Link to="/agent/properties">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Listing
