@@ -1,13 +1,8 @@
 import { useState } from 'react';
-import { Header, MobileNav } from '@/components/layout/MobileNav';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { AgentLayout } from '@/components/layout/AgentLayout';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, FileText, DollarSign, MapPin } from 'lucide-react';
-import { toast } from 'sonner';
 
 export default function AgentAppraisals() {
   const [appraisals] = useState([
@@ -41,15 +36,13 @@ export default function AgentAppraisals() {
 
   const confidenceColors = {
     low: 'text-destructive',
-    medium: 'text-warning',
-    high: 'text-success',
+    medium: 'text-yellow-500',
+    high: 'text-green-500',
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <Header userRole="agent" />
-
-      <main className="container px-4 py-6">
+    <AgentLayout>
+      <div className="container px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground mb-1">
@@ -113,9 +106,7 @@ export default function AgentAppraisals() {
             </Card>
           ))}
         </div>
-      </main>
-
-      <MobileNav userRole="agent" />
-    </div>
+      </div>
+    </AgentLayout>
   );
 }
