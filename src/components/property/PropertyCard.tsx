@@ -2,16 +2,22 @@ import { Property } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Bed, Bath, Car, Ruler, Pencil } from 'lucide-react';
+import { Bed, Bath, Car, Ruler, Pencil, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useFavorites } from '@/hooks/useFavorites';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PropertyCardProps {
   property: Property;
   linkPrefix?: string;
   onEdit?: (property: Property) => void;
+  showFavorite?: boolean;
 }
 
-export function PropertyCard({ property, linkPrefix = '/property', onEdit }: PropertyCardProps) {
+export function PropertyCard({ property, linkPrefix = '/property', onEdit, showFavorite = true }: PropertyCardProps) {
+  const { user } = useAuth();
+  const { isFavorited, toggleFavorite, isToggling } = useFavorites();
+  
   const statusVariant = {
     available: 'success' as const,
     under_offer: 'warning' as const,
@@ -27,6 +33,14 @@ export function PropertyCard({ property, linkPrefix = '/property', onEdit }: Pro
     leased: 'Leased',
     off_market: 'Off Market',
   };
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleFavorite(property.id);
+  };
+
+  const isSaved = isFavorited(property.id);
 
   const cardContent = (
     <Card variant="property" className="group">
@@ -47,20 +61,33 @@ export function PropertyCard({ property, linkPrefix = '/property', onEdit }: Pro
           )}
         </div>
 
-        {onEdit && (
-          <Button
-            variant="secondary"
-            size="icon"
-            className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onEdit(property);
-            }}
-          >
-            <Pencil className="w-4 h-4" />
-          </Button>
-        )}
+        <div className="absolute top-3 right-3 flex gap-2">
+          {showFavorite && user && (
+            <Button
+              variant="secondary"
+              size="icon"
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={handleFavoriteClick}
+              disabled={isToggling}
+            >
+              <Heart className={`w-4 h-4 ${isSaved ? 'fill-destructive text-destructive' : ''}`} />
+            </Button>
+          )}
+          {onEdit && (
+            <Button
+              variant="secondary"
+              size="icon"
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit(property);
+              }}
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
 
         <div className="absolute bottom-3 left-3 right-3">
           <p className="text-primary-foreground font-display text-xl font-semibold">
@@ -100,14 +127,6 @@ export function PropertyCard({ property, linkPrefix = '/property', onEdit }: Pro
       </CardContent>
     </Card>
   );
-
-  if (onEdit) {
-    return (
-      <Link to={`${linkPrefix}/${property.id}`}>
-        {cardContent}
-      </Link>
-    );
-  }
 
   return (
     <Link to={`${linkPrefix}/${property.id}`}>
