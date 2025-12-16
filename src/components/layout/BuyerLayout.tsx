@@ -5,6 +5,7 @@ import {
   Gavel,
   Calendar,
   Eye,
+  Heart,
   Calculator,
   User,
   HelpCircle,
@@ -35,7 +36,7 @@ const primaryNavItems = [
   { icon: Home, label: 'Home', path: '/' },
   { icon: Search, label: 'Browse', path: '/browse' },
   { icon: Gavel, label: 'Auctions', path: '/auctions' },
-  { icon: Calendar, label: 'Inspections', path: '/inspections' },
+  { icon: Heart, label: 'Saved', path: '/saved' },
   { icon: User, label: 'Profile', path: '/profile' },
 ];
 
@@ -46,6 +47,7 @@ const allNavItems = [
   { icon: Gavel, label: 'Live Auctions', path: '/auctions', section: 'main' },
   { icon: Calendar, label: 'My Inspections', path: '/inspections', section: 'track' },
   { icon: Eye, label: 'My Viewings', path: '/viewings', section: 'track' },
+  { icon: Heart, label: 'Saved Properties', path: '/saved', section: 'track' },
   { icon: Calculator, label: 'Calculator', path: '/calculator', section: 'tools' },
   { icon: HelpCircle, label: 'How It Works', path: '/how-it-works', section: 'tools' },
   { icon: Phone, label: 'Contact', path: '/contact', section: 'tools' },
