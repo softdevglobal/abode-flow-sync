@@ -261,12 +261,12 @@ export default function Browse() {
   const FilterPanel = () => (
     <div className="space-y-6">
       {/* Listing Type Tabs */}
-      <div className="flex border-b border-border">
+      <div className="flex border-b border-border/50">
         <button
           onClick={() => handleFilterChange('listingType', 'sale')}
-          className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+          className={`flex-1 py-3 text-sm font-medium font-body border-b-2 transition-colors ${
             filters.listingType === 'sale'
-              ? 'border-accent text-accent'
+              ? 'border-primary text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
@@ -274,9 +274,9 @@ export default function Browse() {
         </button>
         <button
           onClick={() => handleFilterChange('listingType', 'rent')}
-          className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
+          className={`flex-1 py-3 text-sm font-medium font-body border-b-2 transition-colors ${
             filters.listingType === 'rent'
-              ? 'border-accent text-accent'
+              ? 'border-primary text-primary'
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
@@ -286,7 +286,7 @@ export default function Browse() {
 
       {/* Property Type */}
       <div>
-        <h4 className="font-semibold text-sm mb-3">Property type</h4>
+        <h4 className="font-display font-semibold text-sm mb-3">Property type</h4>
         <div className="grid grid-cols-2 gap-2">
           {propertyTypeOptions.slice(0, showMoreTypes ? undefined : 4).map((type) => (
             <div key={type.value} className="flex items-center space-x-2">
@@ -304,7 +304,7 @@ export default function Browse() {
         {propertyTypeOptions.length > 4 && (
           <button
             onClick={() => setShowMoreTypes(!showMoreTypes)}
-            className="text-sm text-accent mt-2 flex items-center gap-1 hover:underline"
+            className="text-sm text-primary mt-2 flex items-center gap-1 hover:underline font-body"
           >
             {showMoreTypes ? 'Show less' : 'Show more'}
             {showMoreTypes ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -314,7 +314,7 @@ export default function Browse() {
 
       {/* Price */}
       <div>
-        <h4 className="font-semibold text-sm mb-3">Price</h4>
+        <h4 className="font-display font-semibold text-sm mb-3">Price</h4>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label className="text-xs text-muted-foreground">Min</Label>
@@ -351,7 +351,7 @@ export default function Browse() {
 
       {/* Bedrooms */}
       <div>
-        <h4 className="font-semibold text-sm mb-3">Bedrooms</h4>
+        <h4 className="font-display font-semibold text-sm mb-3">Bedrooms</h4>
         <Select value={filters.bedrooms} onValueChange={(v) => handleFilterChange('bedrooms', v)}>
           <SelectTrigger>
             <SelectValue placeholder="Any" />
@@ -368,7 +368,7 @@ export default function Browse() {
 
       {/* Bathrooms */}
       <div>
-        <h4 className="font-semibold text-sm mb-3">Bathrooms</h4>
+        <h4 className="font-display font-semibold text-sm mb-3">Bathrooms</h4>
         <Select value={filters.bathrooms} onValueChange={(v) => handleFilterChange('bathrooms', v)}>
           <SelectTrigger>
             <SelectValue placeholder="Any" />
@@ -385,7 +385,7 @@ export default function Browse() {
 
       {/* Car Spaces */}
       <div>
-        <h4 className="font-semibold text-sm mb-3">Car spaces</h4>
+        <h4 className="font-display font-semibold text-sm mb-3">Car spaces</h4>
         <Select value={filters.parking} onValueChange={(v) => handleFilterChange('parking', v)}>
           <SelectTrigger>
             <SelectValue placeholder="Any" />
@@ -404,7 +404,7 @@ export default function Browse() {
       {activeFiltersCount > 0 && (
         <button
           onClick={clearFilters}
-          className="text-sm text-accent hover:underline"
+          className="text-sm text-primary hover:underline font-body"
         >
           Clear filters
         </button>
@@ -413,7 +413,7 @@ export default function Browse() {
   );
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
+    <div className="min-h-screen bg-background pb-20 md:pb-0 font-body">
       <Header userRole="customer" />
 
       <main className="container px-4 py-6">
@@ -432,7 +432,7 @@ export default function Browse() {
         <div className="flex gap-6">
           {/* Desktop Filter Panel */}
           <aside className="hidden lg:block w-72 flex-shrink-0">
-            <div className="sticky top-24 bg-card rounded-2xl border border-border p-5 shadow-lg">
+            <div className="sticky top-24 bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 p-5 shadow-lg">
               <h3 className="font-display font-semibold mb-4 text-foreground">Filters</h3>
               <FilterPanel />
             </div>
@@ -457,20 +457,20 @@ export default function Browse() {
                 <SheetTrigger asChild>
                   <Button 
                     variant="outline" 
-                    className="h-12 lg:hidden relative"
+                    className="h-12 lg:hidden relative border-border/50"
                   >
                     <SlidersHorizontal className="w-5 h-5 mr-2" />
                     Filters
                     {activeFiltersCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-accent-foreground text-xs rounded-full flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
                         {activeFiltersCount}
                       </span>
                     )}
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-80 overflow-y-auto">
+                <SheetContent side="left" className="w-80 overflow-y-auto bg-background border-border/50">
                   <SheetHeader>
-                    <SheetTitle>Filters</SheetTitle>
+                    <SheetTitle className="font-display">Filters</SheetTitle>
                   </SheetHeader>
                   <div className="mt-6">
                     <FilterPanel />

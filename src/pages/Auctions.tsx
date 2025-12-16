@@ -182,14 +182,14 @@ export default function Auctions() {
   const completedCount = auctions.filter((a) => a.status === 'sold' || a.status === 'passed_in').length;
 
   return (
-    <div className="min-h-screen bg-background pb-20 lg:pb-0">
+    <div className="min-h-screen bg-background pb-20 lg:pb-0 font-body">
       {/* Header */}
-      <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-40">
+      <header className="bg-card/50 backdrop-blur-md border-b border-border/50 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl gradient-orange flex items-center justify-center shadow-glow-sm">
-                <Gavel className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shadow-glow-sm">
+                <Gavel className="w-5 h-5 text-primary" />
               </div>
               <div>
                 <h1 className="font-display text-2xl font-bold text-foreground">Live Auctions</h1>
@@ -199,7 +199,7 @@ export default function Auctions() {
               </div>
             </div>
             <Link to="/">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="border-border/50">
                 Back to Home
               </Button>
             </Link>
@@ -207,18 +207,18 @@ export default function Auctions() {
 
           {/* Stats */}
           <div className="flex gap-4 mb-4 flex-wrap">
-            <div className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-sm bg-card/50 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-border/50">
               <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               <span className="font-medium">{liveCount}</span>
               <span className="text-muted-foreground">Live Now</span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="w-4 h-4 text-muted-foreground" />
+            <div className="flex items-center gap-2 text-sm bg-card/50 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-border/50">
+              <Clock className="w-4 h-4 text-primary" />
               <span className="font-medium">{upcomingCount}</span>
               <span className="text-muted-foreground">Upcoming</span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <CheckCircle className="w-4 h-4 text-muted-foreground" />
+            <div className="flex items-center gap-2 text-sm bg-card/50 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-border/50">
+              <CheckCircle className="w-4 h-4 text-primary" />
               <span className="font-medium">{completedCount}</span>
               <span className="text-muted-foreground">Completed</span>
             </div>
@@ -261,15 +261,17 @@ export default function Auctions() {
           </div>
         ) : filteredAuctions.length === 0 ? (
           <div className="text-center py-20">
-            <Gavel className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold mb-2">No auctions found</h2>
-            <p className="text-muted-foreground mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <Gavel className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-xl font-display font-bold mb-2">No auctions found</h2>
+            <p className="text-muted-foreground mb-6 font-body">
               {searchQuery
                 ? 'Try adjusting your search terms'
                 : 'Check back soon for upcoming auctions'}
             </p>
             {searchQuery && (
-              <Button variant="outline" onClick={() => setSearchQuery('')}>
+              <Button variant="outline" onClick={() => setSearchQuery('')} className="border-border/50">
                 Clear Search
               </Button>
             )}
@@ -288,8 +290,8 @@ export default function Auctions() {
               const endTime = new Date(auction.end_time);
               const hasStarted = isPast(startTime);
 
-              return (
-                <Card key={auction.id} className="overflow-hidden group hover:shadow-lg transition-shadow">
+                return (
+                <Card key={auction.id} className="overflow-hidden group hover:shadow-lg transition-all border-border/50 bg-card/50 backdrop-blur-sm rounded-xl hover:border-primary/30">
                   {/* Image */}
                   <div className="relative h-48 bg-muted">
                     {property.images?.[0] ? (
@@ -357,26 +359,26 @@ export default function Auctions() {
                       {property.title}
                     </h3>
                     <p className="text-sm text-muted-foreground flex items-center gap-1 mb-4 font-body">
-                      <MapPin className="w-3 h-3" />
+                      <MapPin className="w-3 h-3 text-primary" />
                       {property.suburb}, {property.state} {property.postcode}
                     </p>
 
                     {/* Bid Info */}
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground font-body">
                           {isCompleted ? 'Final Price' : isLive ? 'Current Bid' : 'Starting Bid'}
                         </p>
-                        <p className={`text-xl font-bold flex items-center gap-1 ${isCompleted ? 'text-muted-foreground' : 'text-primary'}`}>
+                        <p className={`text-xl font-display font-bold flex items-center gap-1 ${isCompleted ? 'text-muted-foreground' : 'text-primary'}`}>
                           <TrendingUp className="w-4 h-4" />
                           {formatCurrency(auction.current_bid || 0)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground font-body">
                           {isCompleted ? 'Ended' : isLive ? 'Ends' : 'Starts'}
                         </p>
-                        <p className="text-sm font-medium">
+                        <p className="text-sm font-medium font-body">
                           {format(isCompleted ? endTime : isLive ? endTime : startTime, 'MMM d, h:mm a')}
                         </p>
                       </div>
