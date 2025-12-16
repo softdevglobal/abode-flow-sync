@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AgencyThemeProvider } from "@/contexts/AgencyThemeContext";
 import { AuthProvider } from "@/hooks/useAuth";
+import { AnimatePresence } from "framer-motion";
+import { PageTransition } from "@/components/layout/PageTransition";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -42,6 +44,49 @@ const CheckInRedirect = () => {
   return <Navigate to={`/checkin${location.search}`} replace />;
 };
 
+// Animated Routes component to access location
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Landing / Home */}
+        <Route path="/" element={<PageTransition><Landing /></PageTransition>} />
+        <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
+
+        {/* Buyer View Routes */}
+        <Route path="/browse" element={<PageTransition><Browse /></PageTransition>} />
+        <Route path="/property/:id" element={<PageTransition><PropertyDetail /></PageTransition>} />
+        <Route path="/calculator" element={<PageTransition><CalculatorPage /></PageTransition>} />
+        <Route path="/checkin" element={<PageTransition><CheckIn /></PageTransition>} />
+        <Route path="/check-in" element={<CheckInRedirect />} />
+        <Route path="/viewings" element={<PageTransition><MyViewings /></PageTransition>} />
+        <Route path="/inspections" element={<PageTransition><MyInspections /></PageTransition>} />
+        <Route path="/auctions" element={<PageTransition><Auctions /></PageTransition>} />
+        <Route path="/auction/live/:id" element={<PageTransition><LiveAuction /></PageTransition>} />
+        <Route path="/profile" element={<PageTransition><BuyerProfile /></PageTransition>} />
+
+        {/* Agent View Routes */}
+        <Route path="/agent" element={<PageTransition><AgentDashboard /></PageTransition>} />
+        <Route path="/agent/dashboard" element={<PageTransition><AgentDashboard /></PageTransition>} />
+        <Route path="/agent/properties" element={<PageTransition><AgentProperties /></PageTransition>} />
+        <Route path="/agent/property/:id" element={<PageTransition><PropertyDetail /></PageTransition>} />
+        <Route path="/agent/requests" element={<PageTransition><AgentRequests /></PageTransition>} />
+        <Route path="/agent/inspections" element={<PageTransition><AgentInspections /></PageTransition>} />
+        <Route path="/agent/appraisals" element={<PageTransition><AgentAppraisals /></PageTransition>} />
+        <Route path="/agent/auctions" element={<PageTransition><AgentAuctions /></PageTransition>} />
+        <Route path="/agent/auction/:id/run" element={<PageTransition><AuctionConsole /></PageTransition>} />
+        <Route path="/agent/crm" element={<PageTransition><AgentCRM /></PageTransition>} />
+        <Route path="/agent/notifications" element={<PageTransition><AgentNotifications /></PageTransition>} />
+
+        {/* Catch-all */}
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+};
+
 const App = () => (
   <AgencyThemeProvider>
     <QueryClientProvider client={queryClient}>
@@ -50,39 +95,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <Routes>
-              {/* Landing / Home */}
-              <Route path="/" element={<Landing />} />
-              <Route path="/auth" element={<Auth />} />
-
-              {/* Buyer View Routes */}
-              <Route path="/browse" element={<Browse />} />
-              <Route path="/property/:id" element={<PropertyDetail />} />
-              <Route path="/calculator" element={<CalculatorPage />} />
-              <Route path="/checkin" element={<CheckIn />} />
-              <Route path="/check-in" element={<CheckInRedirect />} />
-              <Route path="/viewings" element={<MyViewings />} />
-              <Route path="/inspections" element={<MyInspections />} />
-              <Route path="/auctions" element={<Auctions />} />
-              <Route path="/auction/live/:id" element={<LiveAuction />} />
-              <Route path="/profile" element={<BuyerProfile />} />
-
-              {/* Agent View Routes */}
-              <Route path="/agent" element={<AgentDashboard />} />
-              <Route path="/agent/dashboard" element={<AgentDashboard />} />
-              <Route path="/agent/properties" element={<AgentProperties />} />
-              <Route path="/agent/property/:id" element={<PropertyDetail />} />
-              <Route path="/agent/requests" element={<AgentRequests />} />
-              <Route path="/agent/inspections" element={<AgentInspections />} />
-              <Route path="/agent/appraisals" element={<AgentAppraisals />} />
-              <Route path="/agent/auctions" element={<AgentAuctions />} />
-              <Route path="/agent/auction/:id/run" element={<AuctionConsole />} />
-              <Route path="/agent/crm" element={<AgentCRM />} />
-              <Route path="/agent/notifications" element={<AgentNotifications />} />
-
-              {/* Catch-all */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AnimatedRoutes />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
