@@ -38,6 +38,7 @@ import {
   TrendingUp,
   Sparkles,
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -247,7 +248,8 @@ export default function Landing() {
           </div>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
+            <ThemeToggle />
             <Link to="/auth">
               <Button variant="ghost">Sign In</Button>
             </Link>
