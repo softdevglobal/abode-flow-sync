@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAgencyTheme } from '@/contexts/AgencyThemeContext';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import heroImage from '@/assets/hero-home.jpg';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -320,112 +322,209 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section - Phenomenon Style */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 bg-grid">
+      <section className="relative min-h-screen flex items-center overflow-hidden pt-16 bg-grid">
         {/* Background glow effects */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px] animate-float" />
         <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/10 rounded-full blur-[100px] animate-float" style={{ animationDelay: '2s' }} />
         
         <div className="relative z-10 container px-4 py-20">
-          <div className="max-w-4xl mx-auto text-center">
-            <Badge className="bg-accent/10 text-accent border-accent/20 mb-6 animate-fade-in">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Australia's Modern Real Estate Platform
-            </Badge>
-            
-            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground mb-6 animate-fade-in leading-tight">
-              Find Your{' '}
-              <span className="text-gradient">Dream Home</span>
-              {' '}Today
-            </h1>
-            
-            <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto animate-slide-up">
-              Browse thousands of properties, attend live auctions, and connect with trusted agents across Australia.
-            </p>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="text-center lg:text-left">
+              <Badge className="bg-accent/10 text-accent border-accent/20 mb-6 animate-fade-in">
+                <Sparkles className="w-3 h-3 mr-1" />
+                Australia's Modern Real Estate Platform
+              </Badge>
+              
+              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground mb-6 animate-fade-in leading-tight">
+                Find Your{' '}
+                <span className="text-gradient">Dream Home</span>
+                {' '}Today
+              </h1>
+              
+              <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 animate-slide-up">
+                Browse thousands of properties, attend live auctions, and connect with trusted agents across Australia.
+              </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-scale-in">
-              <Link to="/browse">
-                <Button variant="accent" size="xl">
-                  Browse Properties
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <Link to="/agent">
-                <Button variant="outline" size="xl">
-                  For Agents
-                </Button>
-              </Link>
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10 animate-scale-in">
+                <Link to="/browse">
+                  <Button variant="accent" size="xl">
+                    Browse Properties
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </Link>
+                <Link to="/agent">
+                  <Button variant="outline" size="xl">
+                    For Agents
+                  </Button>
+                </Link>
+              </div>
             </div>
 
-            {/* Search Bar */}
-            <Card variant="glass" className="max-w-4xl mx-auto animate-scale-in">
-              <CardContent className="p-4 md:p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                  <div className="lg:col-span-2 relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      placeholder="Search suburb or postcode..."
-                      value={searchLocation}
-                      onChange={(e) => setSearchLocation(e.target.value)}
-                      className="pl-10 h-12 bg-muted/50 border-border"
-                    />
-                  </div>
-                  <Select value={minPrice} onValueChange={setMinPrice}>
-                    <SelectTrigger className="h-12 bg-muted/50 border-border">
-                      <SelectValue placeholder="Min Price" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Any</SelectItem>
-                      <SelectItem value="200000">$200,000</SelectItem>
-                      <SelectItem value="400000">$400,000</SelectItem>
-                      <SelectItem value="600000">$600,000</SelectItem>
-                      <SelectItem value="800000">$800,000</SelectItem>
-                      <SelectItem value="1000000">$1,000,000</SelectItem>
-                      <SelectItem value="1500000">$1,500,000</SelectItem>
-                      <SelectItem value="2000000">$2,000,000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={maxPrice} onValueChange={setMaxPrice}>
-                    <SelectTrigger className="h-12 bg-muted/50 border-border">
-                      <SelectValue placeholder="Max Price" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Any</SelectItem>
-                      <SelectItem value="500000">$500,000</SelectItem>
-                      <SelectItem value="750000">$750,000</SelectItem>
-                      <SelectItem value="1000000">$1,000,000</SelectItem>
-                      <SelectItem value="1500000">$1,500,000</SelectItem>
-                      <SelectItem value="2000000">$2,000,000</SelectItem>
-                      <SelectItem value="3000000">$3,000,000</SelectItem>
-                      <SelectItem value="5000000">$5,000,000+</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={bedrooms} onValueChange={setBedrooms}>
-                    <SelectTrigger className="h-12 bg-muted/50 border-border">
-                      <SelectValue placeholder="Bedrooms" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="any">Any</SelectItem>
-                      <SelectItem value="1">1+</SelectItem>
-                      <SelectItem value="2">2+</SelectItem>
-                      <SelectItem value="3">3+</SelectItem>
-                      <SelectItem value="4">4+</SelectItem>
-                      <SelectItem value="5">5+</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  onClick={handleSearch}
-                  size="lg"
-                  variant="accent"
-                  className="w-full mt-4 h-12"
+            {/* Right - Hero Image with Animations */}
+            <motion.div 
+              className="relative hidden lg:block"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <motion.div
+                className="relative rounded-3xl overflow-hidden shadow-2xl"
+                whileHover={{ 
+                  scale: 1.02,
+                  rotateY: 5,
+                  rotateX: -2,
+                }}
+                whileTap={{ 
+                  scale: 0.98,
+                }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 300, 
+                  damping: 20 
+                }}
+                style={{ transformStyle: "preserve-3d", perspective: 1000 }}
+              >
+                <motion.img
+                  src={heroImage}
+                  alt="Beautiful modern home"
+                  className="w-full h-[500px] object-cover"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.4 }}
+                />
+                {/* Overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+                
+                {/* Floating badge */}
+                <motion.div 
+                  className="absolute bottom-6 left-6 right-6"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.5 }}
                 >
-                  <Search className="w-5 h-5 mr-2" />
-                  Search Properties
-                </Button>
-              </CardContent>
-            </Card>
+                  <div className="bg-card/90 backdrop-blur-md rounded-2xl p-4 border border-border/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl gradient-orange flex items-center justify-center">
+                        <Home className="w-6 h-6 text-accent-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">Dream Homes Await</p>
+                        <p className="text-sm text-muted-foreground">Discover {stats?.activeListings || 0}+ properties</p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Glow effect on hover */}
+                <motion.div 
+                  className="absolute inset-0 rounded-3xl pointer-events-none"
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  style={{
+                    boxShadow: "inset 0 0 60px rgba(249, 115, 22, 0.15), 0 0 40px rgba(249, 115, 22, 0.1)"
+                  }}
+                />
+              </motion.div>
+
+              {/* Decorative elements */}
+              <motion.div 
+                className="absolute -top-4 -right-4 w-24 h-24 bg-accent/20 rounded-full blur-xl"
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.5, 0.8, 0.5]
+                }}
+                transition={{ 
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+              <motion.div 
+                className="absolute -bottom-4 -left-4 w-32 h-32 bg-accent/15 rounded-full blur-xl"
+                animate={{ 
+                  scale: [1, 1.3, 1],
+                  opacity: [0.4, 0.7, 0.4]
+                }}
+                transition={{ 
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1
+                }}
+              />
+            </motion.div>
           </div>
+
+          {/* Search Bar - Full Width Below */}
+          <Card variant="glass" className="max-w-4xl mx-auto mt-16 animate-scale-in">
+            <CardContent className="p-4 md:p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="lg:col-span-2 relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    placeholder="Search suburb or postcode..."
+                    value={searchLocation}
+                    onChange={(e) => setSearchLocation(e.target.value)}
+                    className="pl-10 h-12 bg-muted/50 border-border"
+                  />
+                </div>
+                <Select value={minPrice} onValueChange={setMinPrice}>
+                  <SelectTrigger className="h-12 bg-muted/50 border-border">
+                    <SelectValue placeholder="Min Price" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="any">Any</SelectItem>
+                    <SelectItem value="200000">$200,000</SelectItem>
+                    <SelectItem value="400000">$400,000</SelectItem>
+                    <SelectItem value="600000">$600,000</SelectItem>
+                    <SelectItem value="800000">$800,000</SelectItem>
+                    <SelectItem value="1000000">$1,000,000</SelectItem>
+                    <SelectItem value="1500000">$1,500,000</SelectItem>
+                    <SelectItem value="2000000">$2,000,000</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={maxPrice} onValueChange={setMaxPrice}>
+                  <SelectTrigger className="h-12 bg-muted/50 border-border">
+                    <SelectValue placeholder="Max Price" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="any">Any</SelectItem>
+                    <SelectItem value="500000">$500,000</SelectItem>
+                    <SelectItem value="750000">$750,000</SelectItem>
+                    <SelectItem value="1000000">$1,000,000</SelectItem>
+                    <SelectItem value="1500000">$1,500,000</SelectItem>
+                    <SelectItem value="2000000">$2,000,000</SelectItem>
+                    <SelectItem value="3000000">$3,000,000</SelectItem>
+                    <SelectItem value="5000000">$5,000,000+</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={bedrooms} onValueChange={setBedrooms}>
+                  <SelectTrigger className="h-12 bg-muted/50 border-border">
+                    <SelectValue placeholder="Bedrooms" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="any">Any</SelectItem>
+                    <SelectItem value="1">1+</SelectItem>
+                    <SelectItem value="2">2+</SelectItem>
+                    <SelectItem value="3">3+</SelectItem>
+                    <SelectItem value="4">4+</SelectItem>
+                    <SelectItem value="5">5+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                onClick={handleSearch}
+                size="lg"
+                variant="accent"
+                className="w-full mt-4 h-12"
+              >
+                <Search className="w-5 h-5 mr-2" />
+                Search Properties
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
