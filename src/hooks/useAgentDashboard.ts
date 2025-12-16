@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { addDays, startOfDay, endOfDay } from 'date-fns';
 
@@ -225,5 +225,24 @@ export function useAgentNotifications(limit: number = 5) {
       return data || [];
     },
     enabled: !!userId,
+  });
+}
+
+// Mark a notification as read
+export function useMarkNotificationRead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (notificationId: string) => {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('id', notificationId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agent-notifications'] });
+    },
   });
 }
