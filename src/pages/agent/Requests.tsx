@@ -1,4 +1,4 @@
-import { Header, MobileNav } from '@/components/layout/MobileNav';
+import { AgentLayout } from '@/components/layout/AgentLayout';
 import { ViewingRequestCard } from '@/components/viewing/ViewingRequestCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockViewingRequests } from '@/data/mockData';
@@ -22,9 +22,7 @@ export default function AgentRequests() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <Header userRole="agent" />
-
+    <AgentLayout>
       <main className="container px-4 py-6">
         {/* Page Header */}
         <div className="mb-8">
@@ -108,8 +106,6 @@ export default function AgentRequests() {
           </TabsContent>
         </Tabs>
       </main>
-
-      <MobileNav userRole="agent" />
-    </div>
+    </AgentLayout>
   );
 }

@@ -1,9 +1,8 @@
 import { Link } from 'react-router-dom';
-import { Building2, Search, Calendar, Key, ArrowRight, QrCode, Gavel, Users, ArrowLeft } from 'lucide-react';
+import { Building2, Search, Calendar, Key, ArrowRight, QrCode, Gavel, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { useAgencyTheme } from '@/contexts/AgencyThemeContext';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { BuyerLayout } from '@/components/layout/BuyerLayout';
 
 const steps = [
   {
@@ -70,38 +69,8 @@ const agentFeatures = [
 ];
 
 export default function HowItWorks() {
-  const config = useAgencyTheme();
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container flex items-center justify-between h-16 md:h-20">
-          <Link to="/" className="flex items-center gap-3">
-            {config.logoUrl ? (
-              <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" />
-            ) : (
-              <div className="w-10 h-10 rounded-xl gradient-orange flex items-center justify-center shadow-glow-sm">
-                <Building2 className="w-5 h-5 text-accent-foreground" />
-              </div>
-            )}
-            <span className="font-display text-xl font-bold text-foreground">
-              {config.agencyName}
-            </span>
-          </Link>
-          
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Link to="/">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-
+    <BuyerLayout>
       {/* Hero Section */}
       <section className="py-16 md:py-24 bg-grid">
         <div className="container px-4">
@@ -226,6 +195,6 @@ export default function HowItWorks() {
           </Card>
         </div>
       </section>
-    </div>
+    </BuyerLayout>
   );
 }
