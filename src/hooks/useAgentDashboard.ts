@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { addDays, startOfDay, endOfDay } from 'date-fns';
 
@@ -165,8 +166,10 @@ export function useAgentDashboard() {
   };
 }
 
-// Fetch recent notifications for agent (uses agent's user_id)
+// Fetch recent notifications for agent (uses agent's user_id) with realtime updates
 export function useAgentNotifications(limit: number = 5) {
+  const queryClient = useQueryClient();
+  
   // For prototype, we get the agent's user_id from the agents table
   const { data: agentData } = useQuery({
     queryKey: ['dashboard-agent-user'],
@@ -178,6 +181,33 @@ export function useAgentNotifications(limit: number = 5) {
   });
 
   const userId = agentData?.user_id;
+
+  // Set up realtime subscription for notifications
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`notifications-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Realtime notification update:', payload);
+          // Invalidate and refetch notifications
+          queryClient.invalidateQueries({ queryKey: ['agent-notifications', userId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
 
   return useQuery({
     queryKey: ['agent-notifications', userId, limit],
