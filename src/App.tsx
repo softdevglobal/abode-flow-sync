@@ -17,6 +17,7 @@ import CalculatorPage from "./pages/CalculatorPage";
 import CheckIn from "./pages/CheckIn";
 import MyViewings from "./pages/MyViewings";
 import MyInspections from "./pages/MyInspections";
+import SavedProperties from "./pages/SavedProperties";
 import Auth from "./pages/Auth";
 import Contact from "./pages/Contact";
 import HowItWorks from "./pages/HowItWorks";
@@ -68,6 +69,7 @@ const AnimatedRoutes = () => {
         <Route path="/check-in" element={<CheckInRedirect />} />
         <Route path="/viewings" element={<PageTransition><MyViewings /></PageTransition>} />
         <Route path="/inspections" element={<PageTransition><MyInspections /></PageTransition>} />
+        <Route path="/saved" element={<PageTransition><SavedProperties /></PageTransition>} />
         <Route path="/auctions" element={<PageTransition><Auctions /></PageTransition>} />
         <Route path="/auction/live/:id" element={<PageTransition><LiveAuction /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><BuyerProfile /></PageTransition>} />
