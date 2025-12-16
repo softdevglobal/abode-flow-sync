@@ -244,18 +244,18 @@ export default function Landing() {
             >
               Auctions
             </Link>
-            <a
-              href="#how-it-works"
+            <Link
+              to="/how-it-works"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               How It Works
-            </a>
-            <a
-              href="#footer"
+            </Link>
+            <Link
+              to="/contact"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Contact
-            </a>
+            </Link>
           </div>
 
           {/* Desktop Auth Buttons */}
@@ -299,20 +299,20 @@ export default function Landing() {
               >
                 Auctions
               </Link>
-              <a
-                href="#how-it-works"
+              <Link
+                to="/how-it-works"
                 className="text-foreground font-medium py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 How It Works
-              </a>
-              <a
-                href="#footer"
+              </Link>
+              <Link
+                to="/contact"
                 className="text-foreground font-medium py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Contact
-              </a>
+              </Link>
               <div className="flex gap-3 pt-2">
                 <Link to="/auth" className="flex-1">
                   <Button variant="outline" className="w-full">
