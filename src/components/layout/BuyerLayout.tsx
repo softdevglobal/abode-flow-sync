@@ -15,6 +15,7 @@ import {
   X,
   Building2,
   ChevronDown,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,6 +46,7 @@ const allNavItems = [
   { icon: Home, label: 'Home', path: '/', section: 'main' },
   { icon: Search, label: 'Browse Properties', path: '/browse', section: 'main' },
   { icon: Gavel, label: 'Live Auctions', path: '/auctions', section: 'main' },
+  { icon: FileText, label: 'Appraisals', path: '/appraisals', section: 'main' },
   { icon: Calendar, label: 'My Inspections', path: '/inspections', section: 'track' },
   { icon: Eye, label: 'My Viewings', path: '/viewings', section: 'track' },
   { icon: Heart, label: 'Saved Properties', path: '/saved', section: 'track' },
