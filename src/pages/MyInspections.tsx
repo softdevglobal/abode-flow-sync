@@ -160,10 +160,10 @@ export default function MyInspections() {
 
       <main className="container px-4 py-6">
         <div className="mb-6">
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
             My Inspections
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm font-body">
             Your RSVP'd property inspections
           </p>
         </div>

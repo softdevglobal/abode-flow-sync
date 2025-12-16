@@ -105,11 +105,11 @@ export default function AgentProperties() {
             <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
               Your Listings
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground font-body">
               {properties.length} {properties.length === 1 ? 'property' : 'properties'}
             </p>
           </div>
-          <Button variant="gold" onClick={() => handleOpenForm()} className="w-full sm:w-auto">
+          <Button variant="gold" onClick={() => handleOpenForm()} className="w-full sm:w-auto shadow-glow-sm">
             <Plus className="w-4 h-4 mr-2" />
             Add New Listing
           </Button>

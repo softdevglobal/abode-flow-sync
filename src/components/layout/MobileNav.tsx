@@ -28,7 +28,7 @@ export function MobileNav({ userRole }: MobileNavProps) {
   const navItems = userRole === 'agent' ? agentNavItems : customerNavItems;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border shadow-lg md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border shadow-lg md:hidden">
       <div className="flex items-center justify-around py-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -37,14 +37,14 @@ export function MobileNav({ userRole }: MobileNavProps) {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors",
+                "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200",
                 isActive 
-                  ? "text-accent" 
+                  ? "text-accent scale-105" 
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <item.icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <item.icon className={cn("w-5 h-5", isActive && "drop-shadow-[0_0_8px_hsl(24,95%,53%,0.5)]")} />
+              <span className="text-[10px] font-medium font-body">{item.label}</span>
             </Link>
           );
         })}
@@ -59,25 +59,25 @@ interface HeaderProps {
   userRole?: 'agent' | 'customer';
 }
 
-export function Header({ title = 'PropConnect', showBack, userRole }: HeaderProps) {
+export function Header({ title = 'Abode', showBack, userRole }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-sm border-b border-border">
+    <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-md border-b border-border">
       <div className="container flex items-center justify-between h-14 px-4">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-primary-foreground" />
+            <div className="w-8 h-8 rounded-lg gradient-orange flex items-center justify-center shadow-glow-sm">
+              <Building2 className="w-5 h-5 text-white" />
             </div>
-            <span className="font-display text-lg font-semibold text-foreground">{title}</span>
+            <span className="font-display text-lg font-bold text-foreground">{title}</span>
           </Link>
         </div>
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="w-5 h-5" />
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-accent rounded-full" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-accent rounded-full animate-pulse" />
           </Button>
           
           <Button 

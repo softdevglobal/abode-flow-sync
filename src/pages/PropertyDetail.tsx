@@ -248,7 +248,7 @@ export default function PropertyDetail() {
               <h1 className="font-display text-xl lg:text-2xl font-semibold text-foreground mb-1">
                 {property.address}
               </h1>
-              <div className="flex items-center gap-1 text-muted-foreground mb-4">
+              <div className="flex items-center gap-1 text-muted-foreground mb-4 font-body">
                 <MapPin className="w-4 h-4" />
                 <span>{property.suburb}, {property.state} {property.postcode}</span>
               </div>
@@ -321,8 +321,8 @@ export default function PropertyDetail() {
             {/* Description */}
             {description && (
               <div className="space-y-3">
-                <h2 className="font-display text-xl font-semibold">Description</h2>
-                <p className="text-muted-foreground leading-relaxed">
+                <h2 className="font-display text-xl font-semibold text-foreground">Description</h2>
+                <p className="text-muted-foreground leading-relaxed font-body">
                   {displayDescription}
                   {shouldTruncate && !isDescriptionExpanded && '...'}
                 </p>

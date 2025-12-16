@@ -120,14 +120,14 @@ export default function AgentInspections() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground mb-1">
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
               Inspections
             </h1>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-sm font-body">
               {upcomingCount} upcoming • {todayCount} today
             </p>
           </div>
-          <Button onClick={() => setIsScheduleOpen(true)}>
+          <Button onClick={() => setIsScheduleOpen(true)} className="shadow-glow-sm">
             <Plus className="w-4 h-4 mr-2" />
             Schedule Inspection
           </Button>

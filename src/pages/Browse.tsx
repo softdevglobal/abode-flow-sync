@@ -419,10 +419,10 @@ export default function Browse() {
       <main className="container px-4 py-6">
         {/* Search Header */}
         <div className="mb-6">
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
             {filters.listingType === 'rent' ? 'Properties for Rent' : 'Properties for Sale'}
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm font-body">
             {filters.location 
               ? `Searching in "${filters.location}"`
               : 'Find your perfect home from our curated listings'}
@@ -432,8 +432,8 @@ export default function Browse() {
         <div className="flex gap-6">
           {/* Desktop Filter Panel */}
           <aside className="hidden lg:block w-72 flex-shrink-0">
-            <div className="sticky top-24 bg-card rounded-lg border border-border p-5">
-              <h3 className="font-semibold mb-4">Filters</h3>
+            <div className="sticky top-24 bg-card rounded-2xl border border-border p-5 shadow-lg">
+              <h3 className="font-display font-semibold mb-4 text-foreground">Filters</h3>
               <FilterPanel />
             </div>
           </aside>

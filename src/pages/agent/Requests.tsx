@@ -26,10 +26,10 @@ export default function AgentRequests() {
 
       <main className="container px-4 py-6">
         <div className="mb-6">
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
             Viewing Requests
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm font-body">
             Manage customer viewing requests
           </p>
         </div>

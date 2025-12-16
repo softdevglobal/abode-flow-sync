@@ -184,14 +184,16 @@ export default function Auctions() {
   return (
     <div className="min-h-screen bg-background pb-20 lg:pb-0">
       {/* Header */}
-      <header className="bg-card border-b sticky top-0 z-40">
+      <header className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <Gavel className="w-8 h-8 text-primary" />
+              <div className="w-10 h-10 rounded-xl gradient-orange flex items-center justify-center shadow-glow-sm">
+                <Gavel className="w-5 h-5 text-white" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold">Live Auctions</h1>
-                <p className="text-sm text-muted-foreground">
+                <h1 className="font-display text-2xl font-bold text-foreground">Live Auctions</h1>
+                <p className="text-sm text-muted-foreground font-body">
                   Bid on properties in real-time
                 </p>
               </div>
@@ -351,10 +353,10 @@ export default function Auctions() {
 
                   <CardContent className="p-4">
                     {/* Property Info */}
-                    <h3 className="font-semibold text-lg line-clamp-1 mb-1">
+                    <h3 className="font-display font-semibold text-lg line-clamp-1 mb-1 text-foreground">
                       {property.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground flex items-center gap-1 mb-4">
+                    <p className="text-sm text-muted-foreground flex items-center gap-1 mb-4 font-body">
                       <MapPin className="w-3 h-3" />
                       {property.suburb}, {property.state} {property.postcode}
                     </p>
