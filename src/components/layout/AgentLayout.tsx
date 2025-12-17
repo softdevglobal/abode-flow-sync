@@ -16,6 +16,7 @@ import {
   Info,
   FileText,
   Settings,
+  Handshake,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -46,6 +47,7 @@ const navItems = [
   { icon: Calendar, label: 'Inspections', path: '/agent/inspections' },
   { icon: Users, label: 'Requests', path: '/agent/requests' },
   { icon: UserCircle, label: 'CRM', path: '/agent/crm' },
+  { icon: Handshake, label: 'Network', path: '/agent/network' },
   { icon: FileText, label: 'Appraisals', path: '/agent/appraisals' },
   { icon: Settings, label: 'Settings', path: '/agent/settings' },
 ];

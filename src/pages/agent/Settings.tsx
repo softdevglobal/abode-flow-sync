@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useAgentThemeSettings, useUpdateAgentTheme, hexToHSL, hslToHex } from '@/hooks/useAgentThemeSettings';
 import { toast } from 'sonner';
-import { Palette, Building2, Save, RotateCcw, Loader2, Upload, X, Image } from 'lucide-react';
+import { Palette, Building2, Save, RotateCcw, Loader2, Upload, X, Image, Handshake } from 'lucide-react';
 import agencyConfig from '@/config/agencyConfig';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -22,8 +23,10 @@ export default function Settings() {
   const [accentColor, setAccentColor] = useState('#c9a227');
   const [logoUrl, setLogoUrl] = useState('');
   const [faviconUrl, setFaviconUrl] = useState('');
+  const [allowPartnerListings, setAllowPartnerListings] = useState(true);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [savingPartnerSetting, setSavingPartnerSetting] = useState(false);
   
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
@@ -37,12 +40,14 @@ export default function Settings() {
       setAccentColor(themeSettings.theme_accent_color ? hslToHex(themeSettings.theme_accent_color) : hslToHex(agencyConfig.accentColor));
       setLogoUrl(themeSettings.theme_logo_url || '');
       setFaviconUrl(themeSettings.theme_favicon_url || '');
+      setAllowPartnerListings(themeSettings.allow_partner_listings ?? true);
     } else if (!isLoading) {
       // Set defaults from config
       setAgencyName(agencyConfig.agencyName);
       setPrimaryColor(hslToHex(agencyConfig.primaryColor));
       setSecondaryColor(hslToHex(agencyConfig.secondaryColor));
       setAccentColor(hslToHex(agencyConfig.accentColor));
+      setAllowPartnerListings(true);
     }
   }, [themeSettings, isLoading]);
   
@@ -156,6 +161,26 @@ export default function Settings() {
     setAccentColor(hslToHex(agencyConfig.accentColor));
     setLogoUrl('');
     setFaviconUrl('');
+    setAllowPartnerListings(true);
+  };
+  
+  const handlePartnerSettingChange = async (checked: boolean) => {
+    setAllowPartnerListings(checked);
+    setSavingPartnerSetting(true);
+    try {
+      const { error } = await supabase
+        .from('agents')
+        .update({ allow_partner_listings: checked })
+        .eq('id', DEMO_AGENT_ID);
+      
+      if (error) throw error;
+      toast.success(checked ? 'Partners can now display your listings' : 'Partners can no longer display your listings');
+    } catch (error) {
+      toast.error('Failed to update partner setting');
+      setAllowPartnerListings(!checked); // Revert on error
+    } finally {
+      setSavingPartnerSetting(false);
+    }
   };
   
   if (isLoading) {
@@ -456,6 +481,37 @@ export default function Settings() {
                     <strong>{agencyName || 'Your Agency Name'}</strong> — This is how your secondary color will appear as a background
                   </p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Partner Network Section */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Handshake className="w-5 h-5 text-accent" />
+                Partner Network
+              </CardTitle>
+              <CardDescription>
+                Control how your listings are shared with partner agents
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50">
+                <div className="space-y-1">
+                  <Label htmlFor="allow-partners" className="text-base font-medium">
+                    Allow partners to display my listings
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    When enabled, your partner agents can see and share your listings with their clients
+                  </p>
+                </div>
+                <Switch
+                  id="allow-partners"
+                  checked={allowPartnerListings}
+                  onCheckedChange={handlePartnerSettingChange}
+                  disabled={savingPartnerSetting}
+                />
               </div>
             </CardContent>
           </Card>

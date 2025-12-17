@@ -37,6 +37,7 @@ import AgentAppraisals from "./pages/agent/Appraisals";
 import AgentAuctions from "./pages/agent/Auctions";
 import AuctionConsole from "./pages/agent/AuctionConsole";
 import AgentCRM from "./pages/agent/CRM";
+import AgentNetwork from "./pages/agent/Network";
 import AgentNotifications from "./pages/agent/Notifications";
 import AgentSettings from "./pages/agent/Settings";
 
@@ -88,6 +89,7 @@ const AnimatedRoutes = () => {
         <Route path="/agent/auctions" element={<PageTransition><AgentAuctions /></PageTransition>} />
         <Route path="/agent/auction/:id/run" element={<PageTransition><AuctionConsole /></PageTransition>} />
         <Route path="/agent/crm" element={<PageTransition><AgentCRM /></PageTransition>} />
+        <Route path="/agent/network" element={<PageTransition><AgentNetwork /></PageTransition>} />
         <Route path="/agent/notifications" element={<PageTransition><AgentNotifications /></PageTransition>} />
         <Route path="/agent/settings" element={<PageTransition><AgentSettings /></PageTransition>} />
 

@@ -2,7 +2,7 @@ import { Property } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Bed, Bath, Car, Ruler, Pencil, Heart } from 'lucide-react';
+import { Bed, Bath, Car, Ruler, Pencil, Heart, Handshake } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
@@ -12,9 +12,10 @@ interface PropertyCardProps {
   linkPrefix?: string;
   onEdit?: (property: Property) => void;
   showFavorite?: boolean;
+  isPartner?: boolean;
 }
 
-export function PropertyCard({ property, linkPrefix = '/property', onEdit, showFavorite = true }: PropertyCardProps) {
+export function PropertyCard({ property, linkPrefix = '/property', onEdit, showFavorite = true, isPartner = false }: PropertyCardProps) {
   const { user } = useAuth();
   const { isFavorited, toggleFavorite, isToggling } = useFavorites();
   
@@ -58,6 +59,12 @@ export function PropertyCard({ property, linkPrefix = '/property', onEdit, showF
           </Badge>
           {property.listingType === 'rent' && (
             <Badge variant="info">For Rent</Badge>
+          )}
+          {isPartner && (
+            <Badge variant="secondary" className="bg-accent/20 text-accent border-accent/30">
+              <Handshake className="w-3 h-3 mr-1" />
+              Partner
+            </Badge>
           )}
         </div>
 
