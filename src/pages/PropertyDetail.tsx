@@ -54,7 +54,7 @@ export default function PropertyDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('agents')
-        .select('*, profiles:user_id(first_name, last_name, email, phone)')
+        .select('*')
         .eq('id', property!.agent_id)
         .maybeSingle();
       
@@ -184,10 +184,10 @@ export default function PropertyDetail() {
   // Map agent to expected format
   const mappedAgent: import('@/types').Agent = agent ? {
     id: agent.id,
-    email: agent.profiles ? (agent.profiles as any).email || 'agent@example.com' : 'agent@example.com',
-    name: agent.profiles ? `${(agent.profiles as any).first_name || ''} ${(agent.profiles as any).last_name || ''}`.trim() || 'Agent' : 'Agent',
+    email: 'agent@example.com',
+    name: agent.theme_agency_name || 'Agent',
     role: 'agent',
-    phone: agent.profiles ? (agent.profiles as any).phone || '0400 000 000' : '0400 000 000',
+    phone: '0400 000 000',
     avatar: agent.profile_image || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200',
     company: agent.agency_name || 'Real Estate Agency',
     license: agent.license_number || undefined,
