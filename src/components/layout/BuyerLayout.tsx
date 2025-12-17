@@ -27,10 +27,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAgencyTheme } from '@/contexts/AgencyThemeContext';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 // Primary nav items for bottom tab bar (5 max)
 const primaryNavItems = [
@@ -67,9 +69,48 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
   const config = useAgencyTheme();
   const { user, signOut } = useAuth();
 
+  // Fetch unread notification counts
+  const { data: notificationCounts } = useQuery({
+    queryKey: ['buyer-notification-counts', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return { inspections: 0, viewings: 0, total: 0 };
+      
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('type')
+        .eq('user_id', user.id)
+        .eq('read', false);
+      
+      if (error) throw error;
+      
+      const inspections = data?.filter(n => 
+        n.type === 'inspection_reminder' || n.type === 'status_update'
+      ).length || 0;
+      
+      const viewings = data?.filter(n => 
+        n.type === 'viewing_request'
+      ).length || 0;
+      
+      return { 
+        inspections, 
+        viewings, 
+        total: data?.length || 0 
+      };
+    },
+    enabled: !!user?.id,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  // Get badge count for a specific path
+  const getBadgeCount = (path: string) => {
+    if (path === '/inspections') return notificationCounts?.inspections || 0;
+    if (path === '/viewings') return notificationCounts?.viewings || 0;
+    return 0;
   };
 
   const NavSection = ({ title, items }: { title: string; items: typeof allNavItems }) => (
@@ -77,6 +118,7 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
       <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2 px-4">{title}</p>
       {items.map((item) => {
         const isActive = location.pathname === item.path;
+        const badgeCount = getBadgeCount(item.path);
         return (
           <Link
             key={item.path}
@@ -90,7 +132,12 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
             )}
           >
             <item.icon className="w-5 h-5" />
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+            {badgeCount > 0 && (
+              <span className="flex items-center justify-center min-w-5 h-5 px-1.5 text-xs font-bold bg-accent text-accent-foreground rounded-full">
+                {badgeCount > 99 ? '99+' : badgeCount}
+              </span>
+            )}
           </Link>
         );
       })}
@@ -270,18 +317,26 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
         <div className="flex items-center justify-around py-2">
           {primaryNavItems.map((item) => {
             const isActive = location.pathname === item.path;
+            const badgeCount = getBadgeCount(item.path);
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200",
+                  "flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 relative",
                   isActive 
                     ? "text-accent scale-105" 
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <item.icon className={cn("w-5 h-5", isActive && "drop-shadow-[0_0_8px_hsl(24,95%,53%,0.5)]")} />
+                <div className="relative">
+                  <item.icon className={cn("w-5 h-5", isActive && "drop-shadow-[0_0_8px_hsl(24,95%,53%,0.5)]")} />
+                  {badgeCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-4 h-4 px-1 text-[10px] font-bold bg-accent text-accent-foreground rounded-full">
+                      {badgeCount > 9 ? '9+' : badgeCount}
+                    </span>
+                  )}
+                </div>
                 <span className="text-[10px] font-medium font-body">{item.label}</span>
               </Link>
             );
