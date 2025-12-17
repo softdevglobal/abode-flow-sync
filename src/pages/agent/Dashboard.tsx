@@ -2,10 +2,11 @@ import { AgentLayout } from '@/components/layout/AgentLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building2, Calendar, Users, Clock, Plus, ArrowRight, Bell, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { Building2, Calendar, Users, Clock, Plus, ArrowRight, Bell, CheckCircle, AlertCircle, Info, Handshake } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAgentProperties } from '@/hooks/useAgentProperties';
 import { useAgentDashboard, useAgentNotifications } from '@/hooks/useAgentDashboard';
+import { usePartnerMetrics } from '@/hooks/usePartnerMetrics';
 import { formatDistanceToNow } from 'date-fns';
 
 export default function AgentDashboard() {
@@ -18,6 +19,7 @@ export default function AgentDashboard() {
     isLoading: statsLoading 
   } = useAgentDashboard();
   const { data: notifications = [], isLoading: notificationsLoading } = useAgentNotifications(5);
+  const { data: partnerMetrics, isLoading: partnerMetricsLoading } = usePartnerMetrics();
 
   const loading = statsLoading;
 
@@ -119,8 +121,48 @@ export default function AgentDashboard() {
           </Button>
         </div>
 
-        {/* Quick Links & Recent Activity */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        {/* Partner Activity & Quick Links */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {/* Partner Activity Widget */}
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="font-display text-lg flex items-center gap-2">
+                <Handshake className="w-5 h-5 text-accent" />
+                Partner Activity
+              </CardTitle>
+              <Button asChild variant="ghost" size="sm" className="font-body hover:text-primary">
+                <Link to="/agent/network">
+                  View All
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {partnerMetricsLoading ? (
+                <div className="space-y-3">
+                  {[...Array(3)].map((_, i) => (
+                    <Skeleton key={i} className="h-6 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
+                    <span className="text-sm text-muted-foreground">Active Partners</span>
+                    <span className="font-semibold text-foreground">{partnerMetrics?.activePartners || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
+                    <span className="text-sm text-muted-foreground">Partner Listings</span>
+                    <span className="font-semibold text-foreground">{partnerMetrics?.partnerPropertyViews || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
+                    <span className="text-sm text-muted-foreground">Bookings (7 days)</span>
+                    <span className="font-semibold text-foreground">{partnerMetrics?.partnerInspectionBookings || 0}</span>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="font-display text-lg">Manage</CardTitle>

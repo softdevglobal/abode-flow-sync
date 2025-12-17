@@ -8,6 +8,7 @@ export interface ThemeSettings {
   theme_accent_color: string | null;
   theme_logo_url: string | null;
   theme_favicon_url: string | null;
+  allow_partner_listings: boolean | null;
 }
 
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
@@ -20,7 +21,7 @@ export function useAgentThemeSettings(agentId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('agents')
-        .select('theme_agency_name, theme_primary_color, theme_secondary_color, theme_accent_color, theme_logo_url, theme_favicon_url')
+        .select('theme_agency_name, theme_primary_color, theme_secondary_color, theme_accent_color, theme_logo_url, theme_favicon_url, allow_partner_listings')
         .eq('id', id)
         .maybeSingle();
       

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { PropertyCard } from '@/components/property/PropertyCard';
@@ -25,6 +25,7 @@ import { Search, SlidersHorizontal, MapPin, X, Loader2, ChevronDown, ChevronUp }
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import { useAcceptedPartners } from '@/hooks/useAgentNetwork';
 
 type Property = Tables<'properties'>;
 type PropertyType = 'house' | 'apartment' | 'townhouse' | 'land' | 'commercial' | 'rural';
@@ -106,6 +107,9 @@ export default function Browse() {
   const [showFilters, setShowFilters] = useState(false);
   const [showMoreTypes, setShowMoreTypes] = useState(false);
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  
+  // Get partner agent IDs
+  const { data: partnerIds = [] } = useAcceptedPartners();
 
   // Initialize filters from URL params
   useEffect(() => {
@@ -177,7 +181,7 @@ export default function Browse() {
 
   // Fetch active properties from the database
   const { data: properties = [], isLoading } = useQuery({
-    queryKey: ['browse-properties'],
+    queryKey: ['browse-properties', partnerIds],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('properties')
@@ -189,6 +193,12 @@ export default function Browse() {
       return data as Property[];
     },
   });
+  
+  // Create a set of partner agent IDs for quick lookup
+  const partnerAgentIds = useMemo(() => new Set(partnerIds), [partnerIds]);
+  
+  // Check if a property belongs to a partner
+  const isPartnerProperty = (property: Property) => partnerAgentIds.has(property.agent_id);
 
   const filteredProperties = properties.filter(property => {
     // Location filter
@@ -568,7 +578,11 @@ export default function Browse() {
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {filteredProperties.map((property, index) => (
                   <div key={property.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
-                    <PropertyCard property={mapPropertyForCard(property)} linkPrefix="/property" />
+                    <PropertyCard 
+                      property={mapPropertyForCard(property)} 
+                      linkPrefix="/property"
+                      isPartner={isPartnerProperty(property)}
+                    />
                   </div>
                 ))}
               </div>

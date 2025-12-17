@@ -14,9 +14,52 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_partnerships: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          requester_id: string
+          status: Database["public"]["Enums"]["partnership_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          requester_id: string
+          status?: Database["public"]["Enums"]["partnership_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          requester_id?: string
+          status?: Database["public"]["Enums"]["partnership_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_partnerships_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_partnerships_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agents: {
         Row: {
           agency_name: string | null
+          allow_partner_listings: boolean
           bio: string | null
           created_at: string
           id: string
@@ -33,6 +76,7 @@ export type Database = {
         }
         Insert: {
           agency_name?: string | null
+          allow_partner_listings?: boolean
           bio?: string | null
           created_at?: string
           id?: string
@@ -49,6 +93,7 @@ export type Database = {
         }
         Update: {
           agency_name?: string | null
+          allow_partner_listings?: boolean
           bio?: string | null
           created_at?: string
           id?: string
@@ -749,6 +794,7 @@ export type Database = {
         | "new_listing"
         | "status_update"
         | "message"
+      partnership_status: "pending" | "accepted" | "rejected"
       property_status: "active" | "sold" | "pending" | "off_market"
       property_type:
         | "house"
@@ -910,6 +956,7 @@ export const Constants = {
         "status_update",
         "message",
       ],
+      partnership_status: ["pending", "accepted", "rejected"],
       property_status: ["active", "sold", "pending", "off_market"],
       property_type: [
         "house",
