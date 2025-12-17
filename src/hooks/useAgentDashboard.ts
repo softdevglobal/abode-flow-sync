@@ -3,26 +3,16 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { addDays, startOfDay, endOfDay } from 'date-fns';
 
-// Demo agent ID for prototype mode (per project memories)
+// Demo agent ID for prototype mode - this is the agent with all the demo data
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 
-async function fetchAgentId(): Promise<string> {
-  const { data, error } = await supabase.from('agents').select('id').limit(1).single();
-  if (error || !data) return DEMO_AGENT_ID;
-  return data.id;
-}
-
 export function useAgentDashboard() {
-  // Fetch agent ID (uses first agent in DB or demo fallback)
-  const { data: agentId } = useQuery({
-    queryKey: ['dashboard-agent-id'],
-    queryFn: fetchAgentId,
-  });
+  const agentId = DEMO_AGENT_ID;
+
   // Fetch active properties count
   const { data: activeCount = 0, isLoading: activeLoading } = useQuery({
     queryKey: ['dashboard-active-properties', agentId],
     queryFn: async () => {
-      if (!agentId) return 0;
       const { count, error } = await supabase
         .from('properties')
         .select('*', { count: 'exact', head: true })
@@ -31,14 +21,12 @@ export function useAgentDashboard() {
       if (error) throw error;
       return count || 0;
     },
-    enabled: !!agentId,
   });
 
   // Fetch pending properties count
   const { data: pendingCount = 0, isLoading: pendingLoading } = useQuery({
     queryKey: ['dashboard-pending-properties', agentId],
     queryFn: async () => {
-      if (!agentId) return 0;
       const { count, error } = await supabase
         .from('properties')
         .select('*', { count: 'exact', head: true })
@@ -47,14 +35,12 @@ export function useAgentDashboard() {
       if (error) throw error;
       return count || 0;
     },
-    enabled: !!agentId,
   });
 
   // Fetch sold properties count
   const { data: soldCount = 0, isLoading: soldLoading } = useQuery({
     queryKey: ['dashboard-sold-properties', agentId],
     queryFn: async () => {
-      if (!agentId) return 0;
       const { count, error } = await supabase
         .from('properties')
         .select('*', { count: 'exact', head: true })
@@ -63,14 +49,12 @@ export function useAgentDashboard() {
       if (error) throw error;
       return count || 0;
     },
-    enabled: !!agentId,
   });
 
   // Fetch total properties count
   const { data: totalCount = 0, isLoading: totalLoading } = useQuery({
     queryKey: ['dashboard-total-properties', agentId],
     queryFn: async () => {
-      if (!agentId) return 0;
       const { count, error } = await supabase
         .from('properties')
         .select('*', { count: 'exact', head: true })
@@ -78,15 +62,12 @@ export function useAgentDashboard() {
       if (error) throw error;
       return count || 0;
     },
-    enabled: !!agentId,
   });
 
   // Fetch scheduled inspections for next 7 days
   const { data: upcomingInspectionsCount = 0, isLoading: inspectionsLoading } = useQuery({
     queryKey: ['dashboard-upcoming-inspections', agentId],
     queryFn: async () => {
-      if (!agentId) return 0;
-      
       const now = startOfDay(new Date());
       const nextWeek = endOfDay(addDays(now, 7));
       
@@ -112,15 +93,12 @@ export function useAgentDashboard() {
       if (error) throw error;
       return count || 0;
     },
-    enabled: !!agentId,
   });
 
   // Fetch pending inspection bookings count
   const { data: pendingBookingsCount = 0, isLoading: bookingsLoading } = useQuery({
     queryKey: ['dashboard-pending-bookings', agentId],
     queryFn: async () => {
-      if (!agentId) return 0;
-      
       // Get property IDs for this agent
       const { data: properties, error: propError } = await supabase
         .from('properties')
@@ -152,7 +130,6 @@ export function useAgentDashboard() {
       if (error) throw error;
       return count || 0;
     },
-    enabled: !!agentId,
   });
 
   return {
@@ -170,11 +147,15 @@ export function useAgentDashboard() {
 export function useAgentNotifications(limit: number = 5) {
   const queryClient = useQueryClient();
   
-  // For prototype, we get the agent's user_id from the agents table
+  // Get the demo agent's user_id
   const { data: agentData } = useQuery({
     queryKey: ['dashboard-agent-user'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('agents').select('user_id').limit(1).single();
+      const { data, error } = await supabase
+        .from('agents')
+        .select('user_id')
+        .eq('id', DEMO_AGENT_ID)
+        .single();
       if (error || !data) return null;
       return data;
     },

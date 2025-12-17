@@ -7,22 +7,8 @@ type Property = Tables<'properties'>;
 type PropertyInsert = TablesInsert<'properties'>;
 type PropertyUpdate = TablesUpdate<'properties'>;
 
-// Demo agent ID for prototype (first agent in database)
+// Demo agent ID for prototype - this is the agent with all the demo data
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
-
-// Fetch agent ID
-async function fetchAgentId(): Promise<string> {
-  const { data, error } = await supabase
-    .from('agents')
-    .select('id')
-    .limit(1)
-    .maybeSingle();
-
-  if (error || !data) {
-    return DEMO_AGENT_ID;
-  }
-  return data.id;
-}
 
 // Fetch properties for agent
 async function fetchProperties(agentId: string): Promise<Property[]> {
@@ -41,26 +27,17 @@ async function fetchProperties(agentId: string): Promise<Property[]> {
 
 export function useAgentProperties() {
   const queryClient = useQueryClient();
-
-  // Query for agent ID
-  const { data: agentId } = useQuery({
-    queryKey: ['agent-id'],
-    queryFn: fetchAgentId,
-    staleTime: Infinity,
-  });
+  const agentId = DEMO_AGENT_ID;
 
   // Query for properties
   const { data: properties = [], isLoading: loading } = useQuery({
     queryKey: ['agent-properties', agentId],
-    queryFn: () => fetchProperties(agentId!),
-    enabled: !!agentId,
+    queryFn: () => fetchProperties(agentId),
   });
 
   // Create property mutation
   const createMutation = useMutation({
     mutationFn: async (propertyData: Omit<PropertyInsert, 'agent_id'>) => {
-      if (!agentId) throw new Error('Agent profile not found');
-      
       const { data, error } = await supabase
         .from('properties')
         .insert({
