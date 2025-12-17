@@ -79,14 +79,7 @@ function useAgentAuctions() {
   return useQuery({
     queryKey: ['agent-auctions'],
     queryFn: async (): Promise<AuctionWithProperty[]> => {
-      // Get agent's properties first
-      const { data: agentData } = await supabase
-        .from('agents')
-        .select('id')
-        .limit(1)
-        .maybeSingle();
-
-      const agentId = agentData?.id || DEMO_AGENT_ID;
+      const agentId = DEMO_AGENT_ID;
 
       // Fetch auctions with property join, filtered by agent, sorted by start_time ascending
       const { data, error } = await supabase

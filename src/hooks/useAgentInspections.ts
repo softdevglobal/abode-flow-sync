@@ -21,14 +21,7 @@ export function useAgentInspections() {
   const inspectionsQuery = useQuery({
     queryKey: ['agent-inspections'],
     queryFn: async (): Promise<InspectionWithProperty[]> => {
-      // First get agent ID
-      const { data: agentData } = await supabase
-        .from('agents')
-        .select('id')
-        .limit(1)
-        .maybeSingle();
-
-      const agentId = agentData?.id || DEMO_AGENT_ID;
+      const agentId = DEMO_AGENT_ID;
 
       // Get properties for this agent
       const { data: properties } = await supabase
