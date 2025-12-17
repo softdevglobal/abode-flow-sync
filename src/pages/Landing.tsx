@@ -330,9 +330,26 @@ export default function Landing() {
         )}
       </nav>
 
-      {/* Hero Section - Phenomenon Style with Parallax */}
-      <section ref={heroRef} className="relative min-h-screen flex items-center overflow-hidden pt-16 bg-grid">
-        {/* Parallax Background glow effects */}
+      {/* Hero Section - Full Screen with Background Image */}
+      <section ref={heroRef} className="relative h-screen flex items-center overflow-hidden">
+        {/* Full-screen background image */}
+        <motion.div 
+          className="absolute inset-0"
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+        >
+          <img
+            src={heroImage}
+            alt="Beautiful modern home"
+            className="w-full h-full object-cover"
+          />
+          {/* Dark overlay gradient for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
+        </motion.div>
+
+        {/* Parallax glow effects */}
         <motion.div 
           className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px]"
           style={{ y: parallaxY1, scale: parallaxScale }}
@@ -340,14 +357,6 @@ export default function Landing() {
         <motion.div 
           className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/10 rounded-full blur-[100px]"
           style={{ y: parallaxY2, scale: parallaxScale }}
-        />
-        <motion.div 
-          className="absolute top-1/2 right-1/3 w-64 h-64 bg-primary/10 rounded-full blur-[80px]"
-          style={{ y: parallaxY3 }}
-        />
-        <motion.div 
-          className="absolute bottom-1/3 left-1/3 w-48 h-48 bg-accent/15 rounded-full blur-[60px]"
-          style={{ y: parallaxY1 }}
         />
         
         {/* Floating particles with parallax */}
@@ -363,32 +372,32 @@ export default function Landing() {
           className="absolute top-48 left-[20%] w-1.5 h-1.5 bg-primary/40 rounded-full"
           style={{ y: parallaxY1, opacity: parallaxOpacity }}
         />
-        <motion.div 
-          className="absolute top-64 right-[25%] w-2.5 h-2.5 bg-accent/25 rounded-full"
-          style={{ y: parallaxY3, opacity: parallaxOpacity }}
-        />
         
-        <div className="relative z-10 container px-4 py-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
-            <div className="text-center lg:text-left">
-              <Badge className="bg-accent/10 text-accent border-accent/20 mb-6 animate-fade-in">
+        <div className="relative z-10 container px-4">
+          <div className="max-w-3xl">
+            {/* Content */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <Badge className="bg-accent/10 text-accent border-accent/20 mb-6 animate-fade-in backdrop-blur-sm">
                 <Sparkles className="w-3 h-3 mr-1" />
                 Australia's Modern Real Estate Platform
               </Badge>
               
-              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-extrabold text-foreground mb-6 animate-fade-in leading-tight">
+              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold text-foreground mb-6 leading-tight">
                 Find Your{' '}
                 <span className="text-gradient">Dream Home</span>
                 {' '}Today
               </h1>
               
-              <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto lg:mx-0 animate-slide-up">
+              <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-10 max-w-2xl">
                 Browse thousands of properties, attend live auctions, and connect with trusted agents across Australia.
               </p>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10 animate-scale-in">
+              <div className="flex flex-col sm:flex-row gap-4 mb-10">
                 <Link to="/browse">
                   <Button variant="accent" size="xl">
                     Browse Properties
@@ -396,130 +405,56 @@ export default function Landing() {
                   </Button>
                 </Link>
                 <Link to="/agent">
-                  <Button variant="outline" size="xl">
+                  <Button variant="outline" size="xl" className="backdrop-blur-sm bg-background/20">
                     For Agents
                   </Button>
                 </Link>
               </div>
-            </div>
 
-            {/* Hero Image with Touch-Friendly Animations - Visible on all screens */}
-            <motion.div 
-              className="relative order-first lg:order-last mb-8 lg:mb-0"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-              <motion.div
-                className="relative rounded-2xl lg:rounded-3xl overflow-hidden shadow-2xl cursor-pointer"
-                whileHover={{ 
-                  scale: 1.02,
-                  rotateY: 3,
-                  rotateX: -1,
-                }}
-                whileTap={{ 
-                  scale: 0.97,
-                  rotateY: 0,
-                  rotateX: 0,
-                }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 400, 
-                  damping: 25 
-                }}
-                style={{ transformStyle: "preserve-3d", perspective: 1000 }}
+              {/* Stats badge */}
+              <motion.div 
+                className="inline-flex items-center gap-3 bg-card/80 backdrop-blur-md rounded-2xl p-4 border border-border/50"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
               >
-                <motion.img
-                  src={heroImage}
-                  alt="Beautiful modern home"
-                  className="w-full h-[280px] sm:h-[350px] lg:h-[500px] object-cover"
-                  initial={{ scale: 1.1 }}
-                  animate={{ scale: 1 }}
-                  whileTap={{ scale: 1.05 }}
-                  transition={{ duration: 0.6 }}
-                />
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-background/20 to-transparent" />
-                
-                {/* Floating badge - responsive sizing */}
-                <motion.div 
-                  className="absolute bottom-4 left-4 right-4 lg:bottom-6 lg:left-6 lg:right-6"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.5 }}
-                >
-                  <motion.div 
-                    className="bg-card/90 backdrop-blur-md rounded-xl lg:rounded-2xl p-3 lg:p-4 border border-border/50"
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-lg lg:rounded-xl gradient-orange flex items-center justify-center shrink-0">
-                        <Home className="w-5 h-5 lg:w-6 lg:h-6 text-accent-foreground" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-semibold text-foreground text-sm lg:text-base">Dream Homes Await</p>
-                        <p className="text-xs lg:text-sm text-muted-foreground">Discover {stats?.activeListings || 0}+ properties</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                </motion.div>
-
-                {/* Touch ripple effect overlay */}
-                <motion.div 
-                  className="absolute inset-0 rounded-2xl lg:rounded-3xl pointer-events-none"
-                  initial={{ opacity: 0 }}
-                  whileTap={{ 
-                    opacity: 1,
-                    transition: { duration: 0.1 }
-                  }}
-                  style={{
-                    background: "radial-gradient(circle at center, rgba(249, 115, 22, 0.2) 0%, transparent 70%)"
-                  }}
-                />
-
-                {/* Glow effect on hover/tap */}
-                <motion.div 
-                  className="absolute inset-0 rounded-2xl lg:rounded-3xl pointer-events-none"
-                  initial={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  whileTap={{ opacity: 0.8 }}
-                  transition={{ duration: 0.3 }}
-                  style={{
-                    boxShadow: "inset 0 0 40px rgba(249, 115, 22, 0.15), 0 0 30px rgba(249, 115, 22, 0.1)"
-                  }}
-                />
+                <div className="w-12 h-12 rounded-xl gradient-orange flex items-center justify-center shrink-0">
+                  <Home className="w-6 h-6 text-accent-foreground" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">Dream Homes Await</p>
+                  <p className="text-sm text-muted-foreground">Discover {stats?.activeListings || 0}+ properties</p>
+                </div>
               </motion.div>
-
-              {/* Decorative elements - smaller on mobile */}
-              <motion.div 
-                className="absolute -top-2 -right-2 lg:-top-4 lg:-right-4 w-16 h-16 lg:w-24 lg:h-24 bg-accent/20 rounded-full blur-xl"
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 0.8, 0.5]
-                }}
-                transition={{ 
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-              />
-              <motion.div 
-                className="absolute -bottom-2 -left-2 lg:-bottom-4 lg:-left-4 w-20 h-20 lg:w-32 lg:h-32 bg-accent/15 rounded-full blur-xl"
-                animate={{ 
-                  scale: [1, 1.3, 1],
-                  opacity: [0.4, 0.7, 0.4]
-                }}
-                transition={{ 
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: 1
-                }}
-              />
             </motion.div>
           </div>
+        </div>
 
-          {/* Search Bar - Full Width Below */}
+        {/* Scroll indicator */}
+        <motion.div 
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.5 }}
+        >
+          <motion.div
+            className="w-6 h-10 rounded-full border-2 border-foreground/30 flex justify-center pt-2"
+            animate={{ y: [0, 5, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          >
+            <motion.div 
+              className="w-1.5 h-3 bg-foreground/50 rounded-full"
+              animate={{ y: [0, 8, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+            />
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Search Bar Section */}
+      <section className="relative z-20 -mt-20 pb-16">
+        <div className="container px-4">
+          {/* Search Bar */}
           <Card variant="glass" className="max-w-4xl mx-auto mt-16 animate-scale-in">
             <CardContent className="p-4 md:p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
