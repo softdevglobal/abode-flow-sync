@@ -47,6 +47,7 @@ const navItems = [
   { icon: Users, label: 'Requests', path: '/agent/requests' },
   { icon: UserCircle, label: 'CRM', path: '/agent/crm' },
   { icon: FileText, label: 'Appraisals', path: '/agent/appraisals' },
+  { icon: Settings, label: 'Settings', path: '/agent/settings' },
 ];
 
 interface AgentLayoutProps {
