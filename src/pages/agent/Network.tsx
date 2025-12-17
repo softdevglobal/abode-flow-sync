@@ -29,6 +29,7 @@ import {
   useRespondToPartnership,
   useRemovePartnership,
 } from '@/hooks/useAgentNetwork';
+import { PropertyScraper } from '@/components/agent/PropertyScraper';
 
 export default function AgentNetwork() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -448,6 +449,11 @@ export default function AgentNetwork() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Property Scraper Tool */}
+        <div className="mt-8">
+          <PropertyScraper />
+        </div>
       </div>
     </AgentLayout>
   );
