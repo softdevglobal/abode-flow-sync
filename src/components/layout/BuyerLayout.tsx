@@ -70,7 +70,7 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
   const { user, signOut } = useAuth();
 
   // Fetch unread notification counts
-  const { data: notificationCounts } = useQuery({
+  const { data: notificationCounts, refetch: refetchNotifications } = useQuery({
     queryKey: ['buyer-notification-counts', user?.id],
     queryFn: async () => {
       if (!user?.id) return { inspections: 0, viewings: 0, total: 0 };
@@ -98,8 +98,33 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
       };
     },
     enabled: !!user?.id,
-    refetchInterval: 30000, // Refetch every 30 seconds
   });
+
+  // Real-time subscription for notification updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('buyer-notifications-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          console.log('Notification change detected, refetching counts...');
+          refetchNotifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, refetchNotifications]);
 
   const handleSignOut = async () => {
     await signOut();
