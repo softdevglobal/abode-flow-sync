@@ -22,6 +22,12 @@ export type Database = {
           id: string
           license_number: string | null
           profile_image: string | null
+          theme_accent_color: string | null
+          theme_agency_name: string | null
+          theme_favicon_url: string | null
+          theme_logo_url: string | null
+          theme_primary_color: string | null
+          theme_secondary_color: string | null
           updated_at: string
           user_id: string
         }
@@ -32,6 +38,12 @@ export type Database = {
           id?: string
           license_number?: string | null
           profile_image?: string | null
+          theme_accent_color?: string | null
+          theme_agency_name?: string | null
+          theme_favicon_url?: string | null
+          theme_logo_url?: string | null
+          theme_primary_color?: string | null
+          theme_secondary_color?: string | null
           updated_at?: string
           user_id: string
         }
@@ -42,6 +54,12 @@ export type Database = {
           id?: string
           license_number?: string | null
           profile_image?: string | null
+          theme_accent_color?: string | null
+          theme_agency_name?: string | null
+          theme_favicon_url?: string | null
+          theme_logo_url?: string | null
+          theme_primary_color?: string | null
+          theme_secondary_color?: string | null
           updated_at?: string
           user_id?: string
         }

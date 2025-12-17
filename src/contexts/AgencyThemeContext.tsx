@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import agencyConfig, { AgencyConfig } from '@/config/agencyConfig';
+import { supabase } from '@/integrations/supabase/client';
 
 const AgencyThemeContext = createContext<AgencyConfig>(agencyConfig);
 
@@ -10,12 +11,57 @@ export function useAgencyTheme() {
 interface AgencyThemeProviderProps {
   children: React.ReactNode;
   config?: Partial<AgencyConfig>;
+  agentId?: string;
 }
 
-export function AgencyThemeProvider({ children, config }: AgencyThemeProviderProps) {
-  const mergedConfig = { ...agencyConfig, ...config };
+const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
+
+export function AgencyThemeProvider({ children, config, agentId }: AgencyThemeProviderProps) {
+  const [dbConfig, setDbConfig] = useState<Partial<AgencyConfig> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch theme from database
+  useEffect(() => {
+    const fetchTheme = async () => {
+      try {
+        const id = agentId || DEMO_AGENT_ID;
+        const { data, error } = await supabase
+          .from('agents')
+          .select('theme_agency_name, theme_primary_color, theme_secondary_color, theme_accent_color, theme_logo_url, theme_favicon_url')
+          .eq('id', id)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching theme:', error);
+        } else if (data) {
+          const themeFromDb: Partial<AgencyConfig> = {};
+          if (data.theme_agency_name) themeFromDb.agencyName = data.theme_agency_name;
+          if (data.theme_primary_color) themeFromDb.primaryColor = data.theme_primary_color;
+          if (data.theme_secondary_color) themeFromDb.secondaryColor = data.theme_secondary_color;
+          if (data.theme_accent_color) themeFromDb.accentColor = data.theme_accent_color;
+          if (data.theme_logo_url) themeFromDb.logoUrl = data.theme_logo_url;
+          if (data.theme_favicon_url) themeFromDb.faviconUrl = data.theme_favicon_url;
+          
+          if (Object.keys(themeFromDb).length > 0) {
+            setDbConfig(themeFromDb);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch theme:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTheme();
+  }, [agentId]);
+
+  // Merge configs: dbConfig overrides config overrides agencyConfig
+  const mergedConfig = { ...agencyConfig, ...config, ...dbConfig };
 
   useEffect(() => {
+    if (isLoading) return;
+    
     const root = document.documentElement;
 
     // Set primary color
@@ -52,7 +98,7 @@ export function AgencyThemeProvider({ children, config }: AgencyThemeProviderPro
 
     // Update document title with agency name
     document.title = `${mergedConfig.agencyName} | Real Estate`;
-  }, [mergedConfig]);
+  }, [mergedConfig, isLoading]);
 
   return (
     <AgencyThemeContext.Provider value={mergedConfig}>
