@@ -110,6 +110,60 @@ export type Database = {
         }
         Relationships: []
       }
+      appraisal_requests: {
+        Row: {
+          address: string
+          bathrooms: number | null
+          bedrooms: number | null
+          created_at: string
+          customer_id: string
+          id: string
+          land_size: number | null
+          notes: string | null
+          parking: number | null
+          postcode: string
+          property_type: string
+          state: string
+          status: string
+          suburb: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          land_size?: number | null
+          notes?: string | null
+          parking?: number | null
+          postcode: string
+          property_type?: string
+          state?: string
+          status?: string
+          suburb: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          land_size?: number | null
+          notes?: string | null
+          parking?: number | null
+          postcode?: string
+          property_type?: string
+          state?: string
+          status?: string
+          suburb?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appraisals: {
         Row: {
           address: string
