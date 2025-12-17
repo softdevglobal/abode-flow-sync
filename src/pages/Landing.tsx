@@ -8,40 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Building2,
-  Search,
-  Calendar,
-  Home,
-  Bed,
-  Bath,
-  Car,
-  Heart,
-  ArrowRight,
-  MapPin,
-  Users,
-  Menu,
-  X,
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  QrCode,
-  Camera,
-  Gavel,
-  TrendingUp,
-  Sparkles,
-} from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Building2, Search, Calendar, Home, Bed, Bath, Car, Heart, ArrowRight, MapPin, Users, Menu, X, Facebook, Twitter, Instagram, Linkedin, QrCode, Camera, Gavel, TrendingUp, Sparkles } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import heroImage from '@/assets/hero-home.jpg';
-
 export default function Landing() {
   const navigate = useNavigate();
   const config = useAgencyTheme();
@@ -57,7 +27,9 @@ export default function Landing() {
   const [statsVisible, setStatsVisible] = useState(false);
 
   // Parallax scroll effect
-  const { scrollY } = useScroll();
+  const {
+    scrollY
+  } = useScroll();
   const parallaxY1 = useTransform(scrollY, [0, 500], [0, -150]);
   const parallaxY2 = useTransform(scrollY, [0, 500], [0, -100]);
   const parallaxY3 = useTransform(scrollY, [0, 500], [0, -200]);
@@ -76,45 +48,46 @@ export default function Landing() {
 
   // Intersection observer for stats animation
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setStatsVisible(true);
-        }
-      },
-      { threshold: 0.3 }
-    );
-
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setStatsVisible(true);
+      }
+    }, {
+      threshold: 0.3
+    });
     if (statsRef.current) {
       observer.observe(statsRef.current);
     }
-
     return () => observer.disconnect();
   }, []);
 
   // Fetch featured properties
-  const { data: featuredProperties } = useQuery({
+  const {
+    data: featuredProperties
+  } = useQuery({
     queryKey: ['featured-properties'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('properties')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(6);
-
+      const {
+        data,
+        error
+      } = await supabase.from('properties').select('*').eq('status', 'active').order('created_at', {
+        ascending: false
+      }).limit(6);
       if (error) throw error;
       return data;
-    },
+    }
   });
 
   // Fetch live auctions
-  const { data: liveAuctions } = useQuery({
+  const {
+    data: liveAuctions
+  } = useQuery({
     queryKey: ['live-auctions-landing'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('auctions')
-        .select(`
+      const {
+        data,
+        error
+      } = await supabase.from('auctions').select(`
           *,
           property:property_id (
             id,
@@ -128,63 +101,62 @@ export default function Landing() {
             bathrooms,
             parking
           )
-        `)
-        .in('status', ['live', 'pending'])
-        .order('start_time', { ascending: true })
-        .limit(4);
-
+        `).in('status', ['live', 'pending']).order('start_time', {
+        ascending: true
+      }).limit(4);
       if (error) throw error;
       return data;
-    },
+    }
   });
 
   // Fetch stats
-  const { data: stats } = useQuery({
+  const {
+    data: stats
+  } = useQuery({
     queryKey: ['landing-stats'],
     queryFn: async () => {
-      const [propertiesRes, agentsRes] = await Promise.all([
-        supabase.from('properties').select('id', { count: 'exact' }).eq('status', 'active'),
-        supabase.from('agents').select('id', { count: 'exact' }),
-      ]);
-
+      const [propertiesRes, agentsRes] = await Promise.all([supabase.from('properties').select('id', {
+        count: 'exact'
+      }).eq('status', 'active'), supabase.from('agents').select('id', {
+        count: 'exact'
+      })]);
       return {
         activeListings: propertiesRes.count || 0,
         totalAgents: agentsRes.count || 0,
-        citiesCovered: 25, // Placeholder
+        citiesCovered: 25 // Placeholder
       };
-    },
+    }
   });
-
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (searchLocation) params.set('location', searchLocation);
     if (minPrice) params.set('minPrice', minPrice);
     if (maxPrice) params.set('maxPrice', maxPrice);
     if (bedrooms) params.set('bedrooms', bedrooms);
-
     navigate(`/browse?${params.toString()}`);
   };
-
   const formatPrice = (price: number | null) => {
     if (!price) return 'Contact Agent';
     return new Intl.NumberFormat('en-AU', {
       style: 'currency',
       currency: 'AUD',
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(price);
   };
-
-  const AnimatedNumber = ({ value, suffix = '' }: { value: number; suffix?: string }) => {
+  const AnimatedNumber = ({
+    value,
+    suffix = ''
+  }: {
+    value: number;
+    suffix?: string;
+  }) => {
     const [displayValue, setDisplayValue] = useState(0);
-
     useEffect(() => {
       if (!statsVisible) return;
-
       const duration = 2000;
       const steps = 60;
       const increment = value / steps;
       let current = 0;
-
       const timer = setInterval(() => {
         current += increment;
         if (current >= value) {
@@ -194,37 +166,21 @@ export default function Landing() {
           setDisplayValue(Math.floor(current));
         }
       }, duration / steps);
-
       return () => clearInterval(timer);
     }, [value, statsVisible]);
-
-    return (
-      <span>
+    return <span className="text-secondary">
         {displayValue.toLocaleString()}
         {suffix}
-      </span>
-    );
+      </span>;
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled
-            ? 'bg-background/95 backdrop-blur-md border-b border-border'
-            : 'bg-transparent'
-        }`}
-      >
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-background/95 backdrop-blur-md border-b border-border' : 'bg-transparent'}`}>
         <div className="container flex items-center justify-between h-16 md:h-20">
           <Link to="/" className="flex items-center gap-3">
-            {config.logoUrl ? (
-              <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" />
-            ) : (
-              <div className="w-10 h-10 rounded-xl gradient-orange flex items-center justify-center shadow-glow-sm">
+            {config.logoUrl ? <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" /> : <div className="w-10 h-10 rounded-xl gradient-orange flex items-center justify-center shadow-glow-sm">
                 <Building2 className="w-5 h-5 text-accent-foreground" />
-              </div>
-            )}
+              </div>}
             <span className="font-display text-xl font-bold text-foreground">
               {config.agencyName}
             </span>
@@ -232,28 +188,16 @@ export default function Landing() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-8">
-            <Link
-              to="/browse"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <Link to="/browse" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Properties
             </Link>
-            <Link
-              to="/auctions"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <Link to="/auctions" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Auctions
             </Link>
-            <Link
-              to="/how-it-works"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <Link to="/how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               How It Works
             </Link>
-            <Link
-              to="/contact"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <Link to="/contact" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Contact
             </Link>
           </div>
@@ -273,44 +217,24 @@ export default function Landing() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 text-foreground"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
+          <button className="md:hidden p-2 text-foreground" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
 
         {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-card border-t border-border">
+        {mobileMenuOpen && <div className="md:hidden bg-card border-t border-border">
             <div className="container py-4 flex flex-col gap-4">
-              <Link
-                to="/browse"
-                className="text-foreground font-medium py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <Link to="/browse" className="text-foreground font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                 Properties
               </Link>
-              <Link
-                to="/auctions"
-                className="text-foreground font-medium py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <Link to="/auctions" className="text-foreground font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                 Auctions
               </Link>
-              <Link
-                to="/how-it-works"
-                className="text-foreground font-medium py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <Link to="/how-it-works" className="text-foreground font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                 How It Works
               </Link>
-              <Link
-                to="/contact"
-                className="text-foreground font-medium py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <Link to="/contact" className="text-foreground font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                 Contact
               </Link>
               <div className="flex gap-3 pt-2">
@@ -326,61 +250,63 @@ export default function Landing() {
                 </Link>
               </div>
             </div>
-          </div>
-        )}
+          </div>}
       </nav>
 
       {/* Hero Section - Full Screen with Background Image */}
       <section ref={heroRef} className="relative h-screen flex items-center overflow-hidden">
         {/* Full-screen background image */}
-        <motion.div 
-          className="absolute inset-0"
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-        >
-          <img
-            src={heroImage}
-            alt="Beautiful modern home"
-            className="w-full h-full object-cover"
-          />
+        <motion.div className="absolute inset-0" initial={{
+        scale: 1.1
+      }} animate={{
+        scale: 1
+      }} transition={{
+        duration: 1.2,
+        ease: "easeOut"
+      }}>
+          <img src={heroImage} alt="Beautiful modern home" className="w-full h-full object-cover" />
           {/* Dark overlay gradient for text readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
         </motion.div>
 
         {/* Parallax glow effects */}
-        <motion.div 
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px]"
-          style={{ y: parallaxY1, scale: parallaxScale }}
-        />
-        <motion.div 
-          className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/10 rounded-full blur-[100px]"
-          style={{ y: parallaxY2, scale: parallaxScale }}
-        />
+        <motion.div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-[120px]" style={{
+        y: parallaxY1,
+        scale: parallaxScale
+      }} />
+        <motion.div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/10 rounded-full blur-[100px]" style={{
+        y: parallaxY2,
+        scale: parallaxScale
+      }} />
         
         {/* Floating particles with parallax */}
-        <motion.div 
-          className="absolute top-20 left-[10%] w-2 h-2 bg-accent/40 rounded-full"
-          style={{ y: parallaxY3, opacity: parallaxOpacity }}
-        />
-        <motion.div 
-          className="absolute top-32 right-[15%] w-3 h-3 bg-accent/30 rounded-full"
-          style={{ y: parallaxY2, opacity: parallaxOpacity }}
-        />
-        <motion.div 
-          className="absolute top-48 left-[20%] w-1.5 h-1.5 bg-primary/40 rounded-full"
-          style={{ y: parallaxY1, opacity: parallaxOpacity }}
-        />
+        <motion.div className="absolute top-20 left-[10%] w-2 h-2 bg-accent/40 rounded-full" style={{
+        y: parallaxY3,
+        opacity: parallaxOpacity
+      }} />
+        <motion.div className="absolute top-32 right-[15%] w-3 h-3 bg-accent/30 rounded-full" style={{
+        y: parallaxY2,
+        opacity: parallaxOpacity
+      }} />
+        <motion.div className="absolute top-48 left-[20%] w-1.5 h-1.5 bg-primary/40 rounded-full" style={{
+        y: parallaxY1,
+        opacity: parallaxOpacity
+      }} />
         
         <div className="relative z-10 container px-4">
           <div className="max-w-3xl">
             {/* Content */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
+            <motion.div initial={{
+            opacity: 0,
+            y: 30
+          }} animate={{
+            opacity: 1,
+            y: 0
+          }} transition={{
+            duration: 0.8,
+            delay: 0.2
+          }}>
               <Badge className="bg-accent/10 text-accent border-accent/20 mb-6 animate-fade-in backdrop-blur-sm">
                 <Sparkles className="w-3 h-3 mr-1" />
                 Australia's Modern Real Estate Platform
@@ -412,12 +338,16 @@ export default function Landing() {
               </div>
 
               {/* Stats badge */}
-              <motion.div 
-                className="inline-flex items-center gap-3 bg-card/80 backdrop-blur-md rounded-2xl p-4 border border-border/50"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-              >
+              <motion.div className="inline-flex items-center gap-3 bg-card/80 backdrop-blur-md rounded-2xl p-4 border border-border/50" initial={{
+              opacity: 0,
+              y: 20
+            }} animate={{
+              opacity: 1,
+              y: 0
+            }} transition={{
+              delay: 0.6,
+              duration: 0.5
+            }}>
                 <div className="w-12 h-12 rounded-xl gradient-orange flex items-center justify-center shrink-0">
                   <Home className="w-6 h-6 text-accent-foreground" />
                 </div>
@@ -431,22 +361,28 @@ export default function Landing() {
         </div>
 
         {/* Scroll indicator */}
-        <motion.div 
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.5 }}
-        >
-          <motion.div
-            className="w-6 h-10 rounded-full border-2 border-foreground/30 flex justify-center pt-2"
-            animate={{ y: [0, 5, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-          >
-            <motion.div 
-              className="w-1.5 h-3 bg-foreground/50 rounded-full"
-              animate={{ y: [0, 8, 0] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-            />
+        <motion.div className="absolute bottom-8 left-1/2 -translate-x-1/2" initial={{
+        opacity: 0,
+        y: -10
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} transition={{
+        delay: 1,
+        duration: 0.5
+      }}>
+          <motion.div className="w-6 h-10 rounded-full border-2 border-foreground/30 flex justify-center pt-2" animate={{
+          y: [0, 5, 0]
+        }} transition={{
+          repeat: Infinity,
+          duration: 1.5
+        }}>
+            <motion.div className="w-1.5 h-3 bg-foreground/50 rounded-full" animate={{
+            y: [0, 8, 0]
+          }} transition={{
+            repeat: Infinity,
+            duration: 1.5
+          }} />
           </motion.div>
         </motion.div>
       </section>
@@ -460,12 +396,7 @@ export default function Landing() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="lg:col-span-2 relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    placeholder="Search suburb or postcode..."
-                    value={searchLocation}
-                    onChange={(e) => setSearchLocation(e.target.value)}
-                    className="pl-10 h-12 bg-muted/50 border-border"
-                  />
+                  <Input placeholder="Search suburb or postcode..." value={searchLocation} onChange={e => setSearchLocation(e.target.value)} className="pl-10 h-12 bg-muted/50 border-border" />
                 </div>
                 <Select value={minPrice} onValueChange={setMinPrice}>
                   <SelectTrigger className="h-12 bg-muted/50 border-border">
@@ -511,12 +442,7 @@ export default function Landing() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button
-                onClick={handleSearch}
-                size="lg"
-                variant="accent"
-                className="w-full mt-4 h-12"
-              >
+              <Button onClick={handleSearch} size="lg" variant="accent" className="w-full mt-4 h-12">
                 <Search className="w-5 h-5 mr-2" />
                 Search Properties
               </Button>
@@ -547,25 +473,13 @@ export default function Landing() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProperties?.map((property) => (
-              <Link
-                key={property.id}
-                to={`/property/${property.id}`}
-                className="group"
-              >
+            {featuredProperties?.map(property => <Link key={property.id} to={`/property/${property.id}`} className="group">
                 <Card variant="property" className="overflow-hidden">
                   <div className="relative aspect-[4/3] overflow-hidden">
-                    <img
-                      src={property.images?.[0] || '/placeholder.svg'}
-                      alt={property.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <button
-                      className="absolute top-3 right-3 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-background"
-                      onClick={(e) => {
-                        e.preventDefault();
-                      }}
-                    >
+                    <img src={property.images?.[0] || '/placeholder.svg'} alt={property.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    <button className="absolute top-3 right-3 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-background" onClick={e => {
+                  e.preventDefault();
+                }}>
                       <Heart className="w-5 h-5 text-muted-foreground" />
                     </button>
                     <Badge className="absolute bottom-3 left-3 bg-background/80 backdrop-blur-sm text-foreground capitalize border-0">
@@ -598,8 +512,7 @@ export default function Landing() {
                     </div>
                   </CardContent>
                 </Card>
-              </Link>
-            ))}
+              </Link>)}
           </div>
 
           <div className="mt-8 text-center md:hidden">
@@ -614,8 +527,7 @@ export default function Landing() {
       </section>
 
       {/* Live Auctions Section */}
-      {liveAuctions && liveAuctions.length > 0 && (
-        <section className="py-16 md:py-24 bg-background">
+      {liveAuctions && liveAuctions.length > 0 && <section className="py-16 md:py-24 bg-background">
           <div className="container px-4">
             <div className="flex items-center justify-between mb-10">
               <div>
@@ -639,48 +551,34 @@ export default function Landing() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {liveAuctions.map((auction) => {
-                const property = auction.property as {
-                  id: string;
-                  title: string;
-                  address: string;
-                  suburb: string;
-                  state: string;
-                  postcode: string;
-                  images: string[] | null;
-                  bedrooms: number | null;
-                  bathrooms: number | null;
-                  parking: number | null;
-                } | null;
-
-                return (
-                  <Link
-                    key={auction.id}
-                    to={`/auction/live/${auction.id}`}
-                    className="group"
-                  >
+              {liveAuctions.map(auction => {
+            const property = auction.property as {
+              id: string;
+              title: string;
+              address: string;
+              suburb: string;
+              state: string;
+              postcode: string;
+              images: string[] | null;
+              bedrooms: number | null;
+              bathrooms: number | null;
+              parking: number | null;
+            } | null;
+            return <Link key={auction.id} to={`/auction/live/${auction.id}`} className="group">
                     <Card variant="interactive" className="overflow-hidden relative">
-                      {auction.status === 'live' && (
-                        <div className="absolute top-3 left-3 z-10">
+                      {auction.status === 'live' && <div className="absolute top-3 left-3 z-10">
                           <Badge className="bg-red-500 text-white border-0 animate-pulse">
                             <Gavel className="w-3 h-3 mr-1" />
                             LIVE
                           </Badge>
-                        </div>
-                      )}
-                      {auction.status === 'pending' && (
-                        <div className="absolute top-3 left-3 z-10">
+                        </div>}
+                      {auction.status === 'pending' && <div className="absolute top-3 left-3 z-10">
                           <Badge variant="secondary" className="border-0">
                             Upcoming
                           </Badge>
-                        </div>
-                      )}
+                        </div>}
                       <div className="relative aspect-[4/3] overflow-hidden">
-                        <img
-                          src={property?.images?.[0] || '/placeholder.svg'}
-                          alt={property?.title || 'Auction Property'}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
+                        <img src={property?.images?.[0] || '/placeholder.svg'} alt={property?.title || 'Auction Property'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                         <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
                         <div className="absolute bottom-3 left-3 right-3">
                           <p className="text-foreground text-sm truncate">
@@ -704,19 +602,14 @@ export default function Landing() {
                             <span className="text-xs">+{formatPrice(auction.min_increment)}</span>
                           </div>
                         </div>
-                        <Button 
-                          variant="accent" 
-                          size="sm" 
-                          className="w-full mt-3"
-                        >
+                        <Button variant="accent" size="sm" className="w-full mt-3">
                           <Gavel className="w-4 h-4 mr-2" />
                           {auction.status === 'live' ? 'Bid Now' : 'View Auction'}
                         </Button>
                       </CardContent>
                     </Card>
-                  </Link>
-                );
-              })}
+                  </Link>;
+          })}
             </div>
 
             <div className="mt-8 text-center md:hidden">
@@ -728,8 +621,7 @@ export default function Landing() {
               </Link>
             </div>
           </div>
-        </section>
-      )}
+        </section>}
 
       {/* How It Works */}
       <section id="how-it-works" className="py-16 md:py-24 bg-card/50">
@@ -908,13 +800,9 @@ export default function Landing() {
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                {config.logoUrl ? (
-                  <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" />
-                ) : (
-                  <div className="w-10 h-10 rounded-xl gradient-orange flex items-center justify-center">
+                {config.logoUrl ? <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" /> : <div className="w-10 h-10 rounded-xl gradient-orange flex items-center justify-center">
                     <Building2 className="w-5 h-5 text-accent-foreground" />
-                  </div>
-                )}
+                  </div>}
                 <span className="font-display text-xl font-bold text-foreground">
                   {config.agencyName}
                 </span>
@@ -994,21 +882,11 @@ export default function Landing() {
       </footer>
 
       {/* Floating Check-In Button */}
-      {showFloatingCheckIn && (
-        <Link
-          to="/checkin"
-          className="fixed bottom-6 right-6 z-40"
-        >
-          <Button
-            variant="accent"
-            size="lg"
-            className="rounded-full shadow-glow animate-pulse-glow"
-          >
+      {showFloatingCheckIn && <Link to="/checkin" className="fixed bottom-6 right-6 z-40">
+          <Button variant="accent" size="lg" className="rounded-full shadow-glow animate-pulse-glow">
             <QrCode className="w-5 h-5 mr-2" />
             Check In
           </Button>
-        </Link>
-      )}
-    </div>
-  );
+        </Link>}
+    </div>;
 }
