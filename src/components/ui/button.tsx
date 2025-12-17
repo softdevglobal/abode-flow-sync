@@ -22,17 +22,17 @@ const buttonVariants = cva(
         link: 
           "text-accent underline-offset-4 hover:underline",
         accent:
-          "gradient-orange text-accent-foreground shadow-lg hover:shadow-glow font-bold",
+          "gradient-orange text-white shadow-lg hover:shadow-glow font-bold",
         hero:
           "bg-foreground text-background shadow-lg hover:shadow-xl text-base font-bold tracking-wide",
         heroOutline:
           "border-2 border-foreground/30 bg-transparent text-foreground backdrop-blur-sm hover:bg-foreground/10 hover:border-foreground/50",
         gold:
-          "gradient-orange text-accent-foreground shadow-lg hover:shadow-glow font-bold",
+          "gradient-orange text-white shadow-lg hover:shadow-glow font-bold",
         success:
           "bg-success text-success-foreground shadow-md hover:bg-success/90",
         glow:
-          "gradient-orange text-accent-foreground shadow-glow animate-pulse-glow font-bold",
+          "gradient-orange text-white shadow-glow animate-pulse-glow font-bold",
       },
       size: {
         default: "h-11 px-6 py-2.5",
