@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AgentLayout } from '@/components/layout/AgentLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAgentThemeSettings, useUpdateAgentTheme, hexToHSL, hslToHex } from '@/hooks/useAgentThemeSettings';
 import { toast } from 'sonner';
-import { Palette, Building2, Save, RotateCcw, Loader2 } from 'lucide-react';
+import { Palette, Building2, Save, RotateCcw, Loader2, Upload, X, Image } from 'lucide-react';
 import agencyConfig from '@/config/agencyConfig';
+import { supabase } from '@/integrations/supabase/client';
 
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 
@@ -21,6 +22,11 @@ export default function Settings() {
   const [accentColor, setAccentColor] = useState('#c9a227');
   const [logoUrl, setLogoUrl] = useState('');
   const [faviconUrl, setFaviconUrl] = useState('');
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
   
   // Initialize form with saved settings or defaults
   useEffect(() => {
@@ -39,6 +45,90 @@ export default function Settings() {
       setAccentColor(hslToHex(agencyConfig.accentColor));
     }
   }, [themeSettings, isLoading]);
+  
+  const uploadFile = async (file: File, type: 'logo' | 'favicon'): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${DEMO_AGENT_ID}/${type}-${Date.now()}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from('agent-assets')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: true,
+      });
+    
+    if (error) {
+      console.error('Upload error:', error);
+      toast.error(`Failed to upload ${type}`);
+      return null;
+    }
+    
+    const { data: urlData } = supabase.storage
+      .from('agent-assets')
+      .getPublicUrl(data.path);
+    
+    return urlData.publicUrl;
+  };
+  
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+    
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('File size must be less than 2MB');
+      return;
+    }
+    
+    setUploadingLogo(true);
+    const url = await uploadFile(file, 'logo');
+    if (url) {
+      setLogoUrl(url);
+      toast.success('Logo uploaded successfully');
+    }
+    setUploadingLogo(false);
+    
+    // Reset input
+    if (logoInputRef.current) {
+      logoInputRef.current.value = '';
+    }
+  };
+  
+  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+    
+    // Validate file size (max 500KB for favicon)
+    if (file.size > 500 * 1024) {
+      toast.error('Favicon must be less than 500KB');
+      return;
+    }
+    
+    setUploadingFavicon(true);
+    const url = await uploadFile(file, 'favicon');
+    if (url) {
+      setFaviconUrl(url);
+      toast.success('Favicon uploaded successfully');
+    }
+    setUploadingFavicon(false);
+    
+    // Reset input
+    if (faviconInputRef.current) {
+      faviconInputRef.current.value = '';
+    }
+  };
   
   const handleSave = async () => {
     try {
@@ -100,7 +190,7 @@ export default function Settings() {
                 Set your agency name and logos
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="agencyName">Agency Name</Label>
                 <Input
@@ -112,32 +202,142 @@ export default function Settings() {
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="logoUrl">Logo URL</Label>
-                <Input
-                  id="logoUrl"
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  placeholder="https://example.com/logo.png"
-                  className="bg-background"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Recommended size: 200x50px, PNG or SVG format
-                </p>
+              {/* Logo Upload */}
+              <div className="space-y-3">
+                <Label>Logo</Label>
+                <div className="flex items-start gap-4">
+                  {/* Preview */}
+                  <div className="w-32 h-20 rounded-lg border border-border bg-background flex items-center justify-center overflow-hidden">
+                    {logoUrl ? (
+                      <img 
+                        src={logoUrl} 
+                        alt="Logo preview" 
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    ) : (
+                      <Image className="w-8 h-8 text-muted-foreground/50" />
+                    )}
+                  </div>
+                  
+                  {/* Upload controls */}
+                  <div className="flex-1 space-y-2">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={uploadingLogo}
+                        className="gap-2"
+                      >
+                        {uploadingLogo ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Upload className="w-4 h-4" />
+                        )}
+                        Upload Logo
+                      </Button>
+                      {logoUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setLogoUrl('')}
+                          className="gap-2 text-destructive hover:text-destructive"
+                        >
+                          <X className="w-4 h-4" />
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Recommended: 200x50px, PNG or SVG (max 2MB)
+                    </p>
+                    {/* Manual URL input */}
+                    <Input
+                      value={logoUrl}
+                      onChange={(e) => setLogoUrl(e.target.value)}
+                      placeholder="Or enter logo URL..."
+                      className="bg-background text-sm"
+                    />
+                  </div>
+                </div>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="faviconUrl">Favicon URL</Label>
-                <Input
-                  id="faviconUrl"
-                  value={faviconUrl}
-                  onChange={(e) => setFaviconUrl(e.target.value)}
-                  placeholder="https://example.com/favicon.ico"
-                  className="bg-background"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Recommended size: 32x32px, ICO or PNG format
-                </p>
+              {/* Favicon Upload */}
+              <div className="space-y-3">
+                <Label>Favicon</Label>
+                <div className="flex items-start gap-4">
+                  {/* Preview */}
+                  <div className="w-16 h-16 rounded-lg border border-border bg-background flex items-center justify-center overflow-hidden">
+                    {faviconUrl ? (
+                      <img 
+                        src={faviconUrl} 
+                        alt="Favicon preview" 
+                        className="max-w-full max-h-full object-contain"
+                      />
+                    ) : (
+                      <Image className="w-6 h-6 text-muted-foreground/50" />
+                    )}
+                  </div>
+                  
+                  {/* Upload controls */}
+                  <div className="flex-1 space-y-2">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => faviconInputRef.current?.click()}
+                        disabled={uploadingFavicon}
+                        className="gap-2"
+                      >
+                        {uploadingFavicon ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Upload className="w-4 h-4" />
+                        )}
+                        Upload Favicon
+                      </Button>
+                      {faviconUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setFaviconUrl('')}
+                          className="gap-2 text-destructive hover:text-destructive"
+                        >
+                          <X className="w-4 h-4" />
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                    <input
+                      ref={faviconInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFaviconUpload}
+                      className="hidden"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Recommended: 32x32px, PNG or ICO (max 500KB)
+                    </p>
+                    {/* Manual URL input */}
+                    <Input
+                      value={faviconUrl}
+                      onChange={(e) => setFaviconUrl(e.target.value)}
+                      placeholder="Or enter favicon URL..."
+                      className="bg-background text-sm"
+                    />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
