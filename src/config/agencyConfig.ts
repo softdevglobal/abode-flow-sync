@@ -15,8 +15,8 @@ const agencyConfig: AgencyConfig = {
   primaryColor: "220 50% 20%", // Deep Navy
   secondaryColor: "35 15% 92%", // Warm Stone
   accentColor: "38 70% 50%", // Warm Gold
-  logoUrl: null, // Set to a URL string for custom logo
-  faviconUrl: null, // Set to a URL string for custom favicon
+  logoUrl: "/favicon.png", // Custom logo
+  faviconUrl: "/favicon.png", // Custom favicon
 };
 
 export default agencyConfig;
