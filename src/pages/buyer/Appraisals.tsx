@@ -15,7 +15,7 @@ export default function BuyerAppraisals() {
           *,
           agents:agent_id (
             agency_name,
-            profiles:user_id (first_name, last_name)
+            theme_agency_name
           )
         `)
         .eq('is_public', true)
@@ -41,11 +41,8 @@ export default function BuyerAppraisals() {
   };
 
   const getAgentName = (agent: any) => {
-    if (!agent?.profiles) return 'Agent';
-    const profiles = agent.profiles as any;
-    const firstName = profiles.first_name || '';
-    const lastName = profiles.last_name || '';
-    return `${firstName} ${lastName}`.trim() || 'Agent';
+    if (!agent) return 'Agent';
+    return agent.theme_agency_name || 'Agent';
   };
 
   if (isLoading) {
