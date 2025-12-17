@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Info,
   FileText,
+  Settings,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -228,6 +229,12 @@ export function AgentLayout({ children }: AgentLayoutProps) {
                   <p className="text-xs text-muted-foreground">Prototype Mode</p>
                 </div>
                 <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link to="/agent/settings">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Theme Settings
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleGoHome} className="cursor-pointer">
                   <Home className="w-4 h-4 mr-2" />
                   Back to Home
