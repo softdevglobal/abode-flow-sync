@@ -36,7 +36,6 @@ export function useAgentSearch(searchTerm: string) {
       const { data, error } = await supabase
         .from('agents')
         .select('id, agency_name, theme_agency_name, profile_image, user_id')
-        .neq('id', DEMO_AGENT_ID)
         .or(`agency_name.ilike.%${searchTerm}%,theme_agency_name.ilike.%${searchTerm}%`)
         .limit(10);
 
