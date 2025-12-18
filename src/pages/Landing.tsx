@@ -194,6 +194,9 @@ export default function Landing() {
             <Link to="/auctions" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Auctions
             </Link>
+            <Link to="/pre-market" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Pre-Market
+            </Link>
             <Link to="/how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               How It Works
             </Link>
@@ -230,6 +233,9 @@ export default function Landing() {
               </Link>
               <Link to="/auctions" className="text-foreground font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                 Auctions
+              </Link>
+              <Link to="/pre-market" className="text-foreground font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
+                Pre-Market
               </Link>
               <Link to="/how-it-works" className="text-foreground font-medium py-2" onClick={() => setMobileMenuOpen(false)}>
                 How It Works
