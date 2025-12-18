@@ -48,6 +48,7 @@ const allNavItems = [
   { icon: Home, label: 'Home', path: '/', section: 'main' },
   { icon: Search, label: 'Browse Properties', path: '/browse', section: 'main' },
   { icon: Gavel, label: 'Live Auctions', path: '/auctions', section: 'main' },
+  { icon: Building2, label: 'Pre-Market', path: '/pre-market', section: 'main' },
   { icon: FileText, label: 'Appraisals', path: '/appraisals', section: 'main' },
   { icon: Calendar, label: 'My Inspections', path: '/inspections', section: 'track' },
   { icon: Eye, label: 'My Viewings', path: '/viewings', section: 'track' },

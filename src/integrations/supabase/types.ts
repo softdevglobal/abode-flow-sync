@@ -110,6 +110,47 @@ export type Database = {
         }
         Relationships: []
       }
+      appraisal_interests: {
+        Row: {
+          appraisal_id: string
+          created_at: string
+          customer_id: string
+          id: string
+          message: string | null
+          offer_amount: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appraisal_id: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          message?: string | null
+          offer_amount?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appraisal_id?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          message?: string | null
+          offer_amount?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appraisal_interests_appraisal_id_fkey"
+            columns: ["appraisal_id"]
+            isOneToOne: false
+            referencedRelation: "appraisals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appraisal_requests: {
         Row: {
           address: string
