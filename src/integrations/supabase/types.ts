@@ -348,6 +348,13 @@ export type Database = {
             referencedRelation: "auctions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bids_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "public_auctions"
+            referencedColumns: ["id"]
+          },
         ]
       }
       crm_notes: {
@@ -858,7 +865,50 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_auctions: {
+        Row: {
+          created_at: string | null
+          current_bid: number | null
+          end_time: string | null
+          id: string | null
+          min_increment: number | null
+          property_id: string | null
+          start_time: string | null
+          status: Database["public"]["Enums"]["auction_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_bid?: number | null
+          end_time?: string | null
+          id?: string | null
+          min_increment?: number | null
+          property_id?: string | null
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["auction_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_bid?: number | null
+          end_time?: string | null
+          id?: string | null
+          min_increment?: number | null
+          property_id?: string | null
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["auction_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auctions_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: true
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_agent_id: { Args: { _user_id: string }; Returns: string }
