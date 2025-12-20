@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppraisalInterests } from '@/hooks/useAppraisalInterests';
+import { useCurrentAgent } from '@/hooks/useCurrentAgent';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { 
@@ -28,8 +29,6 @@ import {
   Car
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 
 // Viewing request type
 interface ViewingRequest {
@@ -57,11 +56,14 @@ interface ViewingRequest {
 export default function AgentRequests() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('interests');
-  
+  const { agentId } = useCurrentAgent();
+
   // Fetch viewing requests
   const { data: viewingRequests = [], isLoading: viewingLoading } = useQuery({
-    queryKey: ['viewing-requests', DEMO_AGENT_ID],
+    queryKey: ['viewing-requests', agentId],
     queryFn: async (): Promise<ViewingRequest[]> => {
+      if (!agentId) return [];
+      
       const { data, error } = await supabase
         .from('viewing_requests')
         .select(`
@@ -74,7 +76,7 @@ export default function AgentRequests() {
           message,
           created_at
         `)
-        .eq('agent_id', DEMO_AGENT_ID)
+        .eq('agent_id', agentId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -104,10 +106,11 @@ export default function AgentRequests() {
         customer: customerMap.get(request.customer_id) || { email: 'Unknown', first_name: null, last_name: null, phone: null },
       }));
     },
+    enabled: !!agentId,
   });
 
   // Fetch appraisal interests
-  const { interests, isLoading: interestsLoading, updateStatus, isUpdating } = useAppraisalInterests(DEMO_AGENT_ID);
+  const { interests, isLoading: interestsLoading, updateStatus, isUpdating } = useAppraisalInterests(agentId);
 
   // Update viewing request status
   const updateViewingMutation = useMutation({
@@ -120,7 +123,7 @@ export default function AgentRequests() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['viewing-requests', DEMO_AGENT_ID] });
+      queryClient.invalidateQueries({ queryKey: ['viewing-requests', agentId] });
       toast.success('Viewing request updated');
     },
   });
