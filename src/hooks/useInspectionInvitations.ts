@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -80,32 +79,6 @@ export function useInspectionInvitations(agentId: string | null) {
     },
   });
 
-  // Real-time subscription for agent-side invitation updates (when buyer confirms)
-  useEffect(() => {
-    if (!agentId) return;
-
-    const channel = supabase
-      .channel('agent-invitations-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'inspection_invitations',
-          filter: `agent_id=eq.${agentId}`,
-        },
-        (payload) => {
-          console.log('Agent invitation realtime update:', payload);
-          queryClient.invalidateQueries({ queryKey: ['inspection-invitations', agentId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [agentId, queryClient]);
-
   return {
     invitations,
     isLoading,
@@ -176,32 +149,6 @@ export function useBuyerInvitations(customerId: string | undefined) {
       queryClient.invalidateQueries({ queryKey: ['buyer-inspection-invitations'] });
     },
   });
-
-  // Real-time subscription for invitation changes - placed after all hooks
-  useEffect(() => {
-    if (!customerId) return;
-
-    const channel = supabase
-      .channel('buyer-invitations-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'inspection_invitations',
-          filter: `customer_id=eq.${customerId}`,
-        },
-        (payload) => {
-          console.log('Buyer invitation realtime update:', payload);
-          queryClient.invalidateQueries({ queryKey: ['buyer-inspection-invitations', customerId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [customerId, queryClient]);
 
   return {
     invitations,

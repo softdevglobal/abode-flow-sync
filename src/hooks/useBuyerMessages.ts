@@ -169,7 +169,7 @@ export function useBuyerMessages(categoryFilter?: MessageCategory | 'all', unrea
     if (!user?.id) return;
 
     const channel = supabase
-      .channel(`buyer-messages-realtime:${user.id}`)
+      .channel('buyer-messages-realtime')
       .on(
         'postgres_changes',
         {
@@ -178,20 +178,17 @@ export function useBuyerMessages(categoryFilter?: MessageCategory | 'all', unrea
           table: 'buyer_messages',
           filter: `buyer_id=eq.${user.id}`,
         },
-        (payload) => {
-          console.debug('[realtime] buyer_messages change', payload);
-          queryClient.invalidateQueries({ queryKey: ['buyer-messages'], exact: false });
-          queryClient.invalidateQueries({ queryKey: ['buyer-messages-counts'], exact: false });
+        () => {
+          refetch();
+          queryClient.invalidateQueries({ queryKey: ['buyer-messages-counts'] });
         }
       )
-      .subscribe((status) => {
-        console.debug('[realtime] buyer messages subscription status', status);
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, queryClient]);
+  }, [user?.id, refetch, queryClient]);
 
   return {
     messages,

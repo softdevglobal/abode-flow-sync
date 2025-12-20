@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,7 +12,6 @@ import {
   LogIn, MessageSquare, CalendarPlus, Home
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import { cn } from '@/lib/utils';
 
 type ViewingRequestStatus = 'pending' | 'accepted' | 'declined' | 'counter_proposed' | 'confirmed' | 'cancelled';
 
@@ -42,9 +40,6 @@ interface ViewingRequest {
 
 export default function MyViewings() {
   const { user, loading: authLoading } = useAuth();
-  const [searchParams] = useSearchParams();
-  const highlightedViewingId = searchParams.get('viewingId');
-  const highlightRef = useRef<HTMLDivElement>(null);
 
   const { data: viewingRequests = [], isLoading } = useQuery({
     queryKey: ['viewing-requests', user?.id],
@@ -90,15 +85,6 @@ export default function MyViewings() {
   const pendingViewings = viewingRequests.filter(
     (v) => v.status === 'pending' || v.status === 'counter_proposed'
   );
-
-  // Scroll to highlighted viewing when data loads
-  useEffect(() => {
-    if (!isLoading && highlightedViewingId && highlightRef.current) {
-      setTimeout(() => {
-        highlightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
-    }
-  }, [isLoading, highlightedViewingId]);
 
   const getStatusBadge = (status: ViewingRequestStatus) => {
     const config: Record<ViewingRequestStatus, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string; className?: string }> = {
@@ -183,18 +169,9 @@ export default function MyViewings() {
 
             <TabsContent value="upcoming" className="space-y-4">
               {upcomingViewings.length > 0 ? (
-                upcomingViewings.map((viewing) => {
-                  const isHighlighted = viewing.id === highlightedViewingId;
-                  return (
-                    <div key={viewing.id} ref={isHighlighted ? highlightRef : undefined}>
-                      <ViewingCard 
-                        viewing={viewing} 
-                        getStatusBadge={getStatusBadge} 
-                        isHighlighted={isHighlighted}
-                      />
-                    </div>
-                  );
-                })
+                upcomingViewings.map((viewing) => (
+                  <ViewingCard key={viewing.id} viewing={viewing} getStatusBadge={getStatusBadge} />
+                ))
               ) : (
                 <EmptyState
                   icon={Calendar}
@@ -206,18 +183,9 @@ export default function MyViewings() {
 
             <TabsContent value="pending" className="space-y-4">
               {pendingViewings.length > 0 ? (
-                pendingViewings.map((viewing) => {
-                  const isHighlighted = viewing.id === highlightedViewingId;
-                  return (
-                    <div key={viewing.id} ref={isHighlighted ? highlightRef : undefined}>
-                      <ViewingCard 
-                        viewing={viewing} 
-                        getStatusBadge={getStatusBadge} 
-                        isHighlighted={isHighlighted}
-                      />
-                    </div>
-                  );
-                })
+                pendingViewings.map((viewing) => (
+                  <ViewingCard key={viewing.id} viewing={viewing} getStatusBadge={getStatusBadge} />
+                ))
               ) : (
                 <EmptyState
                   icon={Clock}
@@ -235,20 +203,15 @@ export default function MyViewings() {
 
 function ViewingCard({ 
   viewing, 
-  getStatusBadge,
-  isHighlighted
+  getStatusBadge 
 }: { 
   viewing: ViewingRequest; 
   getStatusBadge: (status: ViewingRequestStatus) => JSX.Element;
-  isHighlighted?: boolean;
 }) {
   const property = viewing.property;
 
   return (
-    <Card className={cn(
-      "overflow-hidden",
-      isHighlighted && "ring-2 ring-primary ring-offset-2 ring-offset-background"
-    )}>
+    <Card className="overflow-hidden">
       <CardContent className="p-0">
         <div className="flex">
           {/* Property Image */}

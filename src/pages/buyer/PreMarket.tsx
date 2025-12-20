@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -33,7 +33,6 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
 
 interface Appraisal {
   id: string;
@@ -60,11 +59,6 @@ export default function PreMarket() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [searchParams] = useSearchParams();
-  const highlightedInvitationId = searchParams.get('invitationId');
-  const highlightedAppraisalId = searchParams.get('appraisalId');
-  const highlightRef = useRef<HTMLDivElement>(null);
-  
   const [selectedAppraisal, setSelectedAppraisal] = useState<Appraisal | null>(null);
   const [offerAmount, setOfferAmount] = useState('');
   const [message, setMessage] = useState('');
@@ -103,15 +97,7 @@ export default function PreMarket() {
     },
   });
 
-  // Scroll to highlighted appraisal when data loads
-  useEffect(() => {
-    if (!isLoading && (highlightedInvitationId || highlightedAppraisalId) && highlightRef.current) {
-      setTimeout(() => {
-        highlightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
-    }
-  }, [isLoading, highlightedInvitationId, highlightedAppraisalId]);
-
+  // Fetch user's submitted interests
   const { data: myInterests = [] } = useQuery({
     queryKey: ['my-appraisal-interests', user?.id],
     queryFn: async () => {
@@ -241,29 +227,18 @@ export default function PreMarket() {
           </Card>
         )}
 
+        {/* Appraisals Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {appraisals.map((appraisal) => {
             const hasInterest = hasSubmittedInterest(appraisal.id);
             const interestStatus = getInterestStatus(appraisal.id);
             const status = interestStatus ? statusConfig[interestStatus] : null;
-            const invitation = getInvitationForAppraisal(appraisal.id);
-            
-            // Check if this appraisal should be highlighted
-            const isHighlighted = 
-              appraisal.id === highlightedAppraisalId || 
-              (highlightedInvitationId && invitation?.id === highlightedInvitationId);
 
             return (
-              <div 
+              <Card 
                 key={appraisal.id} 
-                ref={isHighlighted ? highlightRef : undefined}
+                className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl hover:border-accent/50 transition-all duration-300 group overflow-hidden"
               >
-                <Card 
-                  className={cn(
-                    "border-border/50 bg-card/50 backdrop-blur-sm rounded-xl hover:border-accent/50 transition-all duration-300 group overflow-hidden",
-                    isHighlighted && "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                  )}
-                >
                 {/* Property Image */}
                 {appraisal.images && appraisal.images.length > 0 ? (
                   <div 
@@ -435,7 +410,6 @@ export default function PreMarket() {
                   })()}
                 </CardContent>
               </Card>
-              </div>
             );
           })}
         </div>
