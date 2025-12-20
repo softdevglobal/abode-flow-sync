@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { ImageLightbox } from '@/components/ui/image-lightbox';
+import { SelectInspectionTimeModal } from '@/components/buyer/SelectInspectionTimeModal';
+import { useBuyerInvitations } from '@/hooks/useInspectionInvitations';
 import { 
   MapPin, 
   DollarSign, 
@@ -25,7 +27,8 @@ import {
   Bath,
   Car,
   Ruler,
-  ImageIcon
+  ImageIcon,
+  CalendarDays
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -62,11 +65,21 @@ export default function PreMarket() {
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
+  const [selectedInvitation, setSelectedInvitation] = useState<any>(null);
+  const [invitationModalOpen, setInvitationModalOpen] = useState(false);
+
+  // Fetch buyer invitations
+  const { invitations: buyerInvitations } = useBuyerInvitations(user?.id);
 
   const openLightbox = (images: string[], index: number = 0) => {
     setLightboxImages(images);
     setLightboxInitialIndex(index);
     setLightboxOpen(true);
+  };
+
+  // Get invitation for a specific appraisal
+  const getInvitationForAppraisal = (appraisalId: string) => {
+    return buyerInvitations.find(inv => inv.appraisal_id === appraisalId);
   };
 
   // Fetch public appraisals
@@ -336,32 +349,65 @@ export default function PreMarket() {
                   )}
 
                   {/* Status or Action */}
-                  {hasInterest && status ? (
-                    <Badge variant={status.variant as any} className="w-full justify-center py-2">
-                      <status.icon className="w-4 h-4 mr-2" />
-                      {status.label}
-                    </Badge>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => setSelectedAppraisal(appraisal)}
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        View Details
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => setSelectedAppraisal(appraisal)}
-                      >
-                        <Send className="w-4 h-4 mr-2" />
-                        Express Interest
-                      </Button>
-                    </div>
-                  )}
+                  {(() => {
+                    const invitation = getInvitationForAppraisal(appraisal.id);
+                    
+                    if (invitation && invitation.status === 'confirmed') {
+                      return (
+                        <Badge variant="default" className="w-full justify-center py-2 bg-green-500/10 text-green-600 border-green-500/30">
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Inspection Confirmed
+                        </Badge>
+                      );
+                    }
+                    
+                    if (invitation && invitation.status === 'pending') {
+                      return (
+                        <Button
+                          size="sm"
+                          className="w-full gap-2"
+                          onClick={() => {
+                            setSelectedInvitation(invitation);
+                            setInvitationModalOpen(true);
+                          }}
+                        >
+                          <CalendarDays className="w-4 h-4" />
+                          Select Inspection Time
+                        </Button>
+                      );
+                    }
+                    
+                    if (hasInterest && status) {
+                      return (
+                        <Badge variant={status.variant as any} className="w-full justify-center py-2">
+                          <status.icon className="w-4 h-4 mr-2" />
+                          {status.label}
+                        </Badge>
+                      );
+                    }
+                    
+                    return (
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => setSelectedAppraisal(appraisal)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Details
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => setSelectedAppraisal(appraisal)}
+                        >
+                          <Send className="w-4 h-4 mr-2" />
+                          Express Interest
+                        </Button>
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             );
@@ -506,6 +552,7 @@ export default function PreMarket() {
       </Dialog>
 
       {/* Image Lightbox */}
+      {/* Image Lightbox */}
       <ImageLightbox
         images={lightboxImages}
         initialIndex={lightboxInitialIndex}
@@ -513,6 +560,16 @@ export default function PreMarket() {
         onOpenChange={setLightboxOpen}
         alt="Property"
       />
+
+      {/* Select Inspection Time Modal */}
+      {selectedInvitation && user && (
+        <SelectInspectionTimeModal
+          open={invitationModalOpen}
+          onOpenChange={setInvitationModalOpen}
+          invitation={selectedInvitation}
+          customerId={user.id}
+        />
+      )}
     </BuyerLayout>
   );
 }
