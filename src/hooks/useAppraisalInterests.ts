@@ -41,7 +41,20 @@ export function useAppraisalInterests(agentId: string | undefined) {
     queryFn: async (): Promise<AppraisalInterest[]> => {
       if (!agentId) return [];
 
-      // Fetch appraisal interests for this agent's appraisals
+      // First fetch appraisals for this agent (these are visible via RLS prototype policy)
+      const { data: agentAppraisals, error: appraisalsError } = await supabase
+        .from('appraisals')
+        .select('id, address, suburb, state, postcode, price_from, price_to, images, property_type, bedrooms, bathrooms, parking')
+        .eq('agent_id', agentId);
+
+      if (appraisalsError) throw appraisalsError;
+      if (!agentAppraisals || agentAppraisals.length === 0) return [];
+
+      // Get appraisal IDs for this agent
+      const agentAppraisalIds = agentAppraisals.map(a => a.id);
+      const appraisalMap = new Map(agentAppraisals.map(a => [a.id, a]));
+
+      // Fetch appraisal interests for these appraisals
       const { data, error } = await supabase
         .from('appraisal_interests')
         .select(`
@@ -54,29 +67,14 @@ export function useAppraisalInterests(agentId: string | undefined) {
           created_at,
           updated_at
         `)
+        .in('appraisal_id', agentAppraisalIds)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       if (!data || data.length === 0) return [];
 
-      // Get unique appraisal IDs
-      const appraisalIds = [...new Set(data.map(i => i.appraisal_id))];
-      
-      // Fetch appraisals for this agent
-      const { data: appraisals } = await supabase
-        .from('appraisals')
-        .select('id, address, suburb, state, postcode, price_from, price_to, images, property_type, bedrooms, bathrooms, parking')
-        .eq('agent_id', agentId)
-        .in('id', appraisalIds);
-
-      if (!appraisals || appraisals.length === 0) return [];
-
-      // Create a map of appraisals by ID
-      const appraisalMap = new Map(appraisals.map(a => [a.id, a]));
-
-      // Get unique customer IDs from matching appraisals
-      const matchingInterests = data.filter(i => appraisalMap.has(i.appraisal_id));
-      const customerIds = [...new Set(matchingInterests.map(i => i.customer_id))];
+      // Get unique customer IDs
+      const customerIds = [...new Set(data.map(i => i.customer_id))];
 
       // Fetch customer profiles
       const { data: customers } = await supabase
@@ -87,7 +85,7 @@ export function useAppraisalInterests(agentId: string | undefined) {
       const customerMap = new Map(customers?.map(c => [c.id, c]) || []);
 
       // Combine the data
-      return matchingInterests.map(interest => ({
+      return data.map(interest => ({
         ...interest,
         customer: customerMap.get(interest.customer_id) || {
           id: interest.customer_id,
