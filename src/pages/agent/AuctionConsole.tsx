@@ -14,8 +14,10 @@ import {
   CheckCircle,
   AlertTriangle,
   Loader2,
-  UserCheck
+  UserCheck,
+  Timer
 } from 'lucide-react';
+import { CountdownTimer } from '@/components/auction/CountdownTimer';
 import { AgentLayout } from '@/components/layout/AgentLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -360,6 +362,13 @@ export default function AuctionConsole() {
                     Min increment: ${minIncrement.toLocaleString()}
                   </span>
                 </div>
+
+                {/* Countdown Timer */}
+                {auction.end_time && isLive && (
+                  <div className="mt-6 pt-4 border-t border-border/50">
+                    <CountdownTimer endTime={auction.end_time} />
+                  </div>
+                )}
 
                 {/* Call count indicator */}
                 {callCount > 0 && !isEnded && (
