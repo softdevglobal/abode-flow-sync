@@ -378,6 +378,90 @@ export type Database = {
           },
         ]
       }
+      buyer_messages: {
+        Row: {
+          agent_id: string | null
+          appraisal_id: string | null
+          auction_id: string | null
+          buyer_id: string
+          category: string
+          content: string
+          created_at: string
+          id: string
+          property_id: string | null
+          read: boolean
+          starred: boolean
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id?: string | null
+          appraisal_id?: string | null
+          auction_id?: string | null
+          buyer_id: string
+          category: string
+          content: string
+          created_at?: string
+          id?: string
+          property_id?: string | null
+          read?: boolean
+          starred?: boolean
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string | null
+          appraisal_id?: string | null
+          auction_id?: string | null
+          buyer_id?: string
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          property_id?: string | null
+          read?: boolean
+          starred?: boolean
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_messages_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_messages_appraisal_id_fkey"
+            columns: ["appraisal_id"]
+            isOneToOne: false
+            referencedRelation: "appraisals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_messages_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_messages_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "public_auctions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_messages_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_notes: {
         Row: {
           agent_id: string
