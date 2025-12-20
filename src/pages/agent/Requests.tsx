@@ -9,10 +9,13 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAppraisalInterests } from '@/hooks/useAppraisalInterests';
 import { useCurrentAgent } from '@/hooks/useCurrentAgent';
+import { useInspectionInvitations } from '@/hooks/useInspectionInvitations';
+import { InviteToInspectionModal } from '@/components/agent/InviteToInspectionModal';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { 
   Calendar, 
+  CalendarDays,
   Inbox, 
   DollarSign, 
   Home, 
@@ -56,7 +59,12 @@ interface ViewingRequest {
 export default function AgentRequests() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('interests');
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [selectedInterest, setSelectedInterest] = useState<any>(null);
   const { agentId } = useCurrentAgent();
+
+  // Fetch inspection invitations to check which interests already have invitations
+  const { invitations } = useInspectionInvitations(agentId);
 
   // Fetch viewing requests
   const { data: viewingRequests = [], isLoading: viewingLoading } = useQuery({
@@ -147,6 +155,21 @@ export default function AgentRequests() {
 
   const pendingInterests = interests.filter(i => i.status === 'pending');
   const pendingViewings = viewingRequests.filter(r => r.status === 'pending');
+
+  // Check if an interest already has an invitation
+  const hasInvitation = (interestId: string) => {
+    return invitations.some(inv => inv.appraisal_interest_id === interestId);
+  };
+
+  const getInvitationStatus = (interestId: string) => {
+    const invitation = invitations.find(inv => inv.appraisal_interest_id === interestId);
+    return invitation?.status || null;
+  };
+
+  const handleInviteToInspection = (interest: any) => {
+    setSelectedInterest(interest);
+    setInviteModalOpen(true);
+  };
 
   const formatPrice = (from: number, to: number) => {
     const formatNum = (n: number) => {
@@ -332,8 +355,8 @@ export default function AgentRequests() {
                               </p>
                             </div>
 
-                            {/* Contact Buttons */}
-                            <div className="flex items-center gap-2">
+                            {/* Contact & Action Buttons */}
+                            <div className="flex flex-wrap items-center gap-2">
                               {interest.customer.phone && (
                                 <Button size="sm" variant="outline" className="gap-2" asChild>
                                   <a href={`tel:${interest.customer.phone}`}>
@@ -348,9 +371,39 @@ export default function AgentRequests() {
                                   Email
                                 </a>
                               </Button>
+                              
+                              {/* Invite to Inspection Button */}
+                              {!hasInvitation(interest.id) ? (
+                                <Button 
+                                  size="sm" 
+                                  variant="accent"
+                                  className="gap-2"
+                                  onClick={() => handleInviteToInspection(interest)}
+                                >
+                                  <CalendarDays className="w-4 h-4" />
+                                  Invite to Inspection
+                                </Button>
+                              ) : (
+                                <Badge 
+                                  variant="outline" 
+                                  className={cn(
+                                    "gap-1",
+                                    getInvitationStatus(interest.id) === 'confirmed' 
+                                      ? 'bg-green-500/10 text-green-600 border-green-500/30'
+                                      : 'bg-blue-500/10 text-blue-600 border-blue-500/30'
+                                  )}
+                                >
+                                  <CalendarDays className="w-3 h-3" />
+                                  {getInvitationStatus(interest.id) === 'confirmed' 
+                                    ? 'Inspection Confirmed' 
+                                    : 'Invitation Sent'}
+                                </Badge>
+                              )}
+
                               {interest.status === 'pending' && (
                                 <Button 
                                   size="sm" 
+                                  variant="ghost"
                                   className="gap-2"
                                   onClick={() => handleMarkContacted(interest.id)}
                                   disabled={isUpdating}
@@ -479,6 +532,16 @@ export default function AgentRequests() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Invite to Inspection Modal */}
+      {selectedInterest && agentId && (
+        <InviteToInspectionModal
+          open={inviteModalOpen}
+          onOpenChange={setInviteModalOpen}
+          interest={selectedInterest}
+          agentId={agentId}
+        />
+      )}
     </AgentLayout>
   );
 }

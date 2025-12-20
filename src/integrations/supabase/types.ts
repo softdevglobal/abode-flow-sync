@@ -568,6 +568,76 @@ export type Database = {
           },
         ]
       }
+      inspection_invitations: {
+        Row: {
+          agent_id: string
+          agent_message: string | null
+          appraisal_id: string
+          appraisal_interest_id: string
+          buyer_message: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          proposed_dates: Json
+          selected_date: string | null
+          selected_time: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          agent_message?: string | null
+          appraisal_id: string
+          appraisal_interest_id: string
+          buyer_message?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          proposed_dates?: Json
+          selected_date?: string | null
+          selected_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          agent_message?: string | null
+          appraisal_id?: string
+          appraisal_interest_id?: string
+          buyer_message?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          proposed_dates?: Json
+          selected_date?: string | null
+          selected_time?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inspection_invitations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_invitations_appraisal_id_fkey"
+            columns: ["appraisal_id"]
+            isOneToOne: false
+            referencedRelation: "appraisals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inspection_invitations_appraisal_interest_id_fkey"
+            columns: ["appraisal_interest_id"]
+            isOneToOne: false
+            referencedRelation: "appraisal_interests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inspections: {
         Row: {
           created_at: string

@@ -44,7 +44,8 @@ export function useNotificationSound(userId: string | undefined) {
           // Play doorbell sound for high-priority notifications
           if (
             newNotification.type === 'appraisal_interest' ||
-            newNotification.type === 'viewing_request'
+            newNotification.type === 'viewing_request' ||
+            newNotification.type === 'inspection_confirmed'
           ) {
             playDoorbellSound();
           }
