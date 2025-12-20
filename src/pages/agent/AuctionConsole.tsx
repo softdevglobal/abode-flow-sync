@@ -40,6 +40,7 @@ import { toast } from 'sonner';
 import { useRealtimeBids, useAuction, useAuctionControls } from '@/hooks/useRealtimeAuction';
 import { useAuctionRegistrations } from '@/hooks/useAuctionRegistration';
 import { cn } from '@/lib/utils';
+import { AuctionCountdown } from '@/components/auction/AuctionCountdown';
 
 export default function AuctionConsole() {
   const { id } = useParams<{ id: string }>();
@@ -360,6 +361,18 @@ export default function AuctionConsole() {
                     Min increment: ${minIncrement.toLocaleString()}
                   </span>
                 </div>
+
+                {/* Countdown Timer */}
+                {auction.end_time && isLive && (
+                  <div className="mt-6 flex flex-col items-center gap-2">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider">Time Remaining</p>
+                    <AuctionCountdown 
+                      endTime={auction.end_time} 
+                      size="lg"
+                      onExpire={() => toast.info('Auction time has ended')}
+                    />
+                  </div>
+                )}
 
                 {/* Call count indicator */}
                 {callCount > 0 && !isEnded && (
