@@ -98,36 +98,36 @@ export default function AgentProperties() {
 
   return (
     <AgentLayout>
-      <div className="container px-4 py-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col gap-3">
           <div>
-            <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-1">
+            <h1 className="font-display text-xl md:text-3xl font-bold text-foreground mb-0.5">
               Your Listings
             </h1>
-            <p className="text-muted-foreground font-body">
+            <p className="text-sm text-muted-foreground font-body">
               {properties.length} {properties.length === 1 ? 'property' : 'properties'}
             </p>
           </div>
-          <Button variant="gold" onClick={() => handleOpenForm()} className="w-full sm:w-auto shadow-glow-sm font-body">
+          <Button variant="gold" onClick={() => handleOpenForm()} className="w-full sm:w-auto sm:self-start shadow-glow-sm font-body">
             <Plus className="w-4 h-4 mr-2" />
             Add New Listing
           </Button>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             <Input
               placeholder="Search by address or suburb..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 h-11 font-body"
+              className="pl-9 sm:pl-10 h-10 sm:h-11 font-body text-sm"
             />
           </div>
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as PropertyStatus)}>
-            <SelectTrigger className="w-full sm:w-[180px] h-11 font-body">
+            <SelectTrigger className="w-full sm:w-[160px] h-10 sm:h-11 font-body text-sm">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
@@ -164,7 +164,7 @@ export default function AgentProperties() {
             )}
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProperties.map((property, index) => (
               <div 
                 key={property.id} 
