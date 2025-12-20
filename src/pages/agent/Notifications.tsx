@@ -14,7 +14,8 @@ import {
   Info,
   Eye,
   CheckCheck,
-  Filter
+  Filter,
+  TrendingUp
 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -29,7 +30,7 @@ import {
 
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 
-type NotificationType = 'all' | 'viewing_request' | 'inspection_reminder' | 'new_listing' | 'status_update' | 'message';
+type NotificationType = 'all' | 'viewing_request' | 'inspection_reminder' | 'new_listing' | 'status_update' | 'message' | 'appraisal_interest';
 type ReadFilter = 'all' | 'unread' | 'read';
 
 export default function AgentNotifications() {
@@ -102,6 +103,8 @@ export default function AgentNotifications() {
         return <AlertCircle className="w-5 h-5 text-amber-500" />;
       case 'message':
         return <Info className="w-5 h-5 text-muted-foreground" />;
+      case 'appraisal_interest':
+        return <TrendingUp className="w-5 h-5 text-green-600" />;
       default:
         return <Bell className="w-5 h-5 text-muted-foreground" />;
     }
@@ -117,6 +120,8 @@ export default function AgentNotifications() {
         return 'outline';
       case 'status_update':
         return 'destructive';
+      case 'appraisal_interest':
+        return 'default';
       default:
         return 'secondary';
     }
@@ -160,6 +165,7 @@ export default function AgentNotifications() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all" className="font-body">All Types</SelectItem>
+                    <SelectItem value="appraisal_interest" className="font-body">Pre-Market Interests</SelectItem>
                     <SelectItem value="viewing_request" className="font-body">Viewing Requests</SelectItem>
                     <SelectItem value="inspection_reminder" className="font-body">Inspection Reminders</SelectItem>
                     <SelectItem value="status_update" className="font-body">Status Updates</SelectItem>

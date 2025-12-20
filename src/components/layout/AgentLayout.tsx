@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useAgencyTheme } from '@/contexts/AgencyThemeContext';
 import { useAgentNotifications, useMarkNotificationRead } from '@/hooks/useAgentDashboard';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -65,6 +66,10 @@ export function AgentLayout({ children }: AgentLayoutProps) {
   const { data: notifications = [], isLoading: notificationsLoading } = useAgentNotifications(10);
   const markAsRead = useMarkNotificationRead();
   
+  // Get agent user ID for sound notifications
+  const agentUserId = notifications[0]?.user_id;
+  useNotificationSound(agentUserId);
+  
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleNotificationClick = (notification: typeof notifications[0]) => {
@@ -81,6 +86,10 @@ export function AgentLayout({ children }: AgentLayoutProps) {
         return <CheckCircle className="w-4 h-4 text-success" />;
       case 'booking_cancelled':
         return <AlertCircle className="w-4 h-4 text-destructive" />;
+      case 'appraisal_interest':
+        return <Home className="w-4 h-4 text-green-500" />;
+      case 'viewing_request':
+        return <Users className="w-4 h-4 text-primary" />;
       default:
         return <Info className="w-4 h-4 text-muted-foreground" />;
     }

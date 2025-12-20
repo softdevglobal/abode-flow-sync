@@ -997,6 +997,7 @@ export type Database = {
         | "new_listing"
         | "status_update"
         | "message"
+        | "appraisal_interest"
       partnership_status: "pending" | "accepted" | "rejected"
       property_status: "active" | "sold" | "pending" | "off_market"
       property_type:
@@ -1158,6 +1159,7 @@ export const Constants = {
         "new_listing",
         "status_update",
         "message",
+        "appraisal_interest",
       ],
       partnership_status: ["pending", "accepted", "rejected"],
       property_status: ["active", "sold", "pending", "off_market"],
