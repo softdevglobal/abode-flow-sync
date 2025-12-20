@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -70,6 +71,50 @@ export function useAuctionRegistration(auctionId: string | undefined) {
 }
 
 export function useAuctionRegistrations(auctionId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  // Subscribe to real-time updates for registrations
+  useEffect(() => {
+    if (!auctionId) return;
+
+    const channel = supabase
+      .channel(`auction-registrations-${auctionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'auction_registrations',
+          filter: `auction_id=eq.${auctionId}`,
+        },
+        (payload) => {
+          console.log('New registration:', payload);
+          // Invalidate to refetch with profile data
+          queryClient.invalidateQueries({ queryKey: ['auction-registrations', auctionId] });
+          toast.info('New bidder registered!', {
+            description: 'A new participant has joined this auction',
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'auction_registrations',
+          filter: `auction_id=eq.${auctionId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['auction-registrations', auctionId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [auctionId, queryClient]);
+
   return useQuery({
     queryKey: ['auction-registrations', auctionId],
     queryFn: async () => {
