@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { 
   Calendar, Clock, MapPin, Loader2, 
-  LogIn, Home, CalendarCheck, ExternalLink, X
+  LogIn, Home, CalendarCheck, ExternalLink, X, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { format, parseISO, isFuture, isPast } from 'date-fns';
 import { toast } from 'sonner';
@@ -55,7 +55,7 @@ export default function MyInspections() {
   const highlightedBookingId = searchParams.get('bookingId');
   const highlightedInspectionId = searchParams.get('inspectionId');
   const highlightRef = useRef<HTMLDivElement>(null);
-  const { data: bookings = [], isLoading } = useQuery({
+  const { data: bookings = [], isLoading, error, refetch } = useQuery({
     queryKey: ['my-inspection-bookings', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -91,6 +91,7 @@ export default function MyInspections() {
       return (data || []) as InspectionBooking[];
     },
     enabled: !!user?.id,
+    retry: 2,
   });
 
   const queryClient = useQueryClient();
@@ -210,6 +211,8 @@ export default function MyInspections() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
+        ) : error ? (
+          <ErrorState error={error} onRetry={() => refetch()} />
         ) : bookings.length === 0 ? (
           <EmptyState />
         ) : (
@@ -408,6 +411,22 @@ function EmptyState() {
       </p>
       <Button asChild variant="outline">
         <Link to="/browse">Browse Properties</Link>
+      </Button>
+    </div>
+  );
+}
+
+function ErrorState({ error, onRetry }: { error: Error; onRetry: () => void }) {
+  return (
+    <div className="text-center py-12">
+      <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
+      <h3 className="font-display text-lg font-semibold mb-2">Failed to load inspections</h3>
+      <p className="text-muted-foreground text-sm mb-4 max-w-md mx-auto">
+        {error.message || 'Something went wrong while loading your inspections. Please try again.'}
+      </p>
+      <Button onClick={onRetry} variant="outline">
+        <RefreshCw className="w-4 h-4 mr-2" />
+        Try Again
       </Button>
     </div>
   );
