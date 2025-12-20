@@ -18,10 +18,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Skeleton } from '@/components/ui/skeleton';
 import { 
-  Calendar, Clock, MapPin, Loader2,
-  LogIn, Home, CalendarCheck, ExternalLink, X, AlertTriangle, RefreshCw
+  Calendar, Clock, MapPin, Loader2, 
+  LogIn, Home, CalendarCheck, ExternalLink, X
 } from 'lucide-react';
 import { format, parseISO, isFuture, isPast } from 'date-fns';
 import { toast } from 'sonner';
@@ -56,7 +55,7 @@ export default function MyInspections() {
   const highlightedBookingId = searchParams.get('bookingId');
   const highlightedInspectionId = searchParams.get('inspectionId');
   const highlightRef = useRef<HTMLDivElement>(null);
-  const { data: bookings = [], isLoading, error, refetch } = useQuery({
+  const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['my-inspection-bookings', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -92,7 +91,6 @@ export default function MyInspections() {
       return (data || []) as InspectionBooking[];
     },
     enabled: !!user?.id,
-    retry: 2,
   });
 
   const queryClient = useQueryClient();
@@ -209,9 +207,9 @@ export default function MyInspections() {
         </div>
 
         {isLoading ? (
-          <LoadingSkeleton />
-        ) : error ? (
-          <ErrorState error={error} onRetry={() => refetch()} />
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
         ) : bookings.length === 0 ? (
           <EmptyState />
         ) : (
@@ -411,60 +409,6 @@ function EmptyState() {
       <Button asChild variant="outline">
         <Link to="/browse">Browse Properties</Link>
       </Button>
-    </div>
-  );
-}
-
-function ErrorState({ error, onRetry }: { error: Error; onRetry: () => void }) {
-  return (
-    <div className="text-center py-12">
-      <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
-      <h3 className="font-display text-lg font-semibold mb-2">Failed to load inspections</h3>
-      <p className="text-muted-foreground text-sm mb-4 max-w-md mx-auto">
-        {error.message || 'Something went wrong while loading your inspections. Please try again.'}
-      </p>
-      <Button onClick={onRetry} variant="outline">
-        <RefreshCw className="w-4 h-4 mr-2" />
-        Try Again
-      </Button>
-    </div>
-  );
-}
-
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-6">
-      <section>
-        <Skeleton className="h-6 w-40 mb-3" />
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-0">
-                <div className="flex">
-                  <Skeleton className="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-none" />
-                  <div className="flex-1 p-4">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="flex-1">
-                        <Skeleton className="h-4 w-3/4 mb-2" />
-                        <Skeleton className="h-3 w-1/2" />
-                      </div>
-                      <Skeleton className="h-5 w-16 rounded-full" />
-                    </div>
-                    <div className="space-y-2 mt-3">
-                      <Skeleton className="h-3 w-32" />
-                      <Skeleton className="h-3 w-28" />
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                      <Skeleton className="h-7 w-24" />
-                      <Skeleton className="h-7 w-20" />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
