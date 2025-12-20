@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -54,6 +54,8 @@ export type AppraisalFormData = z.infer<typeof appraisalSchema> & {
 interface AppraisalFormProps {
   onSubmit: (data: AppraisalFormData) => void;
   isSubmitting?: boolean;
+  defaultValues?: Partial<AppraisalFormData>;
+  submitLabel?: string;
 }
 
 const STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT', 'ACT'];
@@ -65,31 +67,38 @@ const PROPERTY_TYPES = [
   { value: 'rural', label: 'Rural' },
 ];
 
-export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
-  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+export function AppraisalForm({ onSubmit, isSubmitting, defaultValues, submitLabel = 'Create Appraisal' }: AppraisalFormProps) {
+  const [uploadedImages, setUploadedImages] = useState<string[]>(defaultValues?.images || []);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof appraisalSchema>>({
     resolver: zodResolver(appraisalSchema),
     defaultValues: {
-      headline: '',
-      address: '',
-      suburb: '',
-      state: 'VIC',
-      postcode: '',
-      property_type: 'house',
-      bedrooms: undefined,
-      bathrooms: undefined,
-      parking: undefined,
-      land_size: undefined,
-      price_from: 0,
-      price_to: 0,
-      confidence: 'medium',
-      is_public: false,
-      notes: '',
+      headline: defaultValues?.headline || '',
+      address: defaultValues?.address || '',
+      suburb: defaultValues?.suburb || '',
+      state: defaultValues?.state || 'VIC',
+      postcode: defaultValues?.postcode || '',
+      property_type: defaultValues?.property_type || 'house',
+      bedrooms: defaultValues?.bedrooms || undefined,
+      bathrooms: defaultValues?.bathrooms || undefined,
+      parking: defaultValues?.parking || undefined,
+      land_size: defaultValues?.land_size || undefined,
+      price_from: defaultValues?.price_from || 0,
+      price_to: defaultValues?.price_to || 0,
+      confidence: defaultValues?.confidence as 'low' | 'medium' | 'high' || 'medium',
+      is_public: defaultValues?.is_public || false,
+      notes: defaultValues?.notes || '',
     },
   });
+
+  // Update form when defaultValues change (for edit mode)
+  useEffect(() => {
+    if (defaultValues) {
+      setUploadedImages(defaultValues.images || []);
+    }
+  }, [defaultValues]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -204,7 +213,7 @@ export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>State</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="State" />
@@ -245,7 +254,7 @@ export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Property Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select property type" />
@@ -358,7 +367,7 @@ export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Confidence Level</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select confidence" />
@@ -481,10 +490,10 @@ export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
           {isSubmitting ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Creating...
+              Saving...
             </>
           ) : (
-            'Create Appraisal'
+            submitLabel
           )}
         </Button>
       </form>

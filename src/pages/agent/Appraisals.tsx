@@ -22,20 +22,54 @@ import {
   MessageSquare,
   User,
   Home,
-  ImageIcon
+  ImageIcon,
+  Pencil,
+  Trash2,
+  MoreVertical
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { CreateAppraisalDialog } from '@/components/appraisal/CreateAppraisalDialog';
+import { EditAppraisalDialog } from '@/components/appraisal/EditAppraisalDialog';
+import { DeleteAppraisalDialog } from '@/components/appraisal/DeleteAppraisalDialog';
 import { AppraisalFormData } from '@/components/appraisal/AppraisalForm';
 
 // Demo agent ID for prototype
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 
+interface Appraisal {
+  id: string;
+  headline: string | null;
+  address: string;
+  suburb: string;
+  state: string;
+  postcode: string;
+  property_type: string | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  parking: number | null;
+  land_size: number | null;
+  price_from: number;
+  price_to: number;
+  confidence: string;
+  is_public: boolean;
+  notes: string | null;
+  images: string[] | null;
+  created_at: string;
+}
+
 export default function AgentAppraisals() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('requests');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingAppraisal, setEditingAppraisal] = useState<Appraisal | null>(null);
+  const [deletingAppraisal, setDeletingAppraisal] = useState<Appraisal | null>(null);
 
   // Fetch agent's appraisals
   const { data: appraisals = [], isLoading: appraisalsLoading } = useQuery({
@@ -48,7 +82,7 @@ export default function AgentAppraisals() {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      return (data || []) as Appraisal[];
     },
   });
 
@@ -120,7 +154,8 @@ export default function AgentAppraisals() {
     return `${firstName} ${lastName}`.trim() || profile.email || 'Unknown';
   };
 
-  const getPropertyTypeLabel = (type: string) => {
+  const getPropertyTypeLabel = (type: string | null) => {
+    if (!type) return 'House';
     const labels: Record<string, string> = {
       house: 'House',
       unit: 'Unit',
@@ -169,7 +204,74 @@ export default function AgentAppraisals() {
     },
   });
 
+  // Update appraisal mutation
+  const updateAppraisal = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: AppraisalFormData }) => {
+      const { error } = await supabase
+        .from('appraisals')
+        .update({
+          headline: data.headline || null,
+          address: data.address,
+          suburb: data.suburb,
+          state: data.state,
+          postcode: data.postcode,
+          property_type: data.property_type,
+          bedrooms: data.bedrooms || null,
+          bathrooms: data.bathrooms || null,
+          parking: data.parking || null,
+          land_size: data.land_size || null,
+          price_from: data.price_from,
+          price_to: data.price_to,
+          confidence: data.confidence,
+          is_public: data.is_public,
+          notes: data.notes || null,
+          images: data.images || [],
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agent-appraisals'] });
+      queryClient.invalidateQueries({ queryKey: ['public-appraisals'] });
+      setEditingAppraisal(null);
+      toast.success('Appraisal updated successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to update appraisal: ' + error.message);
+    },
+  });
+
+  // Delete appraisal mutation
+  const deleteAppraisal = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('appraisals')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agent-appraisals'] });
+      queryClient.invalidateQueries({ queryKey: ['public-appraisals'] });
+      setDeletingAppraisal(null);
+      toast.success('Appraisal deleted successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to delete appraisal: ' + error.message);
+    },
+  });
+
   const pendingCount = requests.filter((r: any) => r.status === 'pending').length;
+
+  const handleEditClick = (appraisal: Appraisal) => {
+    setEditingAppraisal(appraisal);
+  };
+
+  const handleDeleteClick = (appraisal: Appraisal) => {
+    setDeletingAppraisal(appraisal);
+  };
 
   return (
     <AgentLayout>
@@ -373,8 +475,8 @@ export default function AgentAppraisals() {
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {appraisals.map((appraisal: any) => (
-                  <Card key={appraisal.id} className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl hover:border-primary/30 transition-colors overflow-hidden">
+                {appraisals.map((appraisal) => (
+                  <Card key={appraisal.id} className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl hover:border-primary/30 transition-colors overflow-hidden group">
                     {/* Image */}
                     {appraisal.images && appraisal.images.length > 0 ? (
                       <div className="aspect-[16/10] relative">
@@ -395,6 +497,31 @@ export default function AgentAppraisals() {
                         >
                           {appraisal.is_public ? 'Public' : 'Private'}
                         </Badge>
+                        {/* Actions dropdown */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="secondary"
+                              size="icon"
+                              className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditClick(appraisal)}>
+                              <Pencil className="w-4 h-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteClick(appraisal)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     ) : (
                       <div className="aspect-[16/10] bg-muted/50 flex items-center justify-center relative">
@@ -405,6 +532,31 @@ export default function AgentAppraisals() {
                         >
                           {appraisal.is_public ? 'Public' : 'Private'}
                         </Badge>
+                        {/* Actions dropdown */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="secondary"
+                              size="icon"
+                              className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditClick(appraisal)}>
+                              <Pencil className="w-4 h-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDeleteClick(appraisal)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     )}
 
@@ -412,7 +564,7 @@ export default function AgentAppraisals() {
                       {/* Property Type Badge */}
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant="outline" className="text-xs">
-                          {getPropertyTypeLabel(appraisal.property_type || 'house')}
+                          {getPropertyTypeLabel(appraisal.property_type)}
                         </Badge>
                         <Badge 
                           variant="outline" 
@@ -489,6 +641,41 @@ export default function AgentAppraisals() {
           onOpenChange={setShowCreateDialog}
           onSubmit={(data) => createAppraisal.mutate(data)}
           isSubmitting={createAppraisal.isPending}
+        />
+
+        {/* Edit Dialog */}
+        <EditAppraisalDialog
+          open={!!editingAppraisal}
+          onOpenChange={(open) => !open && setEditingAppraisal(null)}
+          onSubmit={(data) => editingAppraisal && updateAppraisal.mutate({ id: editingAppraisal.id, data })}
+          isSubmitting={updateAppraisal.isPending}
+          appraisal={editingAppraisal ? {
+            headline: editingAppraisal.headline || undefined,
+            address: editingAppraisal.address,
+            suburb: editingAppraisal.suburb,
+            state: editingAppraisal.state,
+            postcode: editingAppraisal.postcode,
+            property_type: editingAppraisal.property_type || 'house',
+            bedrooms: editingAppraisal.bedrooms || undefined,
+            bathrooms: editingAppraisal.bathrooms || undefined,
+            parking: editingAppraisal.parking || undefined,
+            land_size: editingAppraisal.land_size || undefined,
+            price_from: editingAppraisal.price_from,
+            price_to: editingAppraisal.price_to,
+            confidence: editingAppraisal.confidence as 'low' | 'medium' | 'high',
+            is_public: editingAppraisal.is_public,
+            notes: editingAppraisal.notes || undefined,
+            images: editingAppraisal.images || [],
+          } : null}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <DeleteAppraisalDialog
+          open={!!deletingAppraisal}
+          onOpenChange={(open) => !open && setDeletingAppraisal(null)}
+          onConfirm={() => deletingAppraisal && deleteAppraisal.mutate(deletingAppraisal.id)}
+          isDeleting={deleteAppraisal.isPending}
+          appraisalAddress={deletingAppraisal?.address}
         />
       </div>
     </AgentLayout>
