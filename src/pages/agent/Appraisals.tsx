@@ -134,6 +134,7 @@ export default function AgentAppraisals() {
           confidence: data.confidence,
           is_public: data.is_public,
           notes: data.notes || null,
+          images: data.images || [],
         });
       
       if (error) throw error;
