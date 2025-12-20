@@ -12,15 +12,17 @@ export interface CRMCustomer {
   inspection_count: number;
   viewing_count: number;
   bid_count: number;
+  interest_count: number; // Pre-market appraisal interests
   last_interaction: string | null;
   lead_score: number;
 }
 
 // Lead scoring weights
 const LEAD_SCORE_WEIGHTS = {
-  bid: 30,           // Highest buying intent
-  viewing: 15,       // Medium intent
-  inspection: 10,    // Initial interest
+  bid: 30,             // Highest buying intent
+  interest: 25,        // Pre-market interest - very high intent
+  viewing: 15,         // Medium intent
+  inspection: 10,      // Initial interest
   recency_7_days: 20,  // Very recent activity bonus
   recency_30_days: 10, // Recent activity bonus
 };
@@ -29,12 +31,14 @@ export function calculateLeadScore(
   inspectionCount: number,
   viewingCount: number,
   bidCount: number,
+  interestCount: number,
   lastInteraction: string | null
 ): number {
   let score = 0;
   
   // Activity scores
   score += bidCount * LEAD_SCORE_WEIGHTS.bid;
+  score += interestCount * LEAD_SCORE_WEIGHTS.interest;
   score += viewingCount * LEAD_SCORE_WEIGHTS.viewing;
   score += inspectionCount * LEAD_SCORE_WEIGHTS.inspection;
   
@@ -134,11 +138,21 @@ export function useAgentCRM(agentId: string | undefined) {
         `)
         .eq('auctions.properties.agent_id', agentId);
 
+      // Get customers from appraisal interests
+      const { data: interestCustomers } = await supabase
+        .from('appraisal_interests')
+        .select(`
+          customer_id,
+          appraisals!inner(agent_id)
+        `)
+        .eq('appraisals.agent_id', agentId);
+
       // Combine unique customer IDs
       const customerIds = new Set<string>();
       inspectionCustomers?.forEach(c => customerIds.add(c.customer_id));
       viewingCustomers?.forEach(c => customerIds.add(c.customer_id));
       bidCustomers?.forEach(c => customerIds.add(c.bidder_id));
+      interestCustomers?.forEach(c => customerIds.add(c.customer_id));
 
       if (customerIds.size === 0) return [];
 
@@ -154,6 +168,7 @@ export function useAgentCRM(agentId: string | undefined) {
       const inspectionCounts = new Map<string, number>();
       const viewingCounts = new Map<string, number>();
       const bidCounts = new Map<string, number>();
+      const interestCounts = new Map<string, number>();
       const lastInteractions = new Map<string, string>();
 
       inspectionCustomers?.forEach(c => {
@@ -164,6 +179,9 @@ export function useAgentCRM(agentId: string | undefined) {
       });
       bidCustomers?.forEach(c => {
         bidCounts.set(c.bidder_id, (bidCounts.get(c.bidder_id) || 0) + 1);
+      });
+      interestCustomers?.forEach(c => {
+        interestCounts.set(c.customer_id, (interestCounts.get(c.customer_id) || 0) + 1);
       });
 
       // Get last interaction dates
@@ -190,6 +208,17 @@ export function useAgentCRM(agentId: string | undefined) {
         if (lastInspection) dates.push(lastInspection.created_at);
         if (lastViewing) dates.push(lastViewing.created_at);
         
+        // Also check for last appraisal interest
+        const { data: lastInterest } = await supabase
+          .from('appraisal_interests')
+          .select('created_at')
+          .eq('customer_id', customerId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (lastInterest) dates.push(lastInterest.created_at);
+        
         if (dates.length > 0) {
           lastInteractions.set(customerId, dates.sort().reverse()[0]);
         }
@@ -199,6 +228,7 @@ export function useAgentCRM(agentId: string | undefined) {
         const inspections = inspectionCounts.get(profile.id) || 0;
         const viewings = viewingCounts.get(profile.id) || 0;
         const bids = bidCounts.get(profile.id) || 0;
+        const interests = interestCounts.get(profile.id) || 0;
         const lastInt = lastInteractions.get(profile.id) || null;
         
         return {
@@ -211,8 +241,9 @@ export function useAgentCRM(agentId: string | undefined) {
           inspection_count: inspections,
           viewing_count: viewings,
           bid_count: bids,
+          interest_count: interests,
           last_interaction: lastInt,
-          lead_score: calculateLeadScore(inspections, viewings, bids, lastInt),
+          lead_score: calculateLeadScore(inspections, viewings, bids, interests, lastInt),
         };
       });
     },
