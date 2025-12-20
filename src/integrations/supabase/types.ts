@@ -1174,6 +1174,14 @@ export type Database = {
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       get_agent_id: { Args: { _user_id: string }; Returns: string }
+      get_customer_booked_inspection_ids: {
+        Args: { _customer_id: string }
+        Returns: string[]
+      }
+      get_customer_booked_property_ids: {
+        Args: { _customer_id: string }
+        Returns: string[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
