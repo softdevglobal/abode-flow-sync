@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { ArrowLeft, Gavel, TrendingUp, Users, Clock, CheckCircle2, LogIn, UserCheck, UserX, UserPlus, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { AuctionCountdown } from '@/components/auction/AuctionCountdown';
 
 export default function LiveAuction() {
   const { id: auctionId } = useParams<{ id: string }>();
@@ -314,10 +315,21 @@ export default function LiveAuction() {
             <Card>
               <CardContent className="py-4 text-center">
                 <Clock className="w-5 h-5 mx-auto text-muted-foreground mb-1" />
-                <p className="text-sm font-medium">
-                  {auction.end_time ? format(new Date(auction.end_time), 'h:mm a') : '-'}
+                {auction.end_time && isLive ? (
+                  <AuctionCountdown 
+                    endTime={auction.end_time} 
+                    size="sm" 
+                    showIcon={false}
+                    onExpire={() => refetchAuction()}
+                  />
+                ) : (
+                  <p className="text-sm font-medium">
+                    {auction.end_time ? format(new Date(auction.end_time), 'h:mm a') : '-'}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  {isLive ? 'Time Remaining' : 'End Time'}
                 </p>
-                <p className="text-xs text-muted-foreground">End Time</p>
               </CardContent>
             </Card>
           </div>
