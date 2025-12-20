@@ -151,7 +151,7 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
     },
   });
 
-  // Handle notification click - navigate to appropriate page
+  // Handle notification click - navigate to appropriate page with deep-linking
   const handleNotificationClick = (notification: any) => {
     if (!notification.read) {
       markAsRead.mutate(notification.id);
@@ -161,13 +161,30 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
     
     switch (notification.type) {
       case 'viewing_request':
-        navigate('/viewings');
+        if (data?.viewing_request_id) {
+          navigate(`/viewings?viewingId=${data.viewing_request_id}`);
+        } else {
+          navigate('/viewings');
+        }
         break;
       case 'inspection_reminder':
-        navigate('/inspections');
+        // Deep-link to specific booking if available
+        if (data?.booking_id) {
+          navigate(`/inspections?bookingId=${data.booking_id}`);
+        } else if (data?.inspection_id) {
+          navigate(`/inspections?inspectionId=${data.inspection_id}`);
+        } else {
+          navigate('/inspections');
+        }
         break;
       case 'appraisal_interest':
-        navigate('/pre-market');
+        if (data?.invitation_id) {
+          navigate(`/pre-market?invitationId=${data.invitation_id}`);
+        } else if (data?.appraisal_id) {
+          navigate(`/pre-market?appraisalId=${data.appraisal_id}`);
+        } else {
+          navigate('/pre-market');
+        }
         break;
       case 'status_update':
         if (data?.property_id) {

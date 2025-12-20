@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { format, parseISO, isFuture, isPast } from 'date-fns';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
+
 interface InspectionBooking {
   id: string;
   inspection_id: string;
@@ -49,7 +51,10 @@ interface InspectionBooking {
 
 export default function MyInspections() {
   const { user, loading: authLoading } = useAuth();
-
+  const [searchParams] = useSearchParams();
+  const highlightedBookingId = searchParams.get('bookingId');
+  const highlightedInspectionId = searchParams.get('inspectionId');
+  const highlightRef = useRef<HTMLDivElement>(null);
   const { data: bookings = [], isLoading } = useQuery({
     queryKey: ['my-inspection-bookings', user?.id],
     queryFn: async () => {
@@ -117,6 +122,15 @@ export default function MyInspections() {
       supabase.removeChannel(channel);
     };
   }, [user?.id, queryClient]);
+
+  // Scroll to highlighted booking when data loads
+  useEffect(() => {
+    if (!isLoading && (highlightedBookingId || highlightedInspectionId) && highlightRef.current) {
+      setTimeout(() => {
+        highlightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [isLoading, highlightedBookingId, highlightedInspectionId]);
 
   const cancelMutation = useMutation({
     mutationFn: async (bookingId: string) => {
@@ -207,14 +221,24 @@ export default function MyInspections() {
                   Upcoming ({upcomingInspections.length})
                 </h2>
                 <div className="space-y-3">
-                  {upcomingInspections.map((booking) => (
-                    <InspectionCard 
-                      key={booking.id} 
-                      booking={booking} 
-                      onCancel={() => cancelMutation.mutate(booking.id)}
-                      isCancelling={cancelMutation.isPending}
-                    />
-                  ))}
+                  {upcomingInspections.map((booking) => {
+                    const isHighlighted = 
+                      booking.id === highlightedBookingId || 
+                      booking.inspection_id === highlightedInspectionId;
+                    return (
+                      <div 
+                        key={booking.id} 
+                        ref={isHighlighted ? highlightRef : undefined}
+                      >
+                        <InspectionCard 
+                          booking={booking} 
+                          onCancel={() => cancelMutation.mutate(booking.id)}
+                          isCancelling={cancelMutation.isPending}
+                          isHighlighted={isHighlighted}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -225,9 +249,23 @@ export default function MyInspections() {
                   Past Inspections ({pastInspections.length})
                 </h2>
                 <div className="space-y-3">
-                  {pastInspections.map((booking) => (
-                    <InspectionCard key={booking.id} booking={booking} isPast />
-                  ))}
+                  {pastInspections.map((booking) => {
+                    const isHighlighted = 
+                      booking.id === highlightedBookingId || 
+                      booking.inspection_id === highlightedInspectionId;
+                    return (
+                      <div 
+                        key={booking.id} 
+                        ref={isHighlighted ? highlightRef : undefined}
+                      >
+                        <InspectionCard 
+                          booking={booking} 
+                          isPast 
+                          isHighlighted={isHighlighted}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -238,11 +276,12 @@ export default function MyInspections() {
   );
 }
 
-function InspectionCard({ booking, isPast, onCancel, isCancelling }: { 
+function InspectionCard({ booking, isPast, onCancel, isCancelling, isHighlighted }: { 
   booking: InspectionBooking; 
   isPast?: boolean;
   onCancel?: () => void;
   isCancelling?: boolean;
+  isHighlighted?: boolean;
 }) {
   const inspection = booking.inspection;
   const property = inspection?.property;
@@ -253,7 +292,10 @@ function InspectionCard({ booking, isPast, onCancel, isCancelling }: {
   const endTime = new Date(dateTime.getTime() + inspection.duration * 60000);
 
   return (
-    <Card className={isPast ? 'opacity-60' : ''}>
+    <Card className={cn(
+      isPast && 'opacity-60',
+      isHighlighted && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
+    )}>
       <CardContent className="p-0">
         <div className="flex">
           {/* Property Image */}
