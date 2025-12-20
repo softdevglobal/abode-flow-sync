@@ -186,7 +186,39 @@ export default function AuctionConsole() {
 
   const isSold = auction.status === 'sold';
   const isPassedIn = auction.status === 'passed_in';
+  const isPending = auction.status === 'pending';
+  const isLive = auction.status === 'live';
   const isEnded = isSold || isPassedIn;
+
+  const handleStartAuction = async () => {
+    try {
+      await updateAuctionStatus.mutateAsync({ status: 'live' });
+      toast.success('Auction is now LIVE!', {
+        description: 'Buyers can now place bids',
+      });
+    } catch (error) {
+      toast.error('Failed to start auction');
+      console.error(error);
+    }
+  };
+
+  const handlePauseAuction = async () => {
+    try {
+      await updateAuctionStatus.mutateAsync({ status: 'paused' });
+      toast.info('Auction paused');
+    } catch (error) {
+      toast.error('Failed to pause auction');
+    }
+  };
+
+  const handleResumeAuction = async () => {
+    try {
+      await updateAuctionStatus.mutateAsync({ status: 'live' });
+      toast.success('Auction resumed!');
+    } catch (error) {
+      toast.error('Failed to resume auction');
+    }
+  };
 
   return (
     <AgentLayout>
@@ -213,7 +245,7 @@ export default function AuctionConsole() {
             {isSubscribed ? (
               <Badge variant="success" className="flex items-center gap-1">
                 <Wifi className="w-3 h-3" />
-                Live
+                Connected
               </Badge>
             ) : (
               <Badge variant="secondary" className="flex items-center gap-1">
@@ -221,11 +253,81 @@ export default function AuctionConsole() {
                 Connecting...
               </Badge>
             )}
-            <Badge variant={isEnded ? 'secondary' : 'default'} className="uppercase">
+            <Badge 
+              variant={isLive ? 'default' : isEnded ? 'secondary' : 'outline'} 
+              className={cn(
+                "uppercase",
+                isLive && "bg-red-500 text-white animate-pulse",
+                isPending && "border-amber-500 text-amber-600 dark:text-amber-400"
+              )}
+            >
               {auction.status.replace('_', ' ')}
             </Badge>
           </div>
         </div>
+
+        {/* Auction Control Banner */}
+        {isPending && (
+          <div className="bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-amber-600" />
+              <div>
+                <p className="font-medium text-amber-800 dark:text-amber-200">Auction is pending</p>
+                <p className="text-sm text-amber-600 dark:text-amber-400">Start the auction when you're ready for bidders to participate</p>
+              </div>
+            </div>
+            <Button 
+              onClick={handleStartAuction}
+              disabled={updateAuctionStatus.isPending}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {updateAuctionStatus.isPending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Gavel className="w-4 h-4 mr-2" />
+              )}
+              Start Auction
+            </Button>
+          </div>
+        )}
+
+        {isLive && (
+          <div className="bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800 rounded-xl p-4 mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+              <div>
+                <p className="font-medium text-green-800 dark:text-green-200">Auction is LIVE</p>
+                <p className="text-sm text-green-600 dark:text-green-400">Bidders can now place bids in real-time</p>
+              </div>
+            </div>
+            <Button 
+              variant="outline"
+              onClick={handlePauseAuction}
+              disabled={updateAuctionStatus.isPending}
+            >
+              Pause Auction
+            </Button>
+          </div>
+        )}
+
+        {auction.status === 'paused' && (
+          <div className="bg-muted border border-border rounded-xl p-4 mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Auction is paused</p>
+                <p className="text-sm text-muted-foreground">Resume when ready to continue bidding</p>
+              </div>
+            </div>
+            <Button 
+              onClick={handleResumeAuction}
+              disabled={updateAuctionStatus.isPending}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Resume Auction
+            </Button>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Column - Current Bid & Property */}

@@ -39,6 +39,7 @@ export default function LiveAuction() {
   const isSold = auction?.status === 'sold';
   const isPassedIn = auction?.status === 'passed_in';
   const isLive = auction?.status === 'live';
+  const isPending = auction?.status === 'pending';
   const isPaused = auction?.status === 'paused';
 
   // Initialize bid amount when auction loads
@@ -229,6 +230,12 @@ export default function LiveAuction() {
                   LIVE AUCTION
                 </Badge>
               )}
+              {isPending && (
+                <Badge variant="outline" className="border-amber-500 text-amber-600 dark:text-amber-400">
+                  <Clock className="w-3 h-3 mr-1" />
+                  PENDING
+                </Badge>
+              )}
               {isPaused && (
                 <Badge variant="secondary">PAUSED</Badge>
               )}
@@ -315,7 +322,7 @@ export default function LiveAuction() {
             </Card>
           </div>
 
-          {/* Bid Controls or Sold Message */}
+          {/* Bid Controls or Status Messages */}
           {isSold ? (
             <Card className="bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
               <CardContent className="py-8 text-center">
@@ -341,6 +348,53 @@ export default function LiveAuction() {
                 <p className="text-muted-foreground">
                   The property did not meet reserve. Contact the agent for post-auction negotiations.
                 </p>
+              </CardContent>
+            </Card>
+          ) : isPending ? (
+            /* Auction not started yet */
+            <Card className="bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
+              <CardContent className="py-8 text-center">
+                <Clock className="w-16 h-16 mx-auto text-amber-600 mb-4" />
+                <h2 className="text-2xl font-bold text-amber-700 dark:text-amber-400 mb-2">
+                  Auction Hasn't Started Yet
+                </h2>
+                <p className="text-amber-600 dark:text-amber-500 mb-4">
+                  The auctioneer will start the auction soon. Please wait...
+                </p>
+                {auction.start_time && (
+                  <p className="text-sm text-amber-600 dark:text-amber-500">
+                    Scheduled for: {format(new Date(auction.start_time), 'PPP p')}
+                  </p>
+                )}
+                {user && !isRegistered && (
+                  <div className="mt-6">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Register now so you're ready to bid when it starts!
+                    </p>
+                    <Button 
+                      onClick={() => register()}
+                      disabled={isRegistering}
+                    >
+                      {isRegistering ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Registering...
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Register to Bid
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+                {user && isRegistered && (
+                  <Badge className="mt-4 bg-green-600 text-white">
+                    <UserCheck className="w-3 h-3 mr-1" />
+                    You're registered and ready to bid!
+                  </Badge>
+                )}
               </CardContent>
             </Card>
           ) : !user ? (
