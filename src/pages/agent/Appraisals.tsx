@@ -20,7 +20,9 @@ import {
   Car,
   Ruler,
   MessageSquare,
-  User
+  User,
+  Home,
+  ImageIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -118,6 +120,17 @@ export default function AgentAppraisals() {
     return `${firstName} ${lastName}`.trim() || profile.email || 'Unknown';
   };
 
+  const getPropertyTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      house: 'House',
+      unit: 'Unit',
+      townhouse: 'Townhouse',
+      land: 'Land',
+      rural: 'Rural',
+    };
+    return labels[type] || type;
+  };
+
   // Create appraisal mutation
   const createAppraisal = useMutation({
     mutationFn: async (data: AppraisalFormData) => {
@@ -125,10 +138,16 @@ export default function AgentAppraisals() {
         .from('appraisals')
         .insert({
           agent_id: DEMO_AGENT_ID,
+          headline: data.headline || null,
           address: data.address,
           suburb: data.suburb,
           state: data.state,
           postcode: data.postcode,
+          property_type: data.property_type,
+          bedrooms: data.bedrooms || null,
+          bathrooms: data.bathrooms || null,
+          parking: data.parking || null,
+          land_size: data.land_size || null,
           price_from: data.price_from,
           price_to: data.price_to,
           confidence: data.confidence,
@@ -353,50 +372,109 @@ export default function AgentAppraisals() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {appraisals.map((appraisal: any) => (
-                  <Card key={appraisal.id} className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl hover:border-primary/30 transition-colors">
-                    <CardContent className="pt-5">
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                          <FileText className="w-5 h-5 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1 font-body">
-                            <MapPin className="w-4 h-4 text-primary" />
-                            <span className="truncate">{appraisal.address}, {appraisal.suburb} {appraisal.state} {appraisal.postcode}</span>
+                  <Card key={appraisal.id} className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl hover:border-primary/30 transition-colors overflow-hidden">
+                    {/* Image */}
+                    {appraisal.images && appraisal.images.length > 0 ? (
+                      <div className="aspect-[16/10] relative">
+                        <img
+                          src={appraisal.images[0]}
+                          alt={appraisal.address}
+                          className="w-full h-full object-cover"
+                        />
+                        {appraisal.images.length > 1 && (
+                          <div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm rounded-md px-2 py-1 text-xs font-medium flex items-center gap-1">
+                            <ImageIcon className="w-3 h-3" />
+                            {appraisal.images.length}
                           </div>
-                          <div className="flex items-center gap-2 mb-2">
-                            <DollarSign className="w-4 h-4 text-primary" />
-                            <span className="font-display text-lg font-bold">
-                              {formatCurrency(Number(appraisal.price_from))} - {formatCurrency(Number(appraisal.price_to))}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-4 mb-3">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm text-muted-foreground font-body">Confidence:</span>
-                              <span className={`text-sm font-medium capitalize font-body ${confidenceColors[appraisal.confidence as keyof typeof confidenceColors]}`}>
-                                {appraisal.confidence}
-                              </span>
-                            </div>
-                            <Badge variant={appraisal.is_public ? 'default' : 'secondary'}>
-                              {appraisal.is_public ? 'Public' : 'Private'}
-                            </Badge>
-                          </div>
-                          {appraisal.notes && (
-                            <p className="text-sm text-muted-foreground bg-muted/30 border border-border/50 rounded-xl p-3 font-body">
-                              {appraisal.notes}
-                            </p>
-                          )}
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Created {new Date(appraisal.created_at).toLocaleDateString('en-AU', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric',
-                            })}
-                          </p>
-                        </div>
+                        )}
+                        <Badge 
+                          variant={appraisal.is_public ? 'default' : 'secondary'}
+                          className="absolute top-2 left-2"
+                        >
+                          {appraisal.is_public ? 'Public' : 'Private'}
+                        </Badge>
                       </div>
+                    ) : (
+                      <div className="aspect-[16/10] bg-muted/50 flex items-center justify-center relative">
+                        <Home className="w-12 h-12 text-muted-foreground/50" />
+                        <Badge 
+                          variant={appraisal.is_public ? 'default' : 'secondary'}
+                          className="absolute top-2 left-2"
+                        >
+                          {appraisal.is_public ? 'Public' : 'Private'}
+                        </Badge>
+                      </div>
+                    )}
+
+                    <CardContent className="pt-4">
+                      {/* Property Type Badge */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="outline" className="text-xs">
+                          {getPropertyTypeLabel(appraisal.property_type || 'house')}
+                        </Badge>
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${confidenceColors[appraisal.confidence as keyof typeof confidenceColors]}`}
+                        >
+                          {appraisal.confidence} confidence
+                        </Badge>
+                      </div>
+
+                      {/* Headline */}
+                      {appraisal.headline && (
+                        <h3 className="font-display font-semibold text-foreground mb-1 line-clamp-1">
+                          {appraisal.headline}
+                        </h3>
+                      )}
+
+                      {/* Address */}
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                        <MapPin className="w-4 h-4 text-primary shrink-0" />
+                        <span className="truncate">{appraisal.address}, {appraisal.suburb}</span>
+                      </div>
+
+                      {/* Price */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <DollarSign className="w-4 h-4 text-accent" />
+                        <span className="font-display font-bold text-foreground">
+                          {formatCurrency(Number(appraisal.price_from))} - {formatCurrency(Number(appraisal.price_to))}
+                        </span>
+                      </div>
+
+                      {/* Features */}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        {appraisal.bedrooms && (
+                          <span className="flex items-center gap-1">
+                            <Bed className="w-4 h-4" /> {appraisal.bedrooms}
+                          </span>
+                        )}
+                        {appraisal.bathrooms && (
+                          <span className="flex items-center gap-1">
+                            <Bath className="w-4 h-4" /> {appraisal.bathrooms}
+                          </span>
+                        )}
+                        {appraisal.parking && (
+                          <span className="flex items-center gap-1">
+                            <Car className="w-4 h-4" /> {appraisal.parking}
+                          </span>
+                        )}
+                        {appraisal.land_size && (
+                          <span className="flex items-center gap-1">
+                            <Ruler className="w-4 h-4" /> {appraisal.land_size}m²
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Created date */}
+                      <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border/50">
+                        Created {new Date(appraisal.created_at).toLocaleDateString('en-AU', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </p>
                     </CardContent>
                   </Card>
                 ))}
@@ -405,6 +483,7 @@ export default function AgentAppraisals() {
           </TabsContent>
         </Tabs>
 
+        {/* Create Dialog */}
         <CreateAppraisalDialog
           open={showCreateDialog}
           onOpenChange={setShowCreateDialog}
