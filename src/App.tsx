@@ -33,6 +33,7 @@ import Auctions from "./pages/Auctions";
 
 // Agent Pages
 import AgentDashboard from "./pages/agent/Dashboard";
+import AgentDiary from "./pages/agent/Diary";
 import AgentProperties from "./pages/agent/Properties";
 import AgentRequests from "./pages/agent/Requests";
 import AgentInspections from "./pages/agent/Inspections";
@@ -87,6 +88,7 @@ const AnimatedRoutes = () => {
         {/* Agent View Routes */}
         <Route path="/agent" element={<PageTransition><AgentDashboard /></PageTransition>} />
         <Route path="/agent/dashboard" element={<PageTransition><AgentDashboard /></PageTransition>} />
+        <Route path="/agent/diary" element={<PageTransition><AgentDiary /></PageTransition>} />
         <Route path="/agent/properties" element={<PageTransition><AgentProperties /></PageTransition>} />
         <Route path="/agent/property/:id" element={<PageTransition><PropertyDetail /></PageTransition>} />
         <Route path="/agent/requests" element={<PageTransition><AgentRequests /></PageTransition>} />

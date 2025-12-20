@@ -41,8 +41,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
+import { CalendarDays } from 'lucide-react';
+
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/agent' },
+  { icon: CalendarDays, label: 'Diary', path: '/agent/diary' },
   { icon: Building2, label: 'Listings', path: '/agent/properties' },
   { icon: Gavel, label: 'Auctions', path: '/agent/auctions' },
   { icon: Calendar, label: 'Inspections', path: '/agent/inspections' },
@@ -76,6 +79,38 @@ export function AgentLayout({ children }: AgentLayoutProps) {
     if (!notification.read) {
       markAsRead.mutate(notification.id);
     }
+    
+    // Navigate based on notification type
+    const data = notification.data as Record<string, any> | null;
+    let targetPath = '/agent/notifications';
+    
+    switch (notification.type) {
+      case 'viewing_request':
+        targetPath = '/agent/requests';
+        break;
+      case 'appraisal_interest':
+        targetPath = '/agent/requests';
+        break;
+      case 'inspection_reminder':
+        targetPath = '/agent/inspections';
+        break;
+      case 'status_update':
+        if (data?.auction_id) {
+          targetPath = '/agent/auctions';
+        } else if (data?.property_id) {
+          targetPath = '/agent/properties';
+        }
+        break;
+      case 'new_listing':
+        targetPath = '/agent/properties';
+        break;
+      case 'message':
+        targetPath = '/agent/requests';
+        break;
+    }
+    
+    setNotificationsOpen(false);
+    navigate(targetPath);
   };
 
   const getNotificationIcon = (type: string) => {

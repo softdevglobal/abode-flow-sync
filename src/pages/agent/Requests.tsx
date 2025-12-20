@@ -11,11 +11,13 @@ import { useAppraisalInterests } from '@/hooks/useAppraisalInterests';
 import { useCurrentAgent } from '@/hooks/useCurrentAgent';
 import { useInspectionInvitations } from '@/hooks/useInspectionInvitations';
 import { InviteToInspectionModal } from '@/components/agent/InviteToInspectionModal';
+import { ScheduleViewingInspectionModal } from '@/components/agent/ScheduleViewingInspectionModal';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { 
   Calendar, 
   CalendarDays,
+  CalendarPlus,
   Inbox, 
   DollarSign, 
   Home, 
@@ -61,6 +63,8 @@ export default function AgentRequests() {
   const [activeTab, setActiveTab] = useState('interests');
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [selectedInterest, setSelectedInterest] = useState<any>(null);
+  const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
+  const [selectedViewingRequest, setSelectedViewingRequest] = useState<ViewingRequest | null>(null);
   const { agentId } = useCurrentAgent();
 
   // Fetch inspection invitations to check which interests already have invitations
@@ -169,6 +173,11 @@ export default function AgentRequests() {
   const handleInviteToInspection = (interest: any) => {
     setSelectedInterest(interest);
     setInviteModalOpen(true);
+  };
+
+  const handleScheduleViewing = (request: ViewingRequest) => {
+    setSelectedViewingRequest(request);
+    setScheduleModalOpen(true);
   };
 
   const formatPrice = (from: number, to: number) => {
@@ -513,6 +522,23 @@ export default function AgentRequests() {
                             </Button>
                           </>
                         )}
+                        {(request.status === 'accepted' || request.status === 'pending') && (
+                          <Button 
+                            size="sm"
+                            variant="accent"
+                            className="gap-2"
+                            onClick={() => handleScheduleViewing(request)}
+                          >
+                            <CalendarPlus className="w-4 h-4" />
+                            Schedule
+                          </Button>
+                        )}
+                        {request.status === 'confirmed' && (
+                          <Badge variant="secondary" className="bg-green-500/20 text-green-600 border-green-500/30">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Scheduled
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -540,6 +566,15 @@ export default function AgentRequests() {
           onOpenChange={setInviteModalOpen}
           interest={selectedInterest}
           agentId={agentId}
+        />
+      )}
+
+      {/* Schedule Viewing Inspection Modal */}
+      {selectedViewingRequest && (
+        <ScheduleViewingInspectionModal
+          open={scheduleModalOpen}
+          onOpenChange={setScheduleModalOpen}
+          viewingRequest={selectedViewingRequest}
         />
       )}
     </AgentLayout>
