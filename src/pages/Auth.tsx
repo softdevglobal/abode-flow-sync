@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Building2, Mail, Lock, User, Phone, Briefcase, FileText } from 'lucide-react';
 import { PasswordStrengthMeter, validatePasswordStrength } from '@/components/auth/PasswordStrengthMeter';
+import { checkRateLimit } from '@/lib/rateLimiter';
 
 const loginSchema = z.object({
   email: z.string().trim().email('Invalid email address'),
@@ -85,6 +86,18 @@ export default function Auth() {
 
   const handleLogin = async (data: LoginFormData) => {
     setIsLoading(true);
+    
+    // Check rate limit before attempting login
+    const rateLimitResult = await checkRateLimit('auth');
+    if (!rateLimitResult.allowed) {
+      setIsLoading(false);
+      const retryAfter = rateLimitResult.reset_at 
+        ? Math.ceil(rateLimitResult.reset_at - Date.now() / 1000)
+        : 60;
+      toast.error(`Too many login attempts. Please try again in ${retryAfter} seconds.`);
+      return;
+    }
+
     const { error } = await signIn(data.email, data.password);
     setIsLoading(false);
 
@@ -103,6 +116,18 @@ export default function Auth() {
 
   const handleSignup = async (data: SignupFormData) => {
     setIsLoading(true);
+    
+    // Check rate limit before attempting signup
+    const rateLimitResult = await checkRateLimit('auth');
+    if (!rateLimitResult.allowed) {
+      setIsLoading(false);
+      const retryAfter = rateLimitResult.reset_at 
+        ? Math.ceil(rateLimitResult.reset_at - Date.now() / 1000)
+        : 60;
+      toast.error(`Too many signup attempts. Please try again in ${retryAfter} seconds.`);
+      return;
+    }
+
     const { error } = await signUp(data.email, data.password, {
       firstName: data.firstName,
       lastName: data.lastName,
