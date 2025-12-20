@@ -84,11 +84,17 @@ export default function Landing() {
   } = useQuery({
     queryKey: ['live-auctions-landing'],
     queryFn: async () => {
+      // Note: Only select specific columns to avoid exposing reserve_price
       const {
         data,
         error
       } = await supabase.from('auctions').select(`
-          *,
+          id,
+          status,
+          start_time,
+          end_time,
+          current_bid,
+          min_increment,
           property:property_id (
             id,
             title,
