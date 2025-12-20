@@ -177,13 +177,35 @@ export default function AgentDiary() {
     enabled: !!agentId,
   });
 
+  // Helper to safely parse date
+  const safeParseDate = (dateStr: string | null | undefined): Date | null => {
+    if (!dateStr) return null;
+    try {
+      const date = new Date(dateStr);
+      return isNaN(date.getTime()) ? null : date;
+    } catch {
+      return null;
+    }
+  };
+
+  const safeParseISO = (dateTimeStr: string): Date | null => {
+    try {
+      const date = parseISO(dateTimeStr);
+      return isNaN(date.getTime()) ? null : date;
+    } catch {
+      return null;
+    }
+  };
+
   // Transform all events into unified format
   const allEvents = useMemo<DiaryEvent[]>(() => {
     const events: DiaryEvent[] = [];
     
     // Add inspections
     inspections.forEach((insp: any) => {
-      const dateTime = new Date(insp.date_time);
+      const dateTime = safeParseDate(insp.date_time);
+      if (!dateTime) return; // Skip invalid dates
+      
       events.push({
         id: insp.id,
         type: 'inspection',
@@ -198,7 +220,10 @@ export default function AgentDiary() {
     
     // Add viewing requests
     viewingRequests.forEach((vr: any) => {
-      const dateTime = parseISO(`${vr.requested_date}T${vr.requested_time || '10:00'}`);
+      if (!vr.requested_date) return; // Skip if no date
+      const dateTime = safeParseISO(`${vr.requested_date}T${vr.requested_time || '10:00'}`);
+      if (!dateTime) return; // Skip invalid dates
+      
       const customerName = vr.customer?.first_name 
         ? `${vr.customer.first_name} ${vr.customer.last_name || ''}`.trim()
         : vr.customer?.email || 'Unknown';
@@ -219,7 +244,9 @@ export default function AgentDiary() {
     // Add confirmed invitations
     invitations.forEach((inv: any) => {
       if (!inv.selected_date || !inv.selected_time) return;
-      const dateTime = parseISO(`${inv.selected_date}T${inv.selected_time || '10:00'}`);
+      const dateTime = safeParseISO(`${inv.selected_date}T${inv.selected_time || '10:00'}`);
+      if (!dateTime) return; // Skip invalid dates
+      
       const customerName = inv.customer?.first_name 
         ? `${inv.customer.first_name} ${inv.customer.last_name || ''}`.trim()
         : inv.customer?.email || 'Unknown';
