@@ -212,6 +212,7 @@ export type Database = {
           confidence: string
           created_at: string
           id: string
+          images: string[] | null
           is_public: boolean
           notes: string | null
           postcode: string
@@ -228,6 +229,7 @@ export type Database = {
           confidence?: string
           created_at?: string
           id?: string
+          images?: string[] | null
           is_public?: boolean
           notes?: string | null
           postcode: string
@@ -244,6 +246,7 @@ export type Database = {
           confidence?: string
           created_at?: string
           id?: string
+          images?: string[] | null
           is_public?: boolean
           notes?: string | null
           postcode?: string
