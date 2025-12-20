@@ -9,6 +9,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/layout/PageTransition";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -86,20 +87,20 @@ const AnimatedRoutes = () => {
         <Route path="/profile" element={<PageTransition><BuyerProfile /></PageTransition>} />
 
         {/* Agent View Routes */}
-        <Route path="/agent" element={<PageTransition><AgentDashboard /></PageTransition>} />
-        <Route path="/agent/dashboard" element={<PageTransition><AgentDashboard /></PageTransition>} />
-        <Route path="/agent/diary" element={<PageTransition><AgentDiary /></PageTransition>} />
-        <Route path="/agent/properties" element={<PageTransition><AgentProperties /></PageTransition>} />
-        <Route path="/agent/property/:id" element={<PageTransition><PropertyDetail /></PageTransition>} />
-        <Route path="/agent/requests" element={<PageTransition><AgentRequests /></PageTransition>} />
-        <Route path="/agent/inspections" element={<PageTransition><AgentInspections /></PageTransition>} />
-        <Route path="/agent/appraisals" element={<PageTransition><AgentAppraisals /></PageTransition>} />
-        <Route path="/agent/auctions" element={<PageTransition><AgentAuctions /></PageTransition>} />
-        <Route path="/agent/auction/:id/run" element={<PageTransition><AuctionConsole /></PageTransition>} />
-        <Route path="/agent/crm" element={<PageTransition><AgentCRM /></PageTransition>} />
-        <Route path="/agent/network" element={<PageTransition><AgentNetwork /></PageTransition>} />
-        <Route path="/agent/notifications" element={<PageTransition><AgentNotifications /></PageTransition>} />
-        <Route path="/agent/settings" element={<PageTransition><AgentSettings /></PageTransition>} />
+        <Route path="/agent" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentDashboard /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/dashboard" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentDashboard /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/diary" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentDiary /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/properties" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentProperties /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/property/:id" element={<PageTransition><ProtectedRoute requiredRole="agent"><PropertyDetail /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/requests" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentRequests /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/inspections" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentInspections /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/appraisals" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentAppraisals /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/auctions" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentAuctions /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/auction/:id/run" element={<PageTransition><ProtectedRoute requiredRole="agent"><AuctionConsole /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/crm" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentCRM /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/network" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentNetwork /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/notifications" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentNotifications /></ProtectedRoute></PageTransition>} />
+        <Route path="/agent/settings" element={<PageTransition><ProtectedRoute requiredRole="agent"><AgentSettings /></ProtectedRoute></PageTransition>} />
 
         {/* Catch-all */}
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
