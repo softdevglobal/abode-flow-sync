@@ -749,6 +749,33 @@ export type Database = {
           },
         ]
       }
+      rate_limits: {
+        Row: {
+          created_at: string
+          endpoint_type: string
+          id: string
+          identifier: string
+          request_count: number
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint_type: string
+          id?: string
+          identifier: string
+          request_count?: number
+          window_start?: string
+        }
+        Update: {
+          created_at?: string
+          endpoint_type?: string
+          id?: string
+          identifier?: string
+          request_count?: number
+          window_start?: string
+        }
+        Relationships: []
+      }
       saved_searches: {
         Row: {
           alerts_enabled: boolean | null
@@ -911,6 +938,16 @@ export type Database = {
       }
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          p_endpoint_type: string
+          p_identifier: string
+          p_max_requests: number
+          p_window_seconds?: number
+        }
+        Returns: Json
+      }
+      cleanup_rate_limits: { Args: never; Returns: undefined }
       get_agent_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {

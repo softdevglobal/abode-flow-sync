@@ -2,3 +2,6 @@ project_id = "riptfkuvywhjdccstuug"
 
 [functions.firecrawl-scrape]
 verify_jwt = false
+
+[functions.rate-limiter]
+verify_jwt = false
