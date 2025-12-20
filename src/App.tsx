@@ -26,6 +26,7 @@ import HowItWorks from "./pages/HowItWorks";
 import LiveAuction from "./pages/buyer/LiveAuction";
 import BuyerProfile from "./pages/buyer/Profile";
 import BuyerAppraisals from "./pages/buyer/Appraisals";
+import MyAppraisalRequests from "./pages/buyer/MyAppraisalRequests";
 import PreMarket from "./pages/buyer/PreMarket";
 import BuyerMessages from "./pages/buyer/Messages";
 import Auctions from "./pages/Auctions";
@@ -78,6 +79,7 @@ const AnimatedRoutes = () => {
         <Route path="/auctions" element={<PageTransition><Auctions /></PageTransition>} />
         <Route path="/auction/live/:id" element={<PageTransition><LiveAuction /></PageTransition>} />
         <Route path="/appraisals" element={<PageTransition><BuyerAppraisals /></PageTransition>} />
+        <Route path="/my-appraisal-requests" element={<PageTransition><MyAppraisalRequests /></PageTransition>} />
         <Route path="/pre-market" element={<PageTransition><PreMarket /></PageTransition>} />
         <Route path="/messages" element={<PageTransition><BuyerMessages /></PageTransition>} />
         <Route path="/profile" element={<PageTransition><BuyerProfile /></PageTransition>} />
