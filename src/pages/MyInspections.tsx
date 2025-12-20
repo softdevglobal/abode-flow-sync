@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,7 +24,6 @@ import {
 } from 'lucide-react';
 import { format, parseISO, isFuture, isPast } from 'date-fns';
 import { toast } from 'sonner';
-
 interface InspectionBooking {
   id: string;
   inspection_id: string;
@@ -89,6 +89,31 @@ export default function MyInspections() {
   });
 
   const queryClient = useQueryClient();
+
+  // Real-time subscription for inspection bookings
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('my-inspections-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'inspection_bookings',
+          filter: `customer_id=eq.${user.id}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['my-inspection-bookings', user.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
 
   const cancelMutation = useMutation({
     mutationFn: async (bookingId: string) => {
