@@ -95,7 +95,7 @@ export default function MyInspections() {
     if (!user?.id) return;
 
     const channel = supabase
-      .channel('my-inspections-realtime')
+      .channel(`my-inspections-realtime:${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -104,11 +104,14 @@ export default function MyInspections() {
           table: 'inspection_bookings',
           filter: `customer_id=eq.${user.id}`,
         },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['my-inspection-bookings', user.id] });
+        (payload) => {
+          console.debug('[realtime] my inspections booking change', payload);
+          queryClient.invalidateQueries({ queryKey: ['my-inspection-bookings'], exact: false });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.debug('[realtime] my inspections subscription status', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -126,7 +129,7 @@ export default function MyInspections() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['my-inspection-bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['my-inspection-bookings'], exact: false });
       toast.success('RSVP cancelled');
     },
     onError: (error) => {
