@@ -276,7 +276,9 @@ export default function AgentDiary() {
   const datesWithEvents = useMemo(() => {
     const dates = new Set<string>();
     allEvents.forEach(event => {
-      dates.add(format(event.dateTime, 'yyyy-MM-dd'));
+      if (event.dateTime && !isNaN(event.dateTime.getTime())) {
+        dates.add(format(event.dateTime, 'yyyy-MM-dd'));
+      }
     });
     return dates;
   }, [allEvents]);
