@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { CreateAppraisalDialog } from '@/components/appraisal/CreateAppraisalDialog';
+import { AppraisalFormData } from '@/components/appraisal/AppraisalForm';
 
 // Demo agent ID for prototype
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
@@ -31,6 +33,7 @@ const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 export default function AgentAppraisals() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('requests');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   // Fetch agent's appraisals
   const { data: appraisals = [], isLoading: appraisalsLoading } = useQuery({
@@ -115,6 +118,37 @@ export default function AgentAppraisals() {
     return `${firstName} ${lastName}`.trim() || profile.email || 'Unknown';
   };
 
+  // Create appraisal mutation
+  const createAppraisal = useMutation({
+    mutationFn: async (data: AppraisalFormData) => {
+      const { error } = await supabase
+        .from('appraisals')
+        .insert({
+          agent_id: DEMO_AGENT_ID,
+          address: data.address,
+          suburb: data.suburb,
+          state: data.state,
+          postcode: data.postcode,
+          price_from: data.price_from,
+          price_to: data.price_to,
+          confidence: data.confidence,
+          is_public: data.is_public,
+          notes: data.notes || null,
+        });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['agent-appraisals'] });
+      setShowCreateDialog(false);
+      setActiveTab('appraisals');
+      toast.success('Appraisal created successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to create appraisal: ' + error.message);
+    },
+  });
+
   const pendingCount = requests.filter((r: any) => r.status === 'pending').length;
 
   return (
@@ -129,7 +163,7 @@ export default function AgentAppraisals() {
               Manage appraisals and buyer requests
             </p>
           </div>
-          <Button className="shadow-glow-sm font-body">
+          <Button className="shadow-glow-sm font-body" onClick={() => setShowCreateDialog(true)}>
             <Plus className="w-4 h-4 mr-2" />
             New Appraisal
           </Button>
@@ -311,7 +345,7 @@ export default function AgentAppraisals() {
                   <p className="text-muted-foreground text-sm font-body mb-4">
                     Create your first property appraisal to get started.
                   </p>
-                  <Button>
+                  <Button onClick={() => setShowCreateDialog(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     New Appraisal
                   </Button>
@@ -369,6 +403,13 @@ export default function AgentAppraisals() {
             )}
           </TabsContent>
         </Tabs>
+
+        <CreateAppraisalDialog
+          open={showCreateDialog}
+          onOpenChange={setShowCreateDialog}
+          onSubmit={(data) => createAppraisal.mutate(data)}
+          isSubmitting={createAppraisal.isPending}
+        />
       </div>
     </AgentLayout>
   );
