@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -47,7 +48,6 @@ import AgentSettings from "./pages/agent/Settings";
 
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
 
 // Redirect component that preserves query params
 const CheckInRedirect = () => {
@@ -109,22 +109,26 @@ const AnimatedRoutes = () => {
 };
 
 // Main App component with providers
-const App = () => (
-  <ThemeProvider>
-    <AgencyThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
-              <AnimatedRoutes />
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </AgencyThemeProvider>
-  </ThemeProvider>
-);
+const App = () => {
+  const [queryClient] = useState(() => new QueryClient());
+
+  return (
+    <ThemeProvider>
+      <AgencyThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AuthProvider>
+                <AnimatedRoutes />
+              </AuthProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </AgencyThemeProvider>
+    </ThemeProvider>
+  );
+};
 
 export default App;
