@@ -105,6 +105,7 @@ export default function Auctions() {
   const { data: auctions = [], isLoading } = useQuery({
     queryKey: ['public-auctions', statusFilter],
     queryFn: async () => {
+      // Note: reserve_price is intentionally excluded for public security
       const selectQuery = `
         id,
         status,
@@ -112,7 +113,6 @@ export default function Auctions() {
         end_time,
         current_bid,
         min_increment,
-        reserve_price,
         property:properties(
           id,
           title,
