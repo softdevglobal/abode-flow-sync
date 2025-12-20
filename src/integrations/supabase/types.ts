@@ -209,16 +209,22 @@ export type Database = {
         Row: {
           address: string
           agent_id: string
+          bathrooms: number | null
+          bedrooms: number | null
           confidence: string
           created_at: string
+          headline: string | null
           id: string
           images: string[] | null
           is_public: boolean
+          land_size: number | null
           notes: string | null
+          parking: number | null
           postcode: string
           price_from: number
           price_to: number
           property_id: string | null
+          property_type: string | null
           state: string
           suburb: string
           updated_at: string
@@ -226,16 +232,22 @@ export type Database = {
         Insert: {
           address: string
           agent_id: string
+          bathrooms?: number | null
+          bedrooms?: number | null
           confidence?: string
           created_at?: string
+          headline?: string | null
           id?: string
           images?: string[] | null
           is_public?: boolean
+          land_size?: number | null
           notes?: string | null
+          parking?: number | null
           postcode: string
           price_from: number
           price_to: number
           property_id?: string | null
+          property_type?: string | null
           state?: string
           suburb: string
           updated_at?: string
@@ -243,16 +255,22 @@ export type Database = {
         Update: {
           address?: string
           agent_id?: string
+          bathrooms?: number | null
+          bedrooms?: number | null
           confidence?: string
           created_at?: string
+          headline?: string | null
           id?: string
           images?: string[] | null
           is_public?: boolean
+          land_size?: number | null
           notes?: string | null
+          parking?: number | null
           postcode?: string
           price_from?: number
           price_to?: number
           property_id?: string | null
+          property_type?: string | null
           state?: string
           suburb?: string
           updated_at?: string

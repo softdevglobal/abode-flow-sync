@@ -22,15 +22,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Upload, X, ImageIcon } from 'lucide-react';
+import { Loader2, Upload, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const appraisalSchema = z.object({
+  headline: z.string().max(100).optional(),
   address: z.string().min(1, 'Address is required').max(200),
   suburb: z.string().min(1, 'Suburb is required').max(100),
   state: z.string().min(1, 'State is required'),
   postcode: z.string().regex(/^\d{4}$/, 'Postcode must be 4 digits'),
+  property_type: z.string().min(1, 'Property type is required'),
+  bedrooms: z.coerce.number().min(0).max(20).optional(),
+  bathrooms: z.coerce.number().min(0).max(20).optional(),
+  parking: z.coerce.number().min(0).max(20).optional(),
+  land_size: z.coerce.number().min(0).optional(),
   price_from: z.coerce.number().min(1, 'Minimum price is required'),
   price_to: z.coerce.number().min(1, 'Maximum price is required'),
   confidence: z.enum(['low', 'medium', 'high']),
@@ -51,6 +57,13 @@ interface AppraisalFormProps {
 }
 
 const STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'TAS', 'NT', 'ACT'];
+const PROPERTY_TYPES = [
+  { value: 'house', label: 'House' },
+  { value: 'unit', label: 'Unit / Apartment' },
+  { value: 'townhouse', label: 'Townhouse' },
+  { value: 'land', label: 'Land' },
+  { value: 'rural', label: 'Rural' },
+];
 
 export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -60,10 +73,16 @@ export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
   const form = useForm<z.infer<typeof appraisalSchema>>({
     resolver: zodResolver(appraisalSchema),
     defaultValues: {
+      headline: '',
       address: '',
       suburb: '',
-      state: 'NSW',
+      state: 'VIC',
       postcode: '',
+      property_type: 'house',
+      bedrooms: undefined,
+      bathrooms: undefined,
+      parking: undefined,
+      land_size: undefined,
       price_from: 0,
       price_to: 0,
       confidence: 'medium',
@@ -136,6 +155,21 @@ export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
         <FormField
           control={form.control}
+          name="headline"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Headline (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="4 Bed Family Home - Close to Schools" {...field} />
+              </FormControl>
+              <FormDescription>A catchy title for this property</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="address"
           render={({ field }) => (
             <FormItem>
@@ -156,7 +190,7 @@ export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
               <FormItem>
                 <FormLabel>Suburb</FormLabel>
                 <FormControl>
-                  <Input placeholder="Sydney" {...field} />
+                  <Input placeholder="Glen Waverley" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -196,13 +230,96 @@ export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
                 <FormItem>
                   <FormLabel>Postcode</FormLabel>
                   <FormControl>
-                    <Input placeholder="2000" maxLength={4} {...field} />
+                    <Input placeholder="3150" maxLength={4} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </div>
+        </div>
+
+        <FormField
+          control={form.control}
+          name="property_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Property Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select property type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {PROPERTY_TYPES.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-4 gap-3">
+          <FormField
+            control={form.control}
+            name="bedrooms"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Beds</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="4" min={0} max={20} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="bathrooms"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Baths</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="2" min={0} max={20} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="parking"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cars</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="2" min={0} max={20} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="land_size"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Land (m²)</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="650" min={0} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -213,7 +330,7 @@ export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
               <FormItem>
                 <FormLabel>Price From ($)</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="500000" {...field} />
+                  <Input type="number" placeholder="1800000" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -227,7 +344,7 @@ export function AppraisalForm({ onSubmit, isSubmitting }: AppraisalFormProps) {
               <FormItem>
                 <FormLabel>Price To ($)</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="600000" {...field} />
+                  <Input type="number" placeholder="1950000" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

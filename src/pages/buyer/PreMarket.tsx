@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,12 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Home
+  Home,
+  Bed,
+  Bath,
+  Car,
+  Ruler,
+  ImageIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,14 +32,21 @@ import { toast } from 'sonner';
 
 interface Appraisal {
   id: string;
+  headline: string | null;
   address: string;
   suburb: string;
   state: string;
   postcode: string;
+  property_type: string | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  parking: number | null;
+  land_size: number | null;
   price_from: number;
   price_to: number;
   confidence: string;
   notes: string | null;
+  images: string[] | null;
   created_at: string;
   agent_id: string;
 }
@@ -131,6 +143,18 @@ export default function PreMarket() {
     return interest?.status || null;
   };
 
+  const getPropertyTypeLabel = (type: string | null) => {
+    if (!type) return 'Property';
+    const labels: Record<string, string> = {
+      house: 'House',
+      unit: 'Unit',
+      townhouse: 'Townhouse',
+      land: 'Land',
+      rural: 'Rural',
+    };
+    return labels[type] || type;
+  };
+
   const confidenceColors: Record<string, string> = {
     high: 'bg-green-500/10 text-green-500 border-green-500/20',
     medium: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
@@ -192,20 +216,65 @@ export default function PreMarket() {
                 key={appraisal.id} 
                 className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl hover:border-accent/50 transition-all duration-300 group overflow-hidden"
               >
-                {/* Pre-market badge */}
-                <div className="bg-accent/10 px-4 py-2 border-b border-border/50">
-                  <Badge variant="outline" className="bg-accent/20 text-accent border-accent/30">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    Pre-Market
-                  </Badge>
-                </div>
+                {/* Property Image */}
+                {appraisal.images && appraisal.images.length > 0 ? (
+                  <div className="aspect-[16/10] relative">
+                    <img
+                      src={appraisal.images[0]}
+                      alt={appraisal.headline || appraisal.address}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {appraisal.images.length > 1 && (
+                      <div className="absolute bottom-2 right-2 bg-background/80 backdrop-blur-sm rounded-md px-2 py-1 text-xs font-medium flex items-center gap-1">
+                        <ImageIcon className="w-3 h-3" />
+                        {appraisal.images.length}
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2 flex gap-2">
+                      <Badge variant="outline" className="bg-accent/20 text-accent border-accent/30 backdrop-blur-sm">
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                        Pre-Market
+                      </Badge>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="aspect-[16/10] bg-muted/50 flex items-center justify-center relative">
+                    <Home className="w-12 h-12 text-muted-foreground/50" />
+                    <div className="absolute top-2 left-2">
+                      <Badge variant="outline" className="bg-accent/20 text-accent border-accent/30">
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                        Pre-Market
+                      </Badge>
+                    </div>
+                  </div>
+                )}
 
                 <CardContent className="pt-4">
+                  {/* Property Type & Confidence */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="outline" className="text-xs">
+                      {getPropertyTypeLabel(appraisal.property_type)}
+                    </Badge>
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs ${confidenceColors[appraisal.confidence] || confidenceColors.medium}`}
+                    >
+                      {appraisal.confidence} confidence
+                    </Badge>
+                  </div>
+
+                  {/* Headline */}
+                  {appraisal.headline && (
+                    <h3 className="font-display font-semibold text-foreground mb-1 line-clamp-1">
+                      {appraisal.headline}
+                    </h3>
+                  )}
+
                   {/* Address */}
                   <div className="flex items-start gap-2 mb-3">
                     <MapPin className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                     <div>
-                      <p className="font-display font-semibold text-foreground">
+                      <p className="font-medium text-foreground text-sm">
                         {appraisal.address}
                       </p>
                       <p className="text-sm text-muted-foreground">
@@ -214,27 +283,41 @@ export default function PreMarket() {
                     </div>
                   </div>
 
+                  {/* Features */}
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                    {appraisal.bedrooms && (
+                      <span className="flex items-center gap-1">
+                        <Bed className="w-4 h-4" /> {appraisal.bedrooms}
+                      </span>
+                    )}
+                    {appraisal.bathrooms && (
+                      <span className="flex items-center gap-1">
+                        <Bath className="w-4 h-4" /> {appraisal.bathrooms}
+                      </span>
+                    )}
+                    {appraisal.parking && (
+                      <span className="flex items-center gap-1">
+                        <Car className="w-4 h-4" /> {appraisal.parking}
+                      </span>
+                    )}
+                    {appraisal.land_size && (
+                      <span className="flex items-center gap-1">
+                        <Ruler className="w-4 h-4" /> {appraisal.land_size}m²
+                      </span>
+                    )}
+                  </div>
+
                   {/* Price Range */}
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-4">
                     <DollarSign className="w-4 h-4 text-accent" />
                     <span className="font-display font-bold text-lg text-foreground">
                       {formatCurrency(appraisal.price_from)} - {formatCurrency(appraisal.price_to)}
                     </span>
                   </div>
 
-                  {/* Confidence Badge */}
-                  <div className="flex items-center gap-2 mb-4">
-                    <Badge 
-                      variant="outline" 
-                      className={confidenceColors[appraisal.confidence] || confidenceColors.medium}
-                    >
-                      {appraisal.confidence.charAt(0).toUpperCase() + appraisal.confidence.slice(1)} Confidence
-                    </Badge>
-                  </div>
-
                   {/* Notes preview */}
                   {appraisal.notes && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4 bg-muted/30 rounded-lg p-2">
                       {appraisal.notes}
                     </p>
                   )}
@@ -296,17 +379,51 @@ export default function PreMarket() {
 
           {selectedAppraisal && (
             <div className="space-y-4">
+              {/* Property Image */}
+              {selectedAppraisal.images && selectedAppraisal.images.length > 0 && (
+                <div className="aspect-video rounded-lg overflow-hidden">
+                  <img
+                    src={selectedAppraisal.images[0]}
+                    alt={selectedAppraisal.headline || selectedAppraisal.address}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
               {/* Property Info */}
               <div className="bg-muted/50 rounded-lg p-4">
+                {selectedAppraisal.headline && (
+                  <h4 className="font-semibold text-foreground mb-2">{selectedAppraisal.headline}</h4>
+                )}
                 <div className="flex items-start gap-2 mb-2">
                   <MapPin className="w-4 h-4 text-primary mt-0.5" />
                   <div>
-                    <p className="font-semibold text-foreground">{selectedAppraisal.address}</p>
+                    <p className="font-medium text-foreground">{selectedAppraisal.address}</p>
                     <p className="text-sm text-muted-foreground">
                       {selectedAppraisal.suburb}, {selectedAppraisal.state} {selectedAppraisal.postcode}
                     </p>
                   </div>
                 </div>
+                
+                {/* Features */}
+                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                  {selectedAppraisal.bedrooms && (
+                    <span className="flex items-center gap-1">
+                      <Bed className="w-4 h-4" /> {selectedAppraisal.bedrooms} beds
+                    </span>
+                  )}
+                  {selectedAppraisal.bathrooms && (
+                    <span className="flex items-center gap-1">
+                      <Bath className="w-4 h-4" /> {selectedAppraisal.bathrooms} baths
+                    </span>
+                  )}
+                  {selectedAppraisal.parking && (
+                    <span className="flex items-center gap-1">
+                      <Car className="w-4 h-4" /> {selectedAppraisal.parking} cars
+                    </span>
+                  )}
+                </div>
+
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-accent" />
                   <span className="font-bold text-foreground">
