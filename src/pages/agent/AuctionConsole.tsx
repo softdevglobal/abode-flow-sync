@@ -13,7 +13,8 @@ import {
   Volume2,
   CheckCircle,
   AlertTriangle,
-  Loader2
+  Loader2,
+  UserCheck
 } from 'lucide-react';
 import { AgentLayout } from '@/components/layout/AgentLayout';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { useRealtimeBids, useAuction, useAuctionControls } from '@/hooks/useRealtimeAuction';
+import { useAuctionRegistrations } from '@/hooks/useAuctionRegistration';
 import { cn } from '@/lib/utils';
 
 export default function AuctionConsole() {
@@ -48,6 +52,7 @@ export default function AuctionConsole() {
   const { data: auction, isLoading: auctionLoading } = useAuction(id);
   const { bids, highestBid, bidCount, isSubscribed, latestBidId } = useRealtimeBids(id);
   const { updateAuctionStatus, updatePropertyStatus, placeBid } = useAuctionControls(id);
+  const { data: registrations = [], isLoading: registrationsLoading } = useAuctionRegistrations(id);
 
   const currentHighBid = highestBid?.amount || auction?.current_bid || 0;
   const minIncrement = auction?.min_increment || 1000;
@@ -360,6 +365,97 @@ export default function AuctionConsole() {
                       </div>
                     ))}
                   </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Registered Bidders */}
+            <Card className="rounded-2xl border-border/50 bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center justify-between font-display">
+                  <span className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-primary" />
+                    Registered Bidders
+                  </span>
+                  <Badge variant="secondary" className="bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400">
+                    {registrations.length} registered
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {registrationsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : registrations.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p>No registered bidders yet</p>
+                    <p className="text-xs mt-1">Buyers will appear here when they register</p>
+                  </div>
+                ) : (
+                  <ScrollArea className="max-h-[250px]">
+                    <div className="space-y-2">
+                      {registrations.map((registration) => {
+                        const profile = registration.profile as { id: string; first_name: string | null; last_name: string | null; email: string } | null;
+                        const initials = profile 
+                          ? `${profile.first_name?.[0] || ''}${profile.last_name?.[0] || ''}`.toUpperCase() || 'U'
+                          : 'U';
+                        const displayName = profile 
+                          ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email
+                          : 'Unknown User';
+                        
+                        // Check if this bidder has placed any bids
+                        const hasBid = bids.some(bid => bid.bidder_id === registration.user_id);
+                        const isHighestBidder = highestBid?.bidder_id === registration.user_id;
+                        
+                        return (
+                          <div
+                            key={registration.id}
+                            className={cn(
+                              "flex items-center justify-between p-3 rounded-lg",
+                              isHighestBidder ? "bg-green-50 dark:bg-green-950/50 border border-green-200 dark:border-green-800" : "bg-muted/50"
+                            )}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-9 w-9">
+                                <AvatarFallback className={cn(
+                                  "text-sm font-medium",
+                                  isHighestBidder ? "bg-green-500 text-white" : "bg-primary/10 text-primary"
+                                )}>
+                                  {initials}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-sm">{displayName}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {profile?.email}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {isHighestBidder ? (
+                                <Badge variant="success" className="text-xs">
+                                  <TrendingUp className="w-3 h-3 mr-1" />
+                                  Leading
+                                </Badge>
+                              ) : hasBid ? (
+                                <Badge variant="secondary" className="text-xs">
+                                  <Gavel className="w-3 h-3 mr-1" />
+                                  Active
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-xs text-muted-foreground">
+                                  <UserCheck className="w-3 h-3 mr-1" />
+                                  Registered
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
                 )}
               </CardContent>
             </Card>
