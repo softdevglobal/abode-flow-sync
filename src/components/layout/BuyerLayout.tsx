@@ -16,6 +16,7 @@ import {
   Building2,
   ChevronDown,
   FileText,
+  Mail,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,6 +51,7 @@ const allNavItems = [
   { icon: Gavel, label: 'Live Auctions', path: '/auctions', section: 'main' },
   { icon: Building2, label: 'Pre-Market', path: '/pre-market', section: 'main' },
   { icon: FileText, label: 'Appraisals', path: '/appraisals', section: 'main' },
+  { icon: Mail, label: 'Messages', path: '/messages', section: 'track' },
   { icon: Calendar, label: 'My Inspections', path: '/inspections', section: 'track' },
   { icon: Eye, label: 'My Viewings', path: '/viewings', section: 'track' },
   { icon: Heart, label: 'Saved Properties', path: '/saved', section: 'track' },
@@ -74,28 +76,39 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
   const { data: notificationCounts, refetch: refetchNotifications } = useQuery({
     queryKey: ['buyer-notification-counts', user?.id],
     queryFn: async () => {
-      if (!user?.id) return { inspections: 0, viewings: 0, total: 0 };
+      if (!user?.id) return { inspections: 0, viewings: 0, messages: 0, total: 0 };
       
-      const { data, error } = await supabase
+      // Fetch notifications
+      const { data: notifications, error: notifError } = await supabase
         .from('notifications')
         .select('type')
         .eq('user_id', user.id)
         .eq('read', false);
       
-      if (error) throw error;
+      if (notifError) throw notifError;
       
-      const inspections = data?.filter(n => 
+      // Fetch unread messages count
+      const { count: messagesCount, error: msgError } = await supabase
+        .from('buyer_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('buyer_id', user.id)
+        .eq('read', false);
+      
+      if (msgError) console.error('Messages count error:', msgError);
+      
+      const inspections = notifications?.filter(n => 
         n.type === 'inspection_reminder' || n.type === 'status_update'
       ).length || 0;
       
-      const viewings = data?.filter(n => 
+      const viewings = notifications?.filter(n => 
         n.type === 'viewing_request'
       ).length || 0;
       
       return { 
         inspections, 
         viewings, 
-        total: data?.length || 0 
+        messages: messagesCount || 0,
+        total: (notifications?.length || 0) + (messagesCount || 0)
       };
     },
     enabled: !!user?.id,
@@ -136,6 +149,7 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
   const getBadgeCount = (path: string) => {
     if (path === '/inspections') return notificationCounts?.inspections || 0;
     if (path === '/viewings') return notificationCounts?.viewings || 0;
+    if (path === '/messages') return notificationCounts?.messages || 0;
     return 0;
   };
 
