@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { ImageLightbox } from '@/components/ui/image-lightbox';
 import { 
   MapPin, 
   DollarSign, 
@@ -58,6 +59,15 @@ export default function PreMarket() {
   const [selectedAppraisal, setSelectedAppraisal] = useState<Appraisal | null>(null);
   const [offerAmount, setOfferAmount] = useState('');
   const [message, setMessage] = useState('');
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
+
+  const openLightbox = (images: string[], index: number = 0) => {
+    setLightboxImages(images);
+    setLightboxInitialIndex(index);
+    setLightboxOpen(true);
+  };
 
   // Fetch public appraisals
   const { data: appraisals = [], isLoading } = useQuery({
@@ -218,7 +228,10 @@ export default function PreMarket() {
               >
                 {/* Property Image */}
                 {appraisal.images && appraisal.images.length > 0 ? (
-                  <div className="aspect-[16/10] relative">
+                  <div 
+                    className="aspect-[16/10] relative cursor-pointer"
+                    onClick={() => openLightbox(appraisal.images!, 0)}
+                  >
                     <img
                       src={appraisal.images[0]}
                       alt={appraisal.headline || appraisal.address}
@@ -381,11 +394,14 @@ export default function PreMarket() {
             <div className="flex-1 overflow-y-auto space-y-4 pr-1">
               {/* Property Image */}
               {selectedAppraisal.images && selectedAppraisal.images.length > 0 && (
-                <div className="aspect-video rounded-lg overflow-hidden">
+                <div 
+                  className="aspect-video rounded-lg overflow-hidden cursor-pointer"
+                  onClick={() => openLightbox(selectedAppraisal.images!, 0)}
+                >
                   <img
                     src={selectedAppraisal.images[0]}
                     alt={selectedAppraisal.headline || selectedAppraisal.address}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               )}
@@ -488,6 +504,15 @@ export default function PreMarket() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Image Lightbox */}
+      <ImageLightbox
+        images={lightboxImages}
+        initialIndex={lightboxInitialIndex}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+        alt="Property"
+      />
     </BuyerLayout>
   );
 }
