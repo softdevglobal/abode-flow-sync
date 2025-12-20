@@ -335,7 +335,7 @@ export function AgentLayout({ children }: AgentLayoutProps) {
       </header>
 
       {/* Main Content */}
-      <main>{children}</main>
+      <main className="container px-4 py-6 pb-20 md:pb-6">{children}</main>
     </div>
   );
 }
