@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuction, useRealtimeBids, useAuctionControls } from '@/hooks/useRealtimeAuction';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuctionRegistration } from '@/hooks/useAuctionRegistration';
 import { supabase } from '@/integrations/supabase/client';
 import { BuyerLayout } from '@/components/layout/BuyerLayout';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { Slider } from '@/components/ui/slider';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { ArrowLeft, Gavel, TrendingUp, Users, Clock, CheckCircle2, LogIn, UserCheck, UserX } from 'lucide-react';
+import { ArrowLeft, Gavel, TrendingUp, Users, Clock, CheckCircle2, LogIn, UserCheck, UserX, UserPlus, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function LiveAuction() {
@@ -21,6 +22,7 @@ export default function LiveAuction() {
   const { data: auction, isLoading: auctionLoading, refetch: refetchAuction } = useAuction(auctionId);
   const { bids, highestBid, bidCount, isSubscribed, latestBidId } = useRealtimeBids(auctionId);
   const { placeBid } = useAuctionControls(auctionId);
+  const { isRegistered, isLoading: registrationLoading, register, isRegistering } = useAuctionRegistration(auctionId);
 
   const bidderId = user?.id || null;
 
@@ -102,6 +104,10 @@ export default function LiveAuction() {
       toast.error('Please sign in to place a bid');
       return;
     }
+    if (!isRegistered) {
+      toast.error('Please register for this auction before bidding');
+      return;
+    }
     if (!auctionId || bidAmount < minBid) {
       toast.error(`Minimum bid is $${minBid.toLocaleString()}`);
       return;
@@ -114,7 +120,7 @@ export default function LiveAuction() {
       console.error('Failed to place bid:', error);
       toast.error('Failed to place bid');
     }
-  }, [auctionId, bidAmount, minBid, placeBid, bidderId]);
+  }, [auctionId, bidAmount, minBid, placeBid, bidderId, isRegistered]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-AU', {
@@ -195,15 +201,20 @@ export default function LiveAuction() {
             </Button>
             <div className="flex items-center gap-2">
               {/* Bidder Registration Status */}
-              {user ? (
+              {user && isRegistered ? (
                 <Badge variant="outline" className="text-xs bg-green-50 dark:bg-green-950 border-green-300 dark:border-green-700 text-green-700 dark:text-green-400">
                   <UserCheck className="w-3 h-3 mr-1" />
                   Registered to Bid
                 </Badge>
-              ) : (
+              ) : user && !isRegistered ? (
                 <Badge variant="outline" className="text-xs bg-amber-50 dark:bg-amber-950 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400">
                   <UserX className="w-3 h-3 mr-1" />
                   Not Registered
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-xs bg-muted border-border text-muted-foreground">
+                  <UserX className="w-3 h-3 mr-1" />
+                  Sign In Required
                 </Badge>
               )}
               {isSubscribed && (
@@ -346,6 +357,42 @@ export default function LiveAuction() {
                     <LogIn className="w-4 h-4 mr-2" />
                     Sign In to Bid
                   </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ) : !isRegistered ? (
+            /* Registration required prompt */
+            <Card>
+              <CardContent className="py-8 text-center">
+                <UserPlus className="w-12 h-12 mx-auto text-primary mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Register to Bid</h3>
+                <p className="text-muted-foreground mb-6">
+                  You need to register for this auction before you can place bids.
+                </p>
+                <div className="bg-muted/50 rounded-lg p-4 mb-6 text-left max-w-sm mx-auto">
+                  <p className="text-sm font-medium mb-2">By registering, you agree to:</p>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>• Honor any winning bid you place</li>
+                    <li>• Provide valid contact information</li>
+                    <li>• Follow auction terms and conditions</li>
+                  </ul>
+                </div>
+                <Button 
+                  size="lg" 
+                  onClick={() => register()}
+                  disabled={isRegistering}
+                >
+                  {isRegistering ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Registering...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Register to Bid
+                    </>
+                  )}
                 </Button>
               </CardContent>
             </Card>
