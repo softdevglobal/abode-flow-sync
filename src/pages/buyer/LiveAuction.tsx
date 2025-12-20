@@ -12,8 +12,9 @@ import { Slider } from '@/components/ui/slider';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { ArrowLeft, Gavel, TrendingUp, Users, Clock, CheckCircle2, LogIn, UserCheck, UserX, UserPlus, Loader2 } from 'lucide-react';
+import { ArrowLeft, Gavel, TrendingUp, Users, Clock, CheckCircle2, LogIn, UserCheck, UserX, UserPlus, Loader2, Timer } from 'lucide-react';
 import { format } from 'date-fns';
+import { CountdownTimer } from '@/components/auction/CountdownTimer';
 
 export default function LiveAuction() {
   const { id: auctionId } = useParams<{ id: string }>();
@@ -313,11 +314,17 @@ export default function LiveAuction() {
             </Card>
             <Card>
               <CardContent className="py-4 text-center">
-                <Clock className="w-5 h-5 mx-auto text-muted-foreground mb-1" />
-                <p className="text-sm font-medium">
-                  {auction.end_time ? format(new Date(auction.end_time), 'h:mm a') : '-'}
-                </p>
-                <p className="text-xs text-muted-foreground">End Time</p>
+                {auction.end_time && isLive ? (
+                  <CountdownTimer endTime={auction.end_time} variant="default" />
+                ) : (
+                  <>
+                    <Clock className="w-5 h-5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-sm font-medium">
+                      {auction.end_time ? format(new Date(auction.end_time), 'h:mm a') : '-'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">End Time</p>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
