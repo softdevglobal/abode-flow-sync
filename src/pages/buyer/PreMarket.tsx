@@ -369,8 +369,8 @@ export default function PreMarket() {
 
       {/* Interest Dialog */}
       <Dialog open={!!selectedAppraisal} onOpenChange={() => setSelectedAppraisal(null)}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="font-display">Express Interest</DialogTitle>
             <DialogDescription>
               Submit your interest for this pre-market property. The agent will contact you to discuss further.
@@ -378,7 +378,7 @@ export default function PreMarket() {
           </DialogHeader>
 
           {selectedAppraisal && (
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4 pr-1">
               {/* Property Image */}
               {selectedAppraisal.images && selectedAppraisal.images.length > 0 && (
                 <div className="aspect-video rounded-lg overflow-hidden">
@@ -465,7 +465,7 @@ export default function PreMarket() {
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 pt-4 border-t border-border">
             <Button variant="outline" onClick={() => setSelectedAppraisal(null)}>
               Cancel
             </Button>
