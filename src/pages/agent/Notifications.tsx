@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { AgentLayout } from '@/components/layout/AgentLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,9 +35,52 @@ type NotificationType = 'all' | 'viewing_request' | 'inspection_reminder' | 'new
 type ReadFilter = 'all' | 'unread' | 'read';
 
 export default function AgentNotifications() {
+  const navigate = useNavigate();
   const [typeFilter, setTypeFilter] = useState<NotificationType>('all');
   const [readFilter, setReadFilter] = useState<ReadFilter>('all');
   const markAsRead = useMarkNotificationRead();
+
+  // Navigate to the appropriate page based on notification type and data
+  const handleNotificationClick = (notification: any) => {
+    // Mark as read first
+    if (!notification.read) {
+      markAsRead.mutate(notification.id);
+    }
+
+    const data = notification.data as Record<string, any> | null;
+    
+    switch (notification.type) {
+      case 'viewing_request':
+        // Navigate to requests page
+        navigate('/agent/requests');
+        break;
+      case 'appraisal_interest':
+        // Navigate to appraisals page
+        navigate('/agent/appraisals');
+        break;
+      case 'inspection_reminder':
+        // Navigate to inspections page
+        navigate('/agent/inspections');
+        break;
+      case 'status_update':
+        // If it's an auction bid, navigate to auctions
+        if (data?.auction_id) {
+          navigate('/agent/auctions');
+        } else if (data?.property_id) {
+          navigate('/agent/properties');
+        }
+        break;
+      case 'new_listing':
+        navigate('/agent/properties');
+        break;
+      case 'message':
+        navigate('/agent/requests');
+        break;
+      default:
+        // Stay on notifications page
+        break;
+    }
+  };
 
   // Get agent's user_id
   const { data: agentData } = useQuery({
@@ -209,7 +253,7 @@ export default function AgentNotifications() {
                 {filteredNotifications.map((notification) => (
                   <div
                     key={notification.id}
-                    onClick={() => !notification.read && markAsRead.mutate(notification.id)}
+                    onClick={() => handleNotificationClick(notification)}
                     className={cn(
                       "p-4 hover:bg-primary/5 cursor-pointer transition-colors",
                       !notification.read && "bg-primary/10 border-l-2 border-l-primary"

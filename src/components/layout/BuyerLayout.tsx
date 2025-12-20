@@ -33,7 +33,8 @@ import { useAgencyTheme } from '@/contexts/AgencyThemeContext';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { formatDistanceToNow } from 'date-fns';
 
 // Primary nav items for bottom tab bar (5 max)
 const primaryNavItems = [
@@ -68,18 +69,38 @@ interface BuyerLayoutProps {
 export function BuyerLayout({ children }: BuyerLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const config = useAgencyTheme();
   const { user, signOut } = useAuth();
 
+  // Fetch notifications for user
+  const { data: notifications = [], refetch: refetchNotifications } = useQuery({
+    queryKey: ['buyer-notifications', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
   // Fetch unread notification counts
-  const { data: notificationCounts, refetch: refetchNotifications } = useQuery({
+  const { data: notificationCounts } = useQuery({
     queryKey: ['buyer-notification-counts', user?.id],
     queryFn: async () => {
       if (!user?.id) return { inspections: 0, viewings: 0, messages: 0, total: 0 };
       
       // Fetch notifications
-      const { data: notifications, error: notifError } = await supabase
+      const { data: notifs, error: notifError } = await supabase
         .from('notifications')
         .select('type')
         .eq('user_id', user.id)
@@ -96,11 +117,11 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
       
       if (msgError) console.error('Messages count error:', msgError);
       
-      const inspections = notifications?.filter(n => 
+      const inspections = notifs?.filter(n => 
         n.type === 'inspection_reminder' || n.type === 'status_update'
       ).length || 0;
       
-      const viewings = notifications?.filter(n => 
+      const viewings = notifs?.filter(n => 
         n.type === 'viewing_request'
       ).length || 0;
       
@@ -108,11 +129,61 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
         inspections, 
         viewings, 
         messages: messagesCount || 0,
-        total: (notifications?.length || 0) + (messagesCount || 0)
+        total: (notifs?.length || 0) + (messagesCount || 0)
       };
     },
     enabled: !!user?.id,
   });
+
+  // Mark notification as read mutation
+  const markAsRead = useMutation({
+    mutationFn: async (notificationId: string) => {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('id', notificationId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['buyer-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['buyer-notification-counts'] });
+    },
+  });
+
+  // Handle notification click - navigate to appropriate page
+  const handleNotificationClick = (notification: any) => {
+    if (!notification.read) {
+      markAsRead.mutate(notification.id);
+    }
+
+    const data = notification.data as Record<string, any> | null;
+    
+    switch (notification.type) {
+      case 'viewing_request':
+        navigate('/viewings');
+        break;
+      case 'inspection_reminder':
+        navigate('/inspections');
+        break;
+      case 'appraisal_interest':
+        navigate('/pre-market');
+        break;
+      case 'status_update':
+        if (data?.property_id) {
+          navigate(`/property/${data.property_id}`);
+        }
+        break;
+      case 'new_listing':
+        if (data?.property_id) {
+          navigate(`/property/${data.property_id}`);
+        } else {
+          navigate('/browse');
+        }
+        break;
+      default:
+        break;
+    }
+  };
 
   // Real-time subscription for notification updates
   useEffect(() => {
@@ -129,8 +200,9 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
           filter: `user_id=eq.${user.id}`,
         },
         () => {
-          console.log('Notification change detected, refetching counts...');
+          console.log('Notification change detected, refetching...');
           refetchNotifications();
+          queryClient.invalidateQueries({ queryKey: ['buyer-notification-counts'] });
         }
       )
       .subscribe();
@@ -138,7 +210,7 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, refetchNotifications]);
+  }, [user?.id, refetchNotifications, queryClient]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -230,11 +302,61 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
             {/* Theme Toggle */}
             <ThemeToggle />
 
-            {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative rounded-full">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full animate-pulse" />
-            </Button>
+            {/* Notifications Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative rounded-full">
+                  <Bell className="w-5 h-5" />
+                  {(notificationCounts?.total || 0) > 0 && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-accent rounded-full animate-pulse" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto bg-card border-border">
+                <div className="px-3 py-2 border-b border-border">
+                  <p className="font-semibold text-sm">Notifications</p>
+                  {(notificationCounts?.total || 0) > 0 && (
+                    <p className="text-xs text-muted-foreground">{notificationCounts?.total} unread</p>
+                  )}
+                </div>
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-center text-muted-foreground text-sm">
+                    No notifications yet
+                  </div>
+                ) : (
+                  notifications.slice(0, 8).map((notification) => (
+                    <DropdownMenuItem
+                      key={notification.id}
+                      onClick={() => handleNotificationClick(notification)}
+                      className={cn(
+                        "flex flex-col items-start gap-1 p-3 cursor-pointer",
+                        !notification.read && "bg-accent/10"
+                      )}
+                    >
+                      <div className="flex items-start gap-2 w-full">
+                        {!notification.read && (
+                          <div className="w-2 h-2 rounded-full bg-accent mt-1.5 shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className={cn(
+                            "text-sm truncate",
+                            !notification.read ? "font-semibold" : "font-medium"
+                          )}>
+                            {notification.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {notification.message}
+                          </p>
+                          <p className="text-xs text-muted-foreground/70 mt-1">
+                            {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Profile/Auth - Desktop */}
             {user ? (
