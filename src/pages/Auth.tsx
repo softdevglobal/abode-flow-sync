@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Building2, Mail, Lock, User, Phone, Briefcase, FileText } from 'lucide-react';
+import { PasswordStrengthMeter, validatePasswordStrength } from '@/components/auth/PasswordStrengthMeter';
 
 const loginSchema = z.object({
   email: z.string().trim().email('Invalid email address'),
@@ -20,7 +21,12 @@ const loginSchema = z.object({
 
 const signupSchema = z.object({
   email: z.string().trim().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string()
+    .min(12, 'Password must be at least 12 characters')
+    .regex(/[A-Z]/, 'Password must contain an uppercase letter')
+    .regex(/[a-z]/, 'Password must contain a lowercase letter')
+    .regex(/\d/, 'Password must contain a number')
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain a special character'),
   confirmPassword: z.string(),
   firstName: z.string().trim().min(1, 'First name is required').max(50, 'First name too long'),
   lastName: z.string().trim().min(1, 'Last name is required').max(50, 'Last name too long'),
@@ -302,14 +308,12 @@ export default function Auth() {
                       <Input
                         id="signup-password"
                         type="password"
-                        placeholder="••••••••"
+                        placeholder="Create a strong password"
                         className="pl-10"
                         {...signupForm.register('password')}
                       />
                     </div>
-                    {signupForm.formState.errors.password && (
-                      <p className="text-sm text-destructive">{signupForm.formState.errors.password.message}</p>
-                    )}
+                    <PasswordStrengthMeter password={signupForm.watch('password') || ''} />
                   </div>
 
                   <div className="space-y-2">
