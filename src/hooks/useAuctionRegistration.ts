@@ -73,6 +73,44 @@ export function useAuctionRegistration(auctionId: string | undefined) {
 export function useAuctionRegistrations(auctionId: string | undefined) {
   const queryClient = useQueryClient();
 
+  const query = useQuery({
+    queryKey: ['auction-registrations', auctionId],
+    queryFn: async () => {
+      if (!auctionId) return [];
+
+      // First fetch registrations
+      const { data: registrations, error: regError } = await supabase
+        .from('auction_registrations')
+        .select('*')
+        .eq('auction_id', auctionId)
+        .order('created_at', { ascending: false });
+
+      if (regError) throw regError;
+      if (!registrations || registrations.length === 0) return [];
+
+      // Then fetch profiles for those user IDs
+      const userIds = registrations.map(r => r.user_id);
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .in('id', userIds);
+
+      if (profileError) {
+        console.error('Error fetching profiles:', profileError);
+        // Return registrations without profile data if profiles fetch fails
+        return registrations.map(r => ({ ...r, profile: null }));
+      }
+
+      // Merge profiles with registrations
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+      return registrations.map(r => ({
+        ...r,
+        profile: profileMap.get(r.user_id) || null,
+      }));
+    },
+    enabled: !!auctionId,
+  });
+
   // Subscribe to real-time updates for registrations
   useEffect(() => {
     if (!auctionId) return;
@@ -115,41 +153,5 @@ export function useAuctionRegistrations(auctionId: string | undefined) {
     };
   }, [auctionId, queryClient]);
 
-  return useQuery({
-    queryKey: ['auction-registrations', auctionId],
-    queryFn: async () => {
-      if (!auctionId) return [];
-
-      // First fetch registrations
-      const { data: registrations, error: regError } = await supabase
-        .from('auction_registrations')
-        .select('*')
-        .eq('auction_id', auctionId)
-        .order('created_at', { ascending: false });
-
-      if (regError) throw regError;
-      if (!registrations || registrations.length === 0) return [];
-
-      // Then fetch profiles for those user IDs
-      const userIds = registrations.map(r => r.user_id);
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email')
-        .in('id', userIds);
-
-      if (profileError) {
-        console.error('Error fetching profiles:', profileError);
-        // Return registrations without profile data if profiles fetch fails
-        return registrations.map(r => ({ ...r, profile: null }));
-      }
-
-      // Merge profiles with registrations
-      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-      return registrations.map(r => ({
-        ...r,
-        profile: profileMap.get(r.user_id) || null,
-      }));
-    },
-    enabled: !!auctionId,
-  });
+  return query;
 }
