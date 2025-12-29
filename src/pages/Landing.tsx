@@ -15,7 +15,7 @@ import defaultHeroImage from '@/assets/logo.png';
 export default function Landing() {
   const navigate = useNavigate();
   const config = useAgencyTheme();
-  const heroImage = config.logoUrl || defaultHeroImage;
+  const heroImage = config.heroImageUrl || defaultHeroImage;
   const [isScrolled, setIsScrolled] = useState(false);
   const [showFloatingCheckIn, setShowFloatingCheckIn] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

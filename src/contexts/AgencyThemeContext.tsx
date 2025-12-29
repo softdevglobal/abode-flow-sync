@@ -27,7 +27,7 @@ export function AgencyThemeProvider({ children, config, agentId }: AgencyThemePr
         const id = agentId || DEMO_AGENT_ID;
         const { data, error } = await supabase
           .from('agents')
-          .select('theme_agency_name, theme_primary_color, theme_secondary_color, theme_accent_color, theme_logo_url, theme_favicon_url')
+          .select('theme_agency_name, theme_primary_color, theme_secondary_color, theme_accent_color, theme_logo_url, theme_favicon_url, theme_hero_image_url')
           .eq('id', id)
           .maybeSingle();
 
@@ -41,6 +41,7 @@ export function AgencyThemeProvider({ children, config, agentId }: AgencyThemePr
           if (data.theme_accent_color) themeFromDb.accentColor = data.theme_accent_color;
           if (data.theme_logo_url) themeFromDb.logoUrl = data.theme_logo_url;
           if (data.theme_favicon_url) themeFromDb.faviconUrl = data.theme_favicon_url;
+          if (data.theme_hero_image_url) themeFromDb.heroImageUrl = data.theme_hero_image_url;
           
           if (Object.keys(themeFromDb).length > 0) {
             setDbConfig(themeFromDb);
