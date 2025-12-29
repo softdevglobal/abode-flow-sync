@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/layout/PageTransition";
+import MobileFrame from "@/components/layout/MobileFrame";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -116,11 +117,13 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
-              <AnimatedRoutes />
-            </AuthProvider>
-          </BrowserRouter>
+          <MobileFrame>
+            <BrowserRouter>
+              <AuthProvider>
+                <AnimatedRoutes />
+              </AuthProvider>
+            </BrowserRouter>
+          </MobileFrame>
         </TooltipProvider>
       </QueryClientProvider>
     </AgencyThemeProvider>
