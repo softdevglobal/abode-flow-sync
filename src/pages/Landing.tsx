@@ -279,8 +279,8 @@ export default function Landing() {
       }}>
           <img src={heroImage} alt="Beautiful modern home" className="w-full h-full object-cover" />
           {/* Dark overlay gradient for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-background/50 to-background/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
         </motion.div>
 
         {/* Parallax glow effects */}
