@@ -18,7 +18,6 @@ import {
   Phone, 
   XCircle,
   Plus,
-  Filter,
   ArrowUpDown,
   Calendar,
   Home,
@@ -106,134 +105,93 @@ export default function MyAppraisalRequests() {
 
   return (
     <BuyerLayout>
-      <div className="container px-4 py-6 max-w-5xl">
+      <div className="px-4 py-4 pb-24 space-y-4">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground">
-              My Appraisal Requests
+            <h1 className="font-display text-lg font-bold text-foreground">
+              My Requests
             </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Track and manage your property appraisal requests
+            <p className="text-muted-foreground text-xs">
+              Track your appraisal requests
             </p>
           </div>
-          <Button asChild>
+          <Button size="sm" asChild>
             <Link to="/appraisals">
-              <Plus className="w-4 h-4 mr-2" />
-              New Request
+              <Plus className="w-4 h-4 mr-1" />
+              New
             </Link>
           </Button>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-4 gap-2">
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.total || 0}</p>
-                  <p className="text-xs text-muted-foreground">Total</p>
-                </div>
-              </div>
+            <CardContent className="p-3 text-center">
+              <p className="text-xl font-bold">{stats?.total || 0}</p>
+              <p className="text-[10px] text-muted-foreground">Total</p>
             </CardContent>
           </Card>
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-amber-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.pending || 0}</p>
-                  <p className="text-xs text-muted-foreground">Pending</p>
-                </div>
-              </div>
+            <CardContent className="p-3 text-center">
+              <p className="text-xl font-bold text-amber-500">{stats?.pending || 0}</p>
+              <p className="text-[10px] text-muted-foreground">Pending</p>
             </CardContent>
           </Card>
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                  <Phone className="w-5 h-5 text-blue-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.contacted || 0}</p>
-                  <p className="text-xs text-muted-foreground">Contacted</p>
-                </div>
-              </div>
+            <CardContent className="p-3 text-center">
+              <p className="text-xl font-bold text-blue-500">{stats?.contacted || 0}</p>
+              <p className="text-[10px] text-muted-foreground">Contacted</p>
             </CardContent>
           </Card>
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-emerald-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats?.completed || 0}</p>
-                  <p className="text-xs text-muted-foreground">Completed</p>
-                </div>
-              </div>
+            <CardContent className="p-3 text-center">
+              <p className="text-xl font-bold text-emerald-500">{stats?.completed || 0}</p>
+              <p className="text-[10px] text-muted-foreground">Complete</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Filters */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm mb-6">
-          <CardContent className="py-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* Status Filter Tabs */}
-              <Tabs 
-                value={statusFilter} 
-                onValueChange={(v) => setStatusFilter(v as AppraisalRequestStatus | 'all')}
-                className="flex-1"
-              >
-                <TabsList className="w-full sm:w-auto grid grid-cols-4 sm:flex">
-                  <TabsTrigger value="all" className="text-xs sm:text-sm">
-                    All
-                  </TabsTrigger>
-                  <TabsTrigger value="pending" className="text-xs sm:text-sm">
-                    Pending
-                  </TabsTrigger>
-                  <TabsTrigger value="contacted" className="text-xs sm:text-sm">
-                    Contacted
-                  </TabsTrigger>
-                  <TabsTrigger value="completed" className="text-xs sm:text-sm">
-                    Completed
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+        <div className="space-y-3">
+          {/* Status Filter Tabs */}
+          <Tabs 
+            value={statusFilter} 
+            onValueChange={(v) => setStatusFilter(v as AppraisalRequestStatus | 'all')}
+          >
+            <TabsList className="w-full grid grid-cols-4 h-9">
+              <TabsTrigger value="all" className="text-xs px-2">All</TabsTrigger>
+              <TabsTrigger value="pending" className="text-xs px-2">Pending</TabsTrigger>
+              <TabsTrigger value="contacted" className="text-xs px-2">Contacted</TabsTrigger>
+              <TabsTrigger value="completed" className="text-xs px-2">Done</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-              {/* Sort Controls */}
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-muted-foreground" />
-                <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="created_at">Date Submitted</SelectItem>
-                    <SelectItem value="updated_at">Last Updated</SelectItem>
-                    <SelectItem value="suburb">Suburb</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                >
-                  <ArrowUpDown className={cn(
-                    "w-4 h-4 transition-transform",
-                    sortOrder === 'asc' && "rotate-180"
-                  )} />
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Sort Controls */}
+          <div className="flex items-center gap-2">
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+              <SelectTrigger className="flex-1 h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="created_at">Date Submitted</SelectItem>
+                <SelectItem value="updated_at">Last Updated</SelectItem>
+                <SelectItem value="suburb">Suburb</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-9 w-9 shrink-0"
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            >
+              <ArrowUpDown className={cn(
+                "w-4 h-4 transition-transform",
+                sortOrder === 'asc' && "rotate-180"
+              )} />
+            </Button>
+          </div>
+        </div>
 
         {/* Requests List */}
         {isLoading ? (
