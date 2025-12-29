@@ -116,7 +116,7 @@ export default function AgentInspections() {
 
   return (
     <AgentLayout>
-      <div className="space-y-4">
+      <div className="container px-4 py-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
@@ -178,7 +178,7 @@ export default function AgentInspections() {
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className={viewMode === 'calendar' ? 'space-y-4' : ''}>
+          <div className={viewMode === 'calendar' ? 'grid lg:grid-cols-[350px_1fr] gap-6' : ''}>
             {/* Calendar View */}
             {viewMode === 'calendar' && (
               <div>

@@ -69,35 +69,35 @@ export default function AgentDashboard() {
 
   return (
     <AgentLayout>
-      <div className="space-y-6">
+      <div className="container px-4 py-6">
         {/* Welcome Section */}
-        <div>
-          <h1 className="font-display text-xl md:text-3xl font-bold text-foreground mb-1">
+        <div className="mb-8">
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
             Welcome back!
           </h1>
-          <p className="text-sm text-muted-foreground font-body">
+          <p className="text-muted-foreground font-body">
             Here's an overview of your real estate portfolio.
           </p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {stats.map((stat) => (
             <Card key={stat.title} className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-colors cursor-default">
-              <CardContent className="p-3 sm:pt-5">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl ${stat.bgColor} flex items-center justify-center`}>
-                    <stat.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.color}`} />
+              <CardContent className="pt-5">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
+                    <stat.icon className={`w-5 h-5 ${stat.color}`} />
                   </div>
                   <div>
                     {loading ? (
-                      <Skeleton className="h-6 sm:h-8 w-10 sm:w-12 mb-1" />
+                      <Skeleton className="h-8 w-12 mb-1" />
                     ) : (
-                      <p className="text-xl sm:text-2xl font-display font-bold">
+                      <p className="text-2xl font-display font-bold">
                         {stat.value}
                       </p>
                     )}
-                    <p className="text-[10px] sm:text-xs text-muted-foreground font-body leading-tight">{stat.title}</p>
+                    <p className="text-xs text-muted-foreground font-body">{stat.title}</p>
                   </div>
                 </div>
               </CardContent>
@@ -106,23 +106,23 @@ export default function AgentDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3">
-          <Button asChild variant="default" size="sm" className="h-auto py-3 sm:py-4 flex-col gap-1 sm:gap-2 font-body shadow-glow-sm text-xs sm:text-sm">
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          <Button asChild variant="default" size="lg" className="h-auto py-4 flex-col gap-2 font-body shadow-glow-sm">
             <Link to="/agent/properties">
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Plus className="w-5 h-5" />
               <span>Add Listing</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" size="sm" className="h-auto py-3 sm:py-4 flex-col gap-1 sm:gap-2 font-body hover:border-primary/50 text-xs sm:text-sm">
+          <Button asChild variant="outline" size="lg" className="h-auto py-4 flex-col gap-2 font-body hover:border-primary/50">
             <Link to="/agent/inspections">
-              <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Calendar className="w-5 h-5" />
               <span>Inspections</span>
             </Link>
           </Button>
         </div>
 
         {/* Partner Activity & Quick Links */}
-        <div className="space-y-4">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           {/* Partner Activity Widget */}
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -261,15 +261,15 @@ export default function AgentDashboard() {
         </div>
 
         {/* CTA Card */}
-        <Card className="border-primary/30 gradient-orange text-white shadow-glow-sm rounded-xl overflow-hidden">
-          <CardContent className="p-4 sm:pt-6">
-            <h3 className="font-display text-lg sm:text-xl font-bold mb-1 sm:mb-2">
+        <Card className="border-primary/30 gradient-orange text-white mb-8 shadow-glow-sm rounded-xl overflow-hidden">
+          <CardContent className="pt-6">
+            <h3 className="font-display text-xl font-bold mb-2">
               Add a New Listing
             </h3>
-            <p className="text-white/80 mb-3 sm:mb-4 font-body text-sm">
+            <p className="text-white/80 mb-4 font-body">
               List a new property and start receiving enquiries from potential buyers.
             </p>
-            <Button asChild variant="secondary" size="sm" className="bg-white text-primary hover:bg-white/90 font-body">
+            <Button asChild variant="secondary" className="bg-white text-primary hover:bg-white/90 font-body">
               <Link to="/agent/properties">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Listing

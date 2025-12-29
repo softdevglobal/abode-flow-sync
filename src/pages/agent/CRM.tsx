@@ -243,23 +243,29 @@ export default function CRM() {
 
   return (
     <AgentLayout>
-      <div className="px-4 py-4 space-y-4">
+      <div className="space-y-6 p-4 md:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="font-display text-lg font-bold text-foreground">Customer CRM</h1>
-            <p className="text-xs text-muted-foreground font-body">
-              Manage relationships
+            <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground">Customer CRM</h1>
+            <p className="text-muted-foreground font-body">
+              Manage customer relationships and track interactions
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="secondary" className="text-sm font-body bg-primary/10 text-primary border-primary/20">
+              <Users className="w-4 h-4 mr-1" />
+              {customers.length} Customers
+            </Badge>
             <Button
               variant="outline"
               size="sm"
               onClick={() => exportCustomersToCSV(customers, customerTagsMap, tags)}
               disabled={customers.length === 0}
+              className="font-body hover:border-primary/50 transition-colors"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
             </Button>
             <TagManager 
               tags={tags} 
@@ -358,15 +364,16 @@ export default function CRM() {
 
         {/* Customer List */}
         {customersLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <Card key={i} className="border-border/50 bg-card/50">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    <Skeleton className="w-10 h-10 rounded-full" />
+                    <Skeleton className="w-12 h-12 rounded-full" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-32" />
                       <Skeleton className="h-3 w-48" />
+                      <Skeleton className="h-3 w-24" />
                     </div>
                   </div>
                 </CardContent>
@@ -375,18 +382,18 @@ export default function CRM() {
           </div>
         ) : filteredCustomers.length === 0 ? (
           <Card className="border-border/50 bg-card/50">
-            <CardContent className="py-8 text-center">
-              <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                <Users className="w-6 h-6 text-primary" />
+            <CardContent className="py-12 text-center">
+              <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Users className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="font-display text-base font-medium text-foreground mb-1">No customers found</h3>
-              <p className="text-sm text-muted-foreground font-body">
-                {filterTag ? 'No matches for filter' : 'Customers appear when they interact'}
+              <h3 className="font-display text-lg font-medium text-foreground mb-2">No customers found</h3>
+              <p className="text-muted-foreground font-body">
+                {filterTag ? 'No customers match the selected tag filter' : 'Customers will appear here when they interact with your properties'}
               </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredCustomers.map((customer) => {
               const customerTags = getCustomerTags(customer.id);
               const scoreInfo = getLeadScoreLabel(customer.lead_score);

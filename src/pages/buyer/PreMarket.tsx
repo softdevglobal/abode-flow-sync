@@ -193,17 +193,17 @@ export default function PreMarket() {
 
   return (
     <BuyerLayout>
-      <div className="px-4 py-4 space-y-4">
+      <div className="container px-4 py-6 max-w-6xl">
         {/* Hero Section */}
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
-            <TrendingUp className="w-6 h-6 text-primary" />
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+            <TrendingUp className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="font-display text-xl font-bold text-foreground mb-1">
+          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
             Pre-Market Properties
           </h1>
-          <p className="text-muted-foreground font-body text-sm">
-            Get early access before they hit the market
+          <p className="text-muted-foreground font-body max-w-xl mx-auto">
+            Get early access to properties before they hit the market. Express interest or make an offer to secure your dream home first.
           </p>
         </div>
 
@@ -220,15 +220,15 @@ export default function PreMarket() {
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Home className="w-12 h-12 text-muted-foreground mb-4" />
               <h3 className="font-display text-lg font-semibold mb-2">No Pre-Market Properties</h3>
-              <p className="text-muted-foreground text-center text-sm">
-                Check back soon for new properties!
+              <p className="text-muted-foreground text-center max-w-sm">
+                There are no pre-market properties available at the moment. Check back soon!
               </p>
             </CardContent>
           </Card>
         )}
 
-        {/* Appraisals Grid - Single Column */}
-        <div className="space-y-4">
+        {/* Appraisals Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {appraisals.map((appraisal) => {
             const hasInterest = hasSubmittedInterest(appraisal.id);
             const interestStatus = getInterestStatus(appraisal.id);
@@ -415,10 +415,12 @@ export default function PreMarket() {
         </div>
 
         {/* Disclaimer */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
-          <CardContent className="pt-4 pb-4">
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl mt-8">
+          <CardContent className="pt-5">
             <p className="text-xs text-muted-foreground font-body">
-              <strong className="text-primary">Disclaimer:</strong> Pre-market appraisals are indicative only.
+              <strong className="text-primary">Disclaimer:</strong> Pre-market appraisals are indicative only and not a formal valuation. 
+              Expressing interest does not guarantee the property will be available or sold at the indicated price range.
+              Final sale terms are subject to negotiation between buyer and seller.
             </p>
           </CardContent>
         </Card>

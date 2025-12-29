@@ -185,19 +185,19 @@ export default function BuyerProfile() {
 
   return (
     <BuyerLayout>
-      <div className="px-4 py-4 space-y-4">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Page Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-lg font-display font-bold">My Profile</h1>
-            <p className="text-xs text-muted-foreground font-body truncate max-w-[200px]">{user.email}</p>
+            <h1 className="text-xl font-display font-bold">My Profile</h1>
+            <p className="text-sm text-muted-foreground font-body">{user.email}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => signOut()}>
+          <Button variant="outline" size="sm" onClick={() => signOut()} className="border-border/50">
             Sign Out
           </Button>
         </div>
         {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-4 mb-6">
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
             <CardContent className="py-4 text-center">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-1">

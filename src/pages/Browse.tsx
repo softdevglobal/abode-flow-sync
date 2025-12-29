@@ -424,7 +424,7 @@ export default function Browse() {
 
   return (
     <BuyerLayout>
-      <div className="space-y-4 pb-20">
+      <div className="container px-4 py-6">
         {/* Search Header */}
         <div className="mb-6">
           <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
@@ -437,7 +437,14 @@ export default function Browse() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex gap-6">
+          {/* Desktop Filter Panel */}
+          <aside className="hidden lg:block w-72 flex-shrink-0">
+            <div className="sticky top-24 bg-card/50 backdrop-blur-sm rounded-2xl border border-border/50 p-5 shadow-lg">
+              <h3 className="font-display font-semibold mb-4 text-foreground">Filters</h3>
+              <FilterPanel />
+            </div>
+          </aside>
 
           {/* Main Content */}
           <div className="flex-1">
@@ -568,7 +575,7 @@ export default function Browse() {
 
             {/* Property Grid */}
             {!isLoading && (
-              <div className="grid gap-4 grid-cols-1">
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {filteredProperties.map((property, index) => (
                   <div key={property.id} className="animate-fade-in" style={{ animationDelay: `${index * 0.05}s` }}>
                     <PropertyCard 

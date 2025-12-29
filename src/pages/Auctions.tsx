@@ -246,60 +246,78 @@ export default function Auctions() {
 
   return (
     <BuyerLayout>
-      <div className="px-4 py-4 space-y-4">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Gavel className="w-5 h-5 text-primary" />
+      {/* Header */}
+      <header className="bg-card/50 backdrop-blur-md border-b border-border/50 sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shadow-glow-sm">
+                <Gavel className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="font-display text-2xl font-bold text-foreground">Live Auctions</h1>
+                <p className="text-sm text-muted-foreground font-body">
+                  Bid on properties in real-time
+                </p>
+              </div>
+            </div>
+            <Link to="/">
+              <Button variant="outline" size="sm" className="border-border/50">
+                Back to Home
+              </Button>
+            </Link>
           </div>
-          <div>
-            <h1 className="font-display text-xl font-bold text-foreground">Live Auctions</h1>
-            <p className="text-xs text-muted-foreground">Bid on properties in real-time</p>
+
+          {/* Stats */}
+          <div className="flex gap-4 mb-4 flex-wrap">
+            <div className="flex items-center gap-2 text-sm bg-card/50 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-border/50">
+              <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <span className="font-medium">{liveCount}</span>
+              <span className="text-muted-foreground">Live Now</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm bg-card/50 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-border/50">
+              <Clock className="w-4 h-4 text-primary" />
+              <span className="font-medium">{upcomingCount}</span>
+              <span className="text-muted-foreground">Upcoming</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm bg-card/50 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-border/50">
+              <CheckCircle className="w-4 h-4 text-primary" />
+              <span className="font-medium">{completedCount}</span>
+              <span className="text-muted-foreground">Completed</span>
+            </div>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by location or property..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as AuctionStatus)}>
+              <TabsList className="flex-wrap h-auto">
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="live">
+                  Live ({liveCount})
+                </TabsTrigger>
+                <TabsTrigger value="pending">
+                  Upcoming ({upcomingCount})
+                </TabsTrigger>
+                <TabsTrigger value="completed">
+                  Completed ({completedCount})
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </div>
+      </header>
 
-        {/* Stats */}
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          <div className="flex items-center gap-1.5 text-xs bg-card px-2.5 py-1.5 rounded-lg border border-border shrink-0">
-            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-            <span className="font-medium">{liveCount}</span>
-            <span className="text-muted-foreground">Live</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs bg-card px-2.5 py-1.5 rounded-lg border border-border shrink-0">
-            <Clock className="w-3 h-3 text-primary" />
-            <span className="font-medium">{upcomingCount}</span>
-            <span className="text-muted-foreground">Upcoming</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-xs bg-card px-2.5 py-1.5 rounded-lg border border-border shrink-0">
-            <CheckCircle className="w-3 h-3 text-primary" />
-            <span className="font-medium">{completedCount}</span>
-            <span className="text-muted-foreground">Completed</span>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search auctions..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
-        {/* Filter Tabs */}
-        <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as AuctionStatus)}>
-          <TabsList className="w-full grid grid-cols-4 h-9">
-            <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-            <TabsTrigger value="live" className="text-xs">Live</TabsTrigger>
-            <TabsTrigger value="pending" className="text-xs">Soon</TabsTrigger>
-            <TabsTrigger value="completed" className="text-xs">Done</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {/* Content */}
-        <div>
+      {/* Content */}
+      <main className="container mx-auto px-4 py-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -322,7 +340,7 @@ export default function Auctions() {
             )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredAuctions.map((auction) => {
               const property = auction.property as any;
               if (!property) return null;
@@ -487,8 +505,7 @@ export default function Auctions() {
             })}
           </div>
         )}
-        </div>
-      </div>
+      </main>
 
       {/* Sign In Dialog */}
       <Dialog open={showRegisterDialog} onOpenChange={setShowRegisterDialog}>

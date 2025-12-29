@@ -397,20 +397,20 @@ function AuctionCard({
           )}
         </div>
 
-        <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+        <CardContent className="p-4 space-y-3">
           {/* Address */}
           <div>
-            <h3 className="font-display font-semibold text-foreground text-sm sm:text-base line-clamp-1">
+            <h3 className="font-display font-semibold text-foreground line-clamp-1">
               {property?.address || 'Unknown Property'}
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground font-body">
+            <p className="text-sm text-muted-foreground font-body">
               {property?.suburb}, {property?.state} {property?.postcode}
             </p>
           </div>
 
           {/* Auction Time */}
-          <div className="flex items-center gap-2 text-xs sm:text-sm">
-            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground" />
+          <div className="flex items-center gap-2 text-sm">
+            <Clock className="w-4 h-4 text-muted-foreground" />
             <span className={cn(
               isLive && "text-red-600 font-medium"
             )}>
@@ -428,27 +428,26 @@ function AuctionCard({
           )}
 
           {/* Actions */}
-          <div className="flex gap-2 pt-1 sm:pt-2">
+          <div className="flex gap-2 pt-2">
             <Button 
-              size="sm"
               className={cn(
-                "flex-1 text-xs sm:text-sm",
+                "flex-1",
                 isLive && "bg-red-600 hover:bg-red-700"
               )}
               onClick={() => navigate(`/agent/auction/${auction.id}/run`)}
             >
-              <Gavel className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
-              {isCompleted ? 'View' : 'Console'}
+              <Gavel className="w-4 h-4 mr-2" />
+              {isCompleted ? 'View Details' : 'Enter Console'}
             </Button>
             
             {isPending && (
               <Button 
                 variant="outline"
-                size="sm"
-                className="text-destructive hover:bg-destructive hover:text-destructive-foreground px-2.5"
+                size="icon"
+                className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
                 onClick={() => setShowDeleteDialog(true)}
               >
-                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <Trash2 className="w-4 h-4" />
               </Button>
             )}
           </div>
@@ -526,7 +525,7 @@ function AuctionSection({
         <h2 className="font-display text-lg font-semibold">{title}</h2>
         <Badge variant="secondary" className="bg-primary/10 text-primary">{auctions.length}</Badge>
       </div>
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {auctions.map((auction) => (
           <AuctionCard key={auction.id} auction={auction} onDelete={onDelete} />
         ))}
@@ -551,12 +550,12 @@ export default function AgentAuctions() {
     <AgentLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="font-display text-2xl md:text-4xl font-bold">Auctions</h1>
-            <p className="text-sm text-muted-foreground font-body">Manage your live property auctions</p>
+            <h1 className="font-display text-3xl md:text-4xl font-bold">Auctions</h1>
+            <p className="text-muted-foreground font-body">Manage your live property auctions</p>
           </div>
-          <Button onClick={() => setCreateDialogOpen(true)} className="rounded-xl w-full sm:w-auto sm:self-start">
+          <Button onClick={() => setCreateDialogOpen(true)} className="rounded-xl">
             <Plus className="w-4 h-4 mr-2" />
             Schedule Auction
           </Button>
