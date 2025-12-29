@@ -2,6 +2,98 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile Frame Styles */
+.mobile-frame-container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, hsl(220 20% 10%) 0%, hsl(220 25% 15%) 50%, hsl(220 20% 12%) 100%);
+  padding: 1rem;
+}
+
+/* On actual mobile devices, hide the frame and go full screen */
+@media (max-width: 430px) {
+  .mobile-frame-container {
+    padding: 0;
+    background: transparent;
+  }
+  
+  .mobile-frame-device {
+    width: 100% !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  .mobile-frame-notch,
+  .mobile-frame-home-indicator {
+    display: none !important;
+  }
+}
+
+.mobile-frame-device {
+  position: relative;
+  width: 390px;
+  height: 844px;
+  background: hsl(var(--background));
+  border-radius: 50px;
+  border: 12px solid hsl(220 10% 20%);
+  box-shadow: 
+    0 0 0 2px hsl(220 10% 30%),
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 100px -20px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 2px hsl(220 10% 25%);
+  overflow: hidden;
+}
+
+.mobile-frame-notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 34px;
+  background: hsl(220 10% 20%);
+  border-radius: 0 0 20px 20px;
+  z-index: 50;
+}
+
+.mobile-frame-notch::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 6px;
+  background: hsl(220 10% 30%);
+  border-radius: 3px;
+}
+
+.mobile-frame-content {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-frame-home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: hsl(var(--foreground) / 0.3);
+  border-radius: 3px;
+  z-index: 50;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
