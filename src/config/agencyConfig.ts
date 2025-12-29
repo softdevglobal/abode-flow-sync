@@ -8,6 +8,7 @@ export interface AgencyConfig {
   accentColor: string; // HSL format: "H S% L%"
   logoUrl: string | null;
   faviconUrl: string | null;
+  heroImageUrl: string | null;
 }
 
 const agencyConfig: AgencyConfig = {
@@ -17,6 +18,7 @@ const agencyConfig: AgencyConfig = {
   accentColor: "38 70% 50%", // Warm Gold
   logoUrl: "/favicon.png", // Custom logo
   faviconUrl: "/favicon.png", // Custom favicon
+  heroImageUrl: null, // Hero background image
 };
 
 export default agencyConfig;

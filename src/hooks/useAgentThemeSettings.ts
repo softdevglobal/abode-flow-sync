@@ -8,6 +8,7 @@ export interface ThemeSettings {
   theme_accent_color: string | null;
   theme_logo_url: string | null;
   theme_favicon_url: string | null;
+  theme_hero_image_url: string | null;
   allow_partner_listings: boolean | null;
 }
 
@@ -21,7 +22,7 @@ export function useAgentThemeSettings(agentId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('agents')
-        .select('theme_agency_name, theme_primary_color, theme_secondary_color, theme_accent_color, theme_logo_url, theme_favicon_url, allow_partner_listings')
+        .select('theme_agency_name, theme_primary_color, theme_secondary_color, theme_accent_color, theme_logo_url, theme_favicon_url, theme_hero_image_url, allow_partner_listings')
         .eq('id', id)
         .maybeSingle();
       

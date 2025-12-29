@@ -23,13 +23,16 @@ export default function Settings() {
   const [accentColor, setAccentColor] = useState('#c9a227');
   const [logoUrl, setLogoUrl] = useState('');
   const [faviconUrl, setFaviconUrl] = useState('');
+  const [heroImageUrl, setHeroImageUrl] = useState('');
   const [allowPartnerListings, setAllowPartnerListings] = useState(true);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
   const [savingPartnerSetting, setSavingPartnerSetting] = useState(false);
   
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
+  const heroImageInputRef = useRef<HTMLInputElement>(null);
   
   // Initialize form with saved settings or defaults
   useEffect(() => {
@@ -40,6 +43,7 @@ export default function Settings() {
       setAccentColor(themeSettings.theme_accent_color ? hslToHex(themeSettings.theme_accent_color) : hslToHex(agencyConfig.accentColor));
       setLogoUrl(themeSettings.theme_logo_url || '');
       setFaviconUrl(themeSettings.theme_favicon_url || '');
+      setHeroImageUrl(themeSettings.theme_hero_image_url || '');
       setAllowPartnerListings(themeSettings.allow_partner_listings ?? true);
     } else if (!isLoading) {
       // Set defaults from config
@@ -48,10 +52,11 @@ export default function Settings() {
       setSecondaryColor(hslToHex(agencyConfig.secondaryColor));
       setAccentColor(hslToHex(agencyConfig.accentColor));
       setAllowPartnerListings(true);
+      setHeroImageUrl('');
     }
   }, [themeSettings, isLoading]);
   
-  const uploadFile = async (file: File, type: 'logo' | 'favicon'): Promise<string | null> => {
+  const uploadFile = async (file: File, type: 'logo' | 'favicon' | 'hero'): Promise<string | null> => {
     const fileExt = file.name.split('.').pop();
     const fileName = `${DEMO_AGENT_ID}/${type}-${Date.now()}.${fileExt}`;
     
@@ -135,6 +140,36 @@ export default function Settings() {
     }
   };
   
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+    
+    // Validate file size (max 5MB for hero images)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Hero image must be less than 5MB');
+      return;
+    }
+    
+    setUploadingHeroImage(true);
+    const url = await uploadFile(file, 'hero');
+    if (url) {
+      setHeroImageUrl(url);
+      toast.success('Hero image uploaded successfully');
+    }
+    setUploadingHeroImage(false);
+    
+    // Reset input
+    if (heroImageInputRef.current) {
+      heroImageInputRef.current.value = '';
+    }
+  };
+  
   const handleSave = async () => {
     try {
       await updateTheme.mutateAsync({
@@ -146,6 +181,7 @@ export default function Settings() {
           theme_accent_color: hexToHSL(accentColor),
           theme_logo_url: logoUrl || null,
           theme_favicon_url: faviconUrl || null,
+          theme_hero_image_url: heroImageUrl || null,
         },
       });
       toast.success('Theme settings saved! Refresh to see changes.');
@@ -161,6 +197,7 @@ export default function Settings() {
     setAccentColor(hslToHex(agencyConfig.accentColor));
     setLogoUrl('');
     setFaviconUrl('');
+    setHeroImageUrl('');
     setAllowPartnerListings(true);
   };
   
@@ -359,6 +396,75 @@ export default function Settings() {
                       value={faviconUrl}
                       onChange={(e) => setFaviconUrl(e.target.value)}
                       placeholder="Or enter favicon URL..."
+                      className="bg-background text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Hero Image Upload */}
+              <div className="space-y-3">
+                <Label>Hero Background Image</Label>
+                <div className="flex items-start gap-4">
+                  {/* Preview */}
+                  <div className="w-40 h-24 rounded-lg border border-border bg-background flex items-center justify-center overflow-hidden">
+                    {heroImageUrl ? (
+                      <img 
+                        src={heroImageUrl} 
+                        alt="Hero image preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Image className="w-8 h-8 text-muted-foreground/50" />
+                    )}
+                  </div>
+                  
+                  {/* Upload controls */}
+                  <div className="flex-1 space-y-2">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => heroImageInputRef.current?.click()}
+                        disabled={uploadingHeroImage}
+                        className="gap-2"
+                      >
+                        {uploadingHeroImage ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Upload className="w-4 h-4" />
+                        )}
+                        Upload Hero Image
+                      </Button>
+                      {heroImageUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setHeroImageUrl('')}
+                          className="gap-2 text-destructive hover:text-destructive"
+                        >
+                          <X className="w-4 h-4" />
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                    <input
+                      ref={heroImageInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleHeroImageUpload}
+                      className="hidden"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Recommended: 1920x1080px, JPG or PNG (max 5MB). Used as background on landing page.
+                    </p>
+                    {/* Manual URL input */}
+                    <Input
+                      value={heroImageUrl}
+                      onChange={(e) => setHeroImageUrl(e.target.value)}
+                      placeholder="Or enter hero image URL..."
                       className="bg-background text-sm"
                     />
                   </div>
