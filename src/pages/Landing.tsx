@@ -405,43 +405,39 @@ export default function Landing() {
           {/* Search Bar */}
           <Card variant="glass" className="max-w-4xl mx-auto mt-16 animate-scale-in">
             <CardContent className="p-4 md:p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div className="lg:col-span-2 relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input placeholder="Search suburb or postcode..." value={searchLocation} onChange={e => setSearchLocation(e.target.value)} className="pl-10 h-12 bg-muted/50 border-border" />
+              <div className="grid grid-cols-1 gap-3">
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Search suburb or postcode..." value={searchLocation} onChange={e => setSearchLocation(e.target.value)} className="pl-9 h-11 bg-muted/50 border-border" />
                 </div>
-                <Select value={minPrice} onValueChange={setMinPrice}>
-                  <SelectTrigger className="h-12 bg-muted/50 border-border">
-                    <SelectValue placeholder="Min Price" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Any</SelectItem>
-                    <SelectItem value="200000">$200,000</SelectItem>
-                    <SelectItem value="400000">$400,000</SelectItem>
-                    <SelectItem value="600000">$600,000</SelectItem>
-                    <SelectItem value="800000">$800,000</SelectItem>
-                    <SelectItem value="1000000">$1,000,000</SelectItem>
-                    <SelectItem value="1500000">$1,500,000</SelectItem>
-                    <SelectItem value="2000000">$2,000,000</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={maxPrice} onValueChange={setMaxPrice}>
-                  <SelectTrigger className="h-12 bg-muted/50 border-border">
-                    <SelectValue placeholder="Max Price" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Any</SelectItem>
-                    <SelectItem value="500000">$500,000</SelectItem>
-                    <SelectItem value="750000">$750,000</SelectItem>
-                    <SelectItem value="1000000">$1,000,000</SelectItem>
-                    <SelectItem value="1500000">$1,500,000</SelectItem>
-                    <SelectItem value="2000000">$2,000,000</SelectItem>
-                    <SelectItem value="3000000">$3,000,000</SelectItem>
-                    <SelectItem value="5000000">$5,000,000+</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-2 gap-3">
+                  <Select value={minPrice} onValueChange={setMinPrice}>
+                    <SelectTrigger className="h-11 bg-muted/50 border-border text-sm">
+                      <SelectValue placeholder="Min" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any</SelectItem>
+                      <SelectItem value="200000">$200k</SelectItem>
+                      <SelectItem value="400000">$400k</SelectItem>
+                      <SelectItem value="600000">$600k</SelectItem>
+                      <SelectItem value="1000000">$1M</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={maxPrice} onValueChange={setMaxPrice}>
+                    <SelectTrigger className="h-11 bg-muted/50 border-border text-sm">
+                      <SelectValue placeholder="Max" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any</SelectItem>
+                      <SelectItem value="500000">$500k</SelectItem>
+                      <SelectItem value="1000000">$1M</SelectItem>
+                      <SelectItem value="1500000">$1.5M</SelectItem>
+                      <SelectItem value="2000000">$2M+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Select value={bedrooms} onValueChange={setBedrooms}>
-                  <SelectTrigger className="h-12 bg-muted/50 border-border">
+                  <SelectTrigger className="h-11 bg-muted/50 border-border text-sm">
                     <SelectValue placeholder="Bedrooms" />
                   </SelectTrigger>
                   <SelectContent>
@@ -450,13 +446,12 @@ export default function Landing() {
                     <SelectItem value="2">2+</SelectItem>
                     <SelectItem value="3">3+</SelectItem>
                     <SelectItem value="4">4+</SelectItem>
-                    <SelectItem value="5">5+</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={handleSearch} size="lg" variant="accent" className="w-full mt-4 h-12">
-                <Search className="w-5 h-5 mr-2" />
-                Search Properties
+              <Button onClick={handleSearch} size="default" variant="accent" className="w-full mt-3 h-11">
+                <Search className="w-4 h-4 mr-2" />
+                Search
               </Button>
             </CardContent>
           </Card>
@@ -464,61 +459,55 @@ export default function Landing() {
       </section>
 
       {/* Featured Properties */}
-      <section className="py-16 md:py-24 bg-card/50">
+      <section className="py-12 bg-card/50">
         <div className="container px-4">
-          <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <Badge className="bg-accent/10 text-accent border-accent/20 mb-3">Featured</Badge>
-              <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
+              <Badge className="bg-accent/10 text-accent border-accent/20 mb-2 text-xs">Featured</Badge>
+              <h2 className="font-display text-xl font-bold text-foreground mb-1">
                 Latest Properties
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Discover our newest listings
               </p>
             </div>
-            <Link to="/browse">
-              <Button variant="outline" className="hidden md:flex">
-                View All
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProperties?.map(property => <Link key={property.id} to={`/property/${property.id}`} className="group">
+          <div className="grid grid-cols-1 gap-4">
+            {featuredProperties?.slice(0, 3).map(property => <Link key={property.id} to={`/property/${property.id}`} className="group">
                 <Card variant="property" className="overflow-hidden">
-                  <div className="relative aspect-[4/3] overflow-hidden">
+                  <div className="relative aspect-[16/9] overflow-hidden">
                     <img src={property.images?.[0] || '/placeholder.svg'} alt={property.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    <button className="absolute top-3 right-3 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-background" onClick={e => {
+                    <button className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-background" onClick={e => {
                   e.preventDefault();
                 }}>
-                      <Heart className="w-5 h-5 text-muted-foreground" />
+                      <Heart className="w-4 h-4 text-muted-foreground" />
                     </button>
-                    <Badge className="absolute bottom-3 left-3 bg-background/80 backdrop-blur-sm text-foreground capitalize border-0">
+                    <Badge className="absolute bottom-2 left-2 bg-background/80 backdrop-blur-sm text-foreground capitalize border-0 text-xs">
                       {property.property_type}
                     </Badge>
                   </div>
-                  <CardContent className="p-5">
-                    <p className="font-display text-2xl font-bold text-accent mb-2">
+                  <CardContent className="p-4">
+                    <p className="font-display text-xl font-bold text-accent mb-1">
                       {property.price_display || formatPrice(property.price)}
                     </p>
-                    <h3 className="font-semibold text-foreground mb-1 line-clamp-1">
+                    <h3 className="font-semibold text-foreground mb-0.5 line-clamp-1 text-sm">
                       {property.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
+                    <p className="text-xs text-muted-foreground mb-3">
                       {property.suburb}, {property.state}
                     </p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
-                        <Bed className="w-4 h-4" />
+                        <Bed className="w-3 h-3" />
                         {property.bedrooms || '-'}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Bath className="w-4 h-4" />
+                        <Bath className="w-3 h-3" />
                         {property.bathrooms || '-'}
                       </span>
                       <span className="flex items-center gap-1">
-                        <Car className="w-4 h-4" />
+                        <Car className="w-3 h-3" />
                         {property.parking || '-'}
                       </span>
                     </div>
@@ -527,9 +516,9 @@ export default function Landing() {
               </Link>)}
           </div>
 
-          <div className="mt-8 text-center md:hidden">
+          <div className="mt-4 text-center">
             <Link to="/browse">
-              <Button variant="outline">
+              <Button variant="outline" size="sm">
                 View All Properties
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>

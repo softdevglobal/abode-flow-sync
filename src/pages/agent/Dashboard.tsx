@@ -122,7 +122,7 @@ export default function AgentDashboard() {
         </div>
 
         {/* Partner Activity & Quick Links */}
-        <div className="grid gap-4 md:grid-cols-3 md:gap-6">
+        <div className="space-y-4">
           {/* Partner Activity Widget */}
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between">
