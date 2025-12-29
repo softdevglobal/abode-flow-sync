@@ -213,39 +213,39 @@ export default function AgentRequests() {
 
   return (
     <AgentLayout>
-      <main className="container px-4 py-6">
+      <main className="px-4 py-4 pb-24 space-y-4">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
+        <div>
+          <h1 className="font-display text-xl font-bold text-foreground">
             Requests
           </h1>
-          <p className="text-muted-foreground font-body">
-            Manage buyer interest and viewing requests
+          <p className="text-xs text-muted-foreground font-body">
+            Manage buyer interest and viewings
           </p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6 bg-card/50 backdrop-blur-sm border border-border/50 p-1 rounded-xl">
+          <TabsList className="grid w-full grid-cols-2 h-10 bg-card/50 backdrop-blur-sm border border-border/50 p-1 rounded-xl">
             <TabsTrigger 
               value="interests" 
-              className="relative data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all gap-2"
+              className="relative data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all gap-1 text-xs"
             >
-              <TrendingUp className="w-4 h-4" />
-              Pre-Market Interests
+              <TrendingUp className="w-3.5 h-3.5" />
+              Pre-Market
               {pendingInterests.length > 0 && (
-                <span className="ml-2 bg-primary/20 text-primary data-[state=active]:bg-primary-foreground/20 data-[state=active]:text-primary-foreground text-xs rounded-full px-2 py-0.5 font-medium">
+                <span className="ml-1 bg-primary/20 text-primary data-[state=active]:bg-primary-foreground/20 data-[state=active]:text-primary-foreground text-[10px] rounded-full px-1.5 py-0.5 font-medium">
                   {pendingInterests.length}
                 </span>
               )}
             </TabsTrigger>
             <TabsTrigger 
               value="viewings"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all gap-2"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg transition-all gap-1 text-xs"
             >
-              <Eye className="w-4 h-4" />
-              Viewing Requests
+              <Eye className="w-3.5 h-3.5" />
+              Viewings
               {pendingViewings.length > 0 && (
-                <span className="ml-2 bg-primary/20 text-primary data-[state=active]:bg-primary-foreground/20 data-[state=active]:text-primary-foreground text-xs rounded-full px-2 py-0.5 font-medium">
+                <span className="ml-1 bg-primary/20 text-primary data-[state=active]:bg-primary-foreground/20 data-[state=active]:text-primary-foreground text-[10px] rounded-full px-1.5 py-0.5 font-medium">
                   {pendingViewings.length}
                 </span>
               )}

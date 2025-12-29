@@ -64,16 +64,16 @@ export default function BuyerMessages() {
 
   return (
     <BuyerLayout>
-      <div className="container py-6 px-4 max-w-4xl mx-auto">
+      <div className="px-4 py-4 pb-24 space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <div className="p-2 rounded-xl bg-accent/10">
-              <Mail className="w-6 h-6 text-accent" />
+              <Mail className="w-5 h-5 text-accent" />
             </div>
             <div>
-              <h1 className="text-2xl font-display font-bold text-foreground">Messages</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-lg font-display font-bold text-foreground">Messages</h1>
+              <p className="text-xs text-muted-foreground">
                 {unreadCounts.all > 0 ? `${unreadCounts.all} unread` : 'All caught up!'}
               </p>
             </div>
@@ -83,16 +83,17 @@ export default function BuyerMessages() {
             <Button 
               variant="outline" 
               size="sm"
+              className="text-xs px-2"
               onClick={() => markAllAsRead(activeTab === 'all' ? undefined : activeTab as MessageCategory)}
             >
-              <MailOpen className="w-4 h-4 mr-2" />
-              Mark All Read
+              <MailOpen className="w-3.5 h-3.5 mr-1" />
+              Mark Read
             </Button>
           )}
         </div>
 
-        {/* Category Tabs */}
-        <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-border">
+        {/* Category Tabs - Horizontal Scroll */}
+        <div className="flex gap-2 pb-3 border-b border-border overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => {
             const count = getTabCount(tab.id);
             const isActive = activeTab === tab.id;
@@ -103,17 +104,17 @@ export default function BuyerMessages() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0",
                   isActive
-                    ? "bg-accent text-accent-foreground shadow-glow-sm"
-                    : "bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted"
+                    ? "bg-accent text-accent-foreground"
+                    : "bg-muted/50 text-muted-foreground"
                 )}
               >
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <Icon className="w-3.5 h-3.5" />
+                {tab.label}
                 {count > 0 && (
                   <span className={cn(
-                    "inline-flex items-center justify-center min-w-5 h-5 px-1.5 text-xs font-bold rounded-full",
+                    "inline-flex items-center justify-center min-w-4 h-4 px-1 text-[10px] font-bold rounded-full",
                     isActive 
                       ? "bg-accent-foreground/20 text-accent-foreground" 
                       : "bg-accent text-accent-foreground"
@@ -127,13 +128,13 @@ export default function BuyerMessages() {
         </div>
 
         {/* Unread Filter */}
-        <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-2">
           <Switch
             id="unread-only"
             checked={unreadOnly}
             onCheckedChange={setUnreadOnly}
           />
-          <Label htmlFor="unread-only" className="text-sm text-muted-foreground cursor-pointer">
+          <Label htmlFor="unread-only" className="text-xs text-muted-foreground cursor-pointer">
             Unread only
           </Label>
         </div>

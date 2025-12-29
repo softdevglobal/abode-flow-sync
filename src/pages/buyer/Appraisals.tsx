@@ -115,24 +115,24 @@ export default function BuyerAppraisals() {
 
   return (
     <BuyerLayout>
-      <div className="container px-4 py-6 max-w-4xl">
+      <div className="px-4 py-4 pb-24 space-y-4">
         {/* Hero Section */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-            <Home className="w-8 h-8 text-primary" />
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+            <Home className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-            Get a Free Property Appraisal
+          <h1 className="font-display text-xl font-bold text-foreground mb-1">
+            Free Property Appraisal
           </h1>
-          <p className="text-muted-foreground font-body max-w-xl mx-auto">
-            Thinking of selling? Get a free, no-obligation appraisal from our experienced agents to understand your property's current market value.
+          <p className="text-xs text-muted-foreground font-body">
+            Get a no-obligation estimate of your property's market value.
           </p>
         </div>
 
         {/* Request Form */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl mb-8">
-          <CardHeader>
-            <CardTitle className="font-display text-lg">Property Details</CardTitle>
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
+          <CardHeader className="pb-3">
+            <CardTitle className="font-display text-base">Property Details</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -149,7 +149,7 @@ export default function BuyerAppraisals() {
                   />
                 </div>
                 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div className="col-span-2">
                     <Label htmlFor="suburb">Suburb *</Label>
                     <Input
@@ -209,7 +209,7 @@ export default function BuyerAppraisals() {
                   </Select>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="bedrooms" className="flex items-center gap-1">
                       <Bed className="w-4 h-4" /> Bedrooms
@@ -297,20 +297,18 @@ export default function BuyerAppraisals() {
         </Card>
 
         {/* Disclaimer */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl mb-8">
-          <CardContent className="pt-5">
-            <p className="text-xs text-muted-foreground font-body">
-              <strong className="text-primary">Disclaimer:</strong> Appraisals are indicative only and not a formal valuation. 
-              These estimates are based on comparable sales and market conditions at the time of assessment. 
-              For legal or financial purposes, please obtain a licensed valuation.
+        <Card className="border-border/50 bg-card/50 backdrop-blur-sm rounded-xl">
+          <CardContent className="pt-4 pb-4">
+            <p className="text-[10px] text-muted-foreground font-body leading-relaxed">
+              <strong className="text-primary">Note:</strong> Appraisals are indicative only, not formal valuations.
             </p>
           </CardContent>
         </Card>
 
         {/* My Requests */}
         {user && myRequests.length > 0 && (
-          <div>
-            <h2 className="font-display text-xl font-semibold mb-4">Your Appraisal Requests</h2>
+          <div className="space-y-3">
+            <h2 className="font-display text-base font-semibold">Your Requests</h2>
             <div className="space-y-4">
               {myRequests.map((request: any) => {
                 const status = statusBadge[request.status as keyof typeof statusBadge] || statusBadge.pending;
