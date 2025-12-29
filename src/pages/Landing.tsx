@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, Search, Calendar, Home, Bed, Bath, Car, Heart, ArrowRight, MapPin, Users, Menu, X, Facebook, Twitter, Instagram, Linkedin, QrCode, Camera, Gavel, TrendingUp, Sparkles } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import heroImage from '@/assets/hero-home.jpg';
+import heroImage from '@/assets/logo.png';
 export default function Landing() {
   const navigate = useNavigate();
   const config = useAgencyTheme();
