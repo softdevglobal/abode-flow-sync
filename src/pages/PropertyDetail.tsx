@@ -236,18 +236,11 @@ export default function PropertyDetail() {
       </div>
 
       {/* Main Content */}
-      <div className="container px-4 lg:px-8 py-6 lg:py-10">
-        {/* Desktop Back Button */}
-        <div className="hidden lg:block mb-6">
-          <Link to="/browse" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm">Back to search results</span>
-          </Link>
-        </div>
+      <div className="px-4 py-4 pb-32">
 
-        <div className="lg:grid lg:grid-cols-3 lg:gap-10">
-          {/* Left Column - Property Details */}
-          <div className="lg:col-span-2 space-y-8">
+        <div className="space-y-6">
+          {/* Property Details */}
+            <div className="space-y-6">
             {/* Header Section */}
             <div>
               {/* Price - Prominent */}
@@ -312,21 +305,6 @@ export default function PropertyDetail() {
                 )}
               </div>
 
-              {/* Desktop Action Buttons */}
-              <div className="hidden lg:flex items-center gap-3 mt-6">
-                <Button
-                  variant={isSaved ? 'outline' : 'ghost'}
-                  onClick={handleSave}
-                  className="gap-2"
-                >
-                  <Heart className={`w-5 h-5 ${isSaved ? 'fill-destructive text-destructive' : ''}`} />
-                  {isSaved ? 'Saved' : 'Save'}
-                </Button>
-                <Button variant="ghost" onClick={handleShare} className="gap-2">
-                  <Share2 className="w-5 h-5" />
-                  Share
-                </Button>
-              </div>
             </div>
 
             {/* Description */}
@@ -375,63 +353,32 @@ export default function PropertyDetail() {
               postcode={property.postcode}
             />
 
-            {/* Mobile Agent Card */}
-            <div className="lg:hidden">
-              <h2 className="font-display text-xl font-semibold mb-4">Listed by</h2>
+            {/* Agent Card */}
+            <div>
+              <h2 className="font-display text-lg font-semibold mb-3">Listed by</h2>
               <AgentEnquiryCard agent={mappedAgent} propertyTitle={property.title} />
             </div>
           </div>
 
-          {/* Right Column - Sticky Agent Card (Desktop) */}
-          <div className="hidden lg:block">
-            <div className="sticky top-6">
-              <AgentEnquiryCard agent={mappedAgent} propertyTitle={property.title} />
-              
-              {/* Live Auction Button - Desktop */}
-              {activeAuction && (
-                <Link to={`/auction/live/${activeAuction.id}`}>
-                  <Button
-                    variant={activeAuction.status === 'live' ? 'default' : 'outline'}
-                    size="lg"
-                    className={`w-full mt-4 ${activeAuction.status === 'live' ? 'bg-red-500 hover:bg-red-600' : ''}`}
-                  >
-                    <Gavel className="w-5 h-5 mr-2" />
-                    {activeAuction.status === 'live' ? 'Watch Live Auction' : 'View Upcoming Auction'}
-                  </Button>
-                </Link>
-              )}
-              
-              {/* Request Inspection Button - Desktop */}
-              <Button
-                variant="gold"
-                size="lg"
-                className="w-full mt-4"
-                onClick={handleRequestInspection}
-              >
-                <Calendar className="w-5 h-5 mr-2" />
-                Request an Inspection
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* Fixed Bottom CTA - Mobile */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 lg:hidden z-40 space-y-2">
+      {/* Fixed Bottom CTA */}
+      <div className="fixed bottom-16 left-0 right-0 bg-card border-t border-border p-3 z-40 space-y-2">
         {activeAuction && (
           <Link to={`/auction/live/${activeAuction.id}`} className="block">
             <Button
               variant={activeAuction.status === 'live' ? 'default' : 'outline'}
-              size="lg"
+              size="default"
               className={`w-full ${activeAuction.status === 'live' ? 'bg-red-500 hover:bg-red-600' : ''}`}
             >
-              <Gavel className="w-5 h-5 mr-2" />
+              <Gavel className="w-4 h-4 mr-2" />
               {activeAuction.status === 'live' ? 'Watch Live Auction' : 'View Upcoming Auction'}
             </Button>
           </Link>
         )}
-        <Button variant="gold" size="lg" className="w-full" onClick={handleRequestInspection}>
-          <Calendar className="w-5 h-5 mr-2" />
+        <Button variant="gold" size="default" className="w-full" onClick={handleRequestInspection}>
+          <Calendar className="w-4 h-4 mr-2" />
           Request an Inspection
         </Button>
       </div>
