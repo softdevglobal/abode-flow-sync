@@ -115,14 +115,14 @@ export default function AgentNetwork() {
 
   return (
     <AgentLayout>
-      <div className="container px-4 py-6 max-w-4xl">
+      <div className="px-4 py-4 space-y-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2">
+        <div>
+          <h1 className="font-display text-lg font-bold text-foreground">
             Partner Network
           </h1>
-          <p className="text-muted-foreground font-body">
-            Connect with other agents to share listings and collaborate
+          <p className="text-xs text-muted-foreground font-body">
+            Connect with other agents
           </p>
         </div>
 
