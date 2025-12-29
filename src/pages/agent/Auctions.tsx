@@ -9,7 +9,8 @@ import {
   Loader2,
   Trash2,
   CalendarDays,
-  Radio
+  Radio,
+  Users
 } from 'lucide-react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { AgentLayout } from '@/components/layout/AgentLayout';
@@ -73,6 +74,7 @@ interface AuctionWithProperty {
     postcode: string;
     images: string[] | null;
   } | null;
+  registration_count?: number;
 }
 
 function useAgentAuctions() {
@@ -100,7 +102,33 @@ function useAgentAuctions() {
         .order('start_time', { ascending: true });
 
       if (error) throw error;
-      return (data as AuctionWithProperty[]) || [];
+      
+      // Fetch registration counts for each auction
+      const auctionsData = (data as AuctionWithProperty[]) || [];
+      if (auctionsData.length === 0) return auctionsData;
+      
+      const auctionIds = auctionsData.map(a => a.id);
+      const { data: registrations, error: regError } = await supabase
+        .from('auction_registrations')
+        .select('auction_id')
+        .in('auction_id', auctionIds)
+        .eq('status', 'approved');
+      
+      if (regError) {
+        console.error('Error fetching registrations:', regError);
+        return auctionsData;
+      }
+      
+      // Count registrations per auction
+      const countMap = new Map<string, number>();
+      registrations?.forEach(r => {
+        countMap.set(r.auction_id, (countMap.get(r.auction_id) || 0) + 1);
+      });
+      
+      return auctionsData.map(auction => ({
+        ...auction,
+        registration_count: countMap.get(auction.id) || 0,
+      }));
     },
   });
 }
@@ -408,14 +436,20 @@ function AuctionCard({
             </p>
           </div>
 
-          {/* Auction Time */}
-          <div className="flex items-center gap-2 text-sm">
-            <Clock className="w-4 h-4 text-muted-foreground" />
-            <span className={cn(
-              isLive && "text-red-600 font-medium"
-            )}>
-              {formatAuctionTime(auction.start_time)}
-            </span>
+          {/* Auction Time & Registrations */}
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <span className={cn(
+                isLive && "text-red-600 font-medium"
+              )}>
+                {formatAuctionTime(auction.start_time)}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Users className="w-4 h-4" />
+              <span className="font-medium">{auction.registration_count || 0}</span>
+            </div>
           </div>
 
           {/* Final Price for completed */}
