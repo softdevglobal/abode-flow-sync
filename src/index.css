@@ -65,6 +65,11 @@
     --shadow-glow: 0 0 40px hsl(24 95% 53% / 0.25);
     --shadow-glow-sm: 0 0 20px hsl(24 95% 53% / 0.2);
 
+    /* Text Shadows - Light */
+    --text-shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.1);
+    --text-shadow: 0 2px 4px hsl(0 0% 0% / 0.2);
+    --text-shadow-lg: 0 4px 8px hsl(0 0% 0% / 0.3);
+
     /* Typography */
     --font-display: 'Manrope', system-ui, sans-serif;
     --font-body: 'Inter', system-ui, sans-serif;
@@ -138,6 +143,11 @@
     --shadow-glow: 0 0 40px hsl(24 95% 53% / 0.4);
     --shadow-glow-sm: 0 0 20px hsl(24 95% 53% / 0.3);
 
+    /* Text Shadows - Dark */
+    --text-shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
+    --text-shadow: 0 2px 4px hsl(0 0% 0% / 0.3);
+    --text-shadow-lg: 0 4px 8px hsl(0 0% 0% / 0.4);
+
     --sidebar-background: 0 0% 6%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 27 95% 60%;
@@ -166,10 +176,12 @@
 
   body {
     @apply bg-background text-foreground font-body antialiased;
+    text-shadow: var(--text-shadow-sm);
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-display font-bold;
+    text-shadow: var(--text-shadow);
   }
 }
 
@@ -248,6 +260,23 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: hsl(var(--border));
     border-radius: 3px;
+  }
+
+  /* Text shadow utilities */
+  .text-shadow-sm {
+    text-shadow: var(--text-shadow-sm);
+  }
+
+  .text-shadow {
+    text-shadow: var(--text-shadow);
+  }
+
+  .text-shadow-lg {
+    text-shadow: var(--text-shadow-lg);
+  }
+
+  .text-shadow-none {
+    text-shadow: none;
   }
 
   /* Glow effect on hover */
