@@ -27,7 +27,25 @@ export function AgencyThemeProvider({ children, config, agentId }: AgencyThemePr
         const id = agentId || DEMO_AGENT_ID;
         const { data, error } = await supabase
           .from('agents')
-          .select('theme_agency_name, theme_primary_color, theme_secondary_color, theme_accent_color, theme_logo_url, theme_favicon_url, theme_hero_image_url')
+          .select(`
+            theme_agency_name, 
+            theme_primary_color, 
+            theme_secondary_color, 
+            theme_accent_color, 
+            theme_logo_url, 
+            theme_favicon_url, 
+            theme_hero_image_url,
+            phone,
+            email,
+            office_address,
+            tagline,
+            hero_cta_text,
+            social_facebook,
+            social_instagram,
+            social_linkedin,
+            social_twitter,
+            meta_description
+          `)
           .eq('id', id)
           .maybeSingle();
 
@@ -42,6 +60,16 @@ export function AgencyThemeProvider({ children, config, agentId }: AgencyThemePr
           if (data.theme_logo_url) themeFromDb.logoUrl = data.theme_logo_url;
           if (data.theme_favicon_url) themeFromDb.faviconUrl = data.theme_favicon_url;
           if (data.theme_hero_image_url) themeFromDb.heroImageUrl = data.theme_hero_image_url;
+          if (data.phone) themeFromDb.phone = data.phone;
+          if (data.email) themeFromDb.email = data.email;
+          if (data.office_address) themeFromDb.officeAddress = data.office_address;
+          if (data.tagline) themeFromDb.tagline = data.tagline;
+          if (data.hero_cta_text) themeFromDb.heroCTAText = data.hero_cta_text;
+          if (data.social_facebook) themeFromDb.socialFacebook = data.social_facebook;
+          if (data.social_instagram) themeFromDb.socialInstagram = data.social_instagram;
+          if (data.social_linkedin) themeFromDb.socialLinkedIn = data.social_linkedin;
+          if (data.social_twitter) themeFromDb.socialTwitter = data.social_twitter;
+          if (data.meta_description) themeFromDb.metaDescription = data.meta_description;
           
           if (Object.keys(themeFromDb).length > 0) {
             setDbConfig(themeFromDb);
@@ -99,6 +127,17 @@ export function AgencyThemeProvider({ children, config, agentId }: AgencyThemePr
 
     // Update document title with agency name
     document.title = `${mergedConfig.agencyName} | Real Estate`;
+    
+    // Update meta description
+    if (mergedConfig.metaDescription) {
+      let metaDesc = document.querySelector('meta[name="description"]');
+      if (!metaDesc) {
+        metaDesc = document.createElement('meta');
+        metaDesc.setAttribute('name', 'description');
+        document.head.appendChild(metaDesc);
+      }
+      metaDesc.setAttribute('content', mergedConfig.metaDescription);
+    }
   }, [mergedConfig, isLoading]);
 
   return (
