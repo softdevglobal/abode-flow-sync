@@ -81,7 +81,11 @@ export type Database = {
           tagline: string | null
           theme_accent_color: string | null
           theme_agency_name: string | null
+          theme_base_font_size: string | null
+          theme_body_font: string | null
           theme_favicon_url: string | null
+          theme_heading_font: string | null
+          theme_heading_scale: string | null
           theme_hero_image_url: string | null
           theme_logo_url: string | null
           theme_primary_color: string | null
@@ -113,7 +117,11 @@ export type Database = {
           tagline?: string | null
           theme_accent_color?: string | null
           theme_agency_name?: string | null
+          theme_base_font_size?: string | null
+          theme_body_font?: string | null
           theme_favicon_url?: string | null
+          theme_heading_font?: string | null
+          theme_heading_scale?: string | null
           theme_hero_image_url?: string | null
           theme_logo_url?: string | null
           theme_primary_color?: string | null
@@ -145,7 +153,11 @@ export type Database = {
           tagline?: string | null
           theme_accent_color?: string | null
           theme_agency_name?: string | null
+          theme_base_font_size?: string | null
+          theme_body_font?: string | null
           theme_favicon_url?: string | null
+          theme_heading_font?: string | null
+          theme_heading_scale?: string | null
           theme_hero_image_url?: string | null
           theme_logo_url?: string | null
           theme_primary_color?: string | null

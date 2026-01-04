@@ -177,11 +177,36 @@
   body {
     @apply bg-background text-foreground font-body antialiased;
     text-shadow: var(--text-shadow-sm);
+    font-size: var(--base-font-size, 16px);
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-display font-bold;
     text-shadow: var(--text-shadow);
+  }
+
+  h1 {
+    font-size: var(--heading-h1, 2.25rem);
+  }
+
+  h2 {
+    font-size: var(--heading-h2, 1.875rem);
+  }
+
+  h3 {
+    font-size: var(--heading-h3, 1.5rem);
+  }
+
+  h4 {
+    font-size: var(--heading-h4, 1.25rem);
+  }
+
+  h5 {
+    font-size: var(--heading-h5, 1.125rem);
+  }
+
+  h6 {
+    font-size: var(--heading-h6, 1rem);
   }
 }
 
