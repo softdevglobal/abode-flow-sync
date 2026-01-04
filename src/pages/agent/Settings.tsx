@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Upload, Palette, User, Phone, Globe, Bell, Image, Share2, Search, Type } from "lucide-react";
+import { Loader2, Upload, Palette, User, Phone, Globe, Bell, Image, Share2, Search, Type, MousePointer } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -76,6 +76,12 @@ export default function Settings() {
   const [baseFontSize, setBaseFontSize] = useState('medium');
   const [headingScale, setHeadingScale] = useState('standard');
   
+  // Button and Icon color settings
+  const [buttonColor, setButtonColor] = useState('#f97316');
+  const [buttonTextColor, setButtonTextColor] = useState('#ffffff');
+  const [iconColor, setIconColor] = useState('#f97316');
+  const [linkColor, setLinkColor] = useState('#f97316');
+  
   // Upload states
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
@@ -132,6 +138,12 @@ export default function Settings() {
       if (themeSettings.theme_body_font) setBodyFont(themeSettings.theme_body_font);
       if (themeSettings.theme_base_font_size) setBaseFontSize(themeSettings.theme_base_font_size);
       if (themeSettings.theme_heading_scale) setHeadingScale(themeSettings.theme_heading_scale);
+      
+      // Button and Icon Colors
+      if (themeSettings.theme_button_color) setButtonColor(hslToHex(themeSettings.theme_button_color));
+      if (themeSettings.theme_button_text_color) setButtonTextColor(hslToHex(themeSettings.theme_button_text_color));
+      if (themeSettings.theme_icon_color) setIconColor(hslToHex(themeSettings.theme_icon_color));
+      if (themeSettings.theme_link_color) setLinkColor(hslToHex(themeSettings.theme_link_color));
     }
   }, [themeSettings]);
 
@@ -218,6 +230,10 @@ export default function Settings() {
           theme_body_font: bodyFont,
           theme_base_font_size: baseFontSize,
           theme_heading_scale: headingScale,
+          theme_button_color: hexToHSL(buttonColor),
+          theme_button_text_color: hexToHSL(buttonTextColor),
+          theme_icon_color: hexToHSL(iconColor),
+          theme_link_color: hexToHSL(linkColor),
         },
       });
       toast.success('Settings saved successfully!');
@@ -257,6 +273,10 @@ export default function Settings() {
     setBodyFont('Inter');
     setBaseFontSize('medium');
     setHeadingScale('standard');
+    setButtonColor('#f97316');
+    setButtonTextColor('#ffffff');
+    setIconColor('#f97316');
+    setLinkColor('#f97316');
     toast.info('Settings reset to defaults');
   };
 
@@ -647,6 +667,124 @@ export default function Settings() {
                     >
                       This is how your body text will appear across the website. The quick brown fox jumps over the lazy dog.
                     </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Button & Icon Colors */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MousePointer className="h-5 w-5" />
+                  Button & Icon Colors
+                </CardTitle>
+                <CardDescription>Customize interactive element colors</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="buttonColor">Button Background</Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        id="buttonColor"
+                        value={buttonColor}
+                        onChange={(e) => setButtonColor(e.target.value)}
+                        className="h-10 w-14 rounded border cursor-pointer"
+                      />
+                      <Input
+                        value={buttonColor}
+                        onChange={(e) => setButtonColor(e.target.value)}
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="buttonTextColor">Button Text</Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        id="buttonTextColor"
+                        value={buttonTextColor}
+                        onChange={(e) => setButtonTextColor(e.target.value)}
+                        className="h-10 w-14 rounded border cursor-pointer"
+                      />
+                      <Input
+                        value={buttonTextColor}
+                        onChange={(e) => setButtonTextColor(e.target.value)}
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="iconColor">Icon Color</Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        id="iconColor"
+                        value={iconColor}
+                        onChange={(e) => setIconColor(e.target.value)}
+                        className="h-10 w-14 rounded border cursor-pointer"
+                      />
+                      <Input
+                        value={iconColor}
+                        onChange={(e) => setIconColor(e.target.value)}
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="linkColor">Link Color</Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        id="linkColor"
+                        value={linkColor}
+                        onChange={(e) => setLinkColor(e.target.value)}
+                        className="h-10 w-14 rounded border cursor-pointer"
+                      />
+                      <Input
+                        value={linkColor}
+                        onChange={(e) => setLinkColor(e.target.value)}
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview */}
+                <div className="mt-6 p-4 rounded-lg border bg-muted/50">
+                  <p className="text-sm font-medium mb-4">Preview</p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <button
+                      className="px-6 py-2.5 rounded-full font-semibold shadow-md transition-all"
+                      style={{ backgroundColor: buttonColor, color: buttonTextColor }}
+                    >
+                      Primary Button
+                    </button>
+                    <button
+                      className="px-6 py-2.5 rounded-full font-semibold border-2 bg-transparent transition-all"
+                      style={{ borderColor: buttonColor, color: buttonColor }}
+                    >
+                      Outline Button
+                    </button>
+                    <div className="flex items-center gap-3">
+                      <Phone className="h-5 w-5" style={{ color: iconColor }} />
+                      <Globe className="h-5 w-5" style={{ color: iconColor }} />
+                      <Bell className="h-5 w-5" style={{ color: iconColor }} />
+                    </div>
+                    <a 
+                      href="#" 
+                      className="underline font-medium"
+                      style={{ color: linkColor }}
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      Sample Link
+                    </a>
                   </div>
                 </div>
               </CardContent>

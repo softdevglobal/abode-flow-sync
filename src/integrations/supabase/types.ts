@@ -83,10 +83,14 @@ export type Database = {
           theme_agency_name: string | null
           theme_base_font_size: string | null
           theme_body_font: string | null
+          theme_button_color: string | null
+          theme_button_text_color: string | null
           theme_favicon_url: string | null
           theme_heading_font: string | null
           theme_heading_scale: string | null
           theme_hero_image_url: string | null
+          theme_icon_color: string | null
+          theme_link_color: string | null
           theme_logo_url: string | null
           theme_primary_color: string | null
           theme_secondary_color: string | null
@@ -119,10 +123,14 @@ export type Database = {
           theme_agency_name?: string | null
           theme_base_font_size?: string | null
           theme_body_font?: string | null
+          theme_button_color?: string | null
+          theme_button_text_color?: string | null
           theme_favicon_url?: string | null
           theme_heading_font?: string | null
           theme_heading_scale?: string | null
           theme_hero_image_url?: string | null
+          theme_icon_color?: string | null
+          theme_link_color?: string | null
           theme_logo_url?: string | null
           theme_primary_color?: string | null
           theme_secondary_color?: string | null
@@ -155,10 +163,14 @@ export type Database = {
           theme_agency_name?: string | null
           theme_base_font_size?: string | null
           theme_body_font?: string | null
+          theme_button_color?: string | null
+          theme_button_text_color?: string | null
           theme_favicon_url?: string | null
           theme_heading_font?: string | null
           theme_heading_scale?: string | null
           theme_hero_image_url?: string | null
+          theme_icon_color?: string | null
+          theme_link_color?: string | null
           theme_logo_url?: string | null
           theme_primary_color?: string | null
           theme_secondary_color?: string | null

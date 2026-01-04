@@ -74,6 +74,12 @@
     --font-display: 'Manrope', system-ui, sans-serif;
     --font-body: 'Inter', system-ui, sans-serif;
 
+    /* Button and Icon Colors */
+    --button-bg: 20 90% 48%;
+    --button-text: 0 0% 100%;
+    --icon-color: 20 90% 48%;
+    --link-color: 20 90% 48%;
+
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 9%;
     --sidebar-primary: 20 90% 48%;
@@ -147,6 +153,12 @@
     --text-shadow-sm: 0 1px 2px hsl(0 0% 0% / 0.2);
     --text-shadow: 0 2px 4px hsl(0 0% 0% / 0.3);
     --text-shadow-lg: 0 4px 8px hsl(0 0% 0% / 0.4);
+
+    /* Button and Icon Colors - Dark (same as light by default, overridden by theme) */
+    --button-bg: 27 95% 60%;
+    --button-text: 12 81% 14%;
+    --icon-color: 27 95% 60%;
+    --link-color: 27 95% 60%;
 
     --sidebar-background: 0 0% 6%;
     --sidebar-foreground: 0 0% 98%;
@@ -249,6 +261,14 @@
 
   .shadow-glow-sm {
     box-shadow: var(--shadow-glow-sm);
+  }
+
+  .themed-icon {
+    color: hsl(var(--icon-color));
+  }
+
+  .themed-link {
+    color: hsl(var(--link-color));
   }
 
   .text-balance {
