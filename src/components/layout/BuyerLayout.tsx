@@ -35,6 +35,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
+import { Footer } from './Footer';
 
 // Primary nav items for bottom tab bar (5 max)
 const primaryNavItems = [
@@ -474,6 +475,11 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
 
       {/* Main Content */}
       <main className="pb-20 md:pb-0">{children}</main>
+
+      {/* Footer - Desktop only */}
+      <div className="hidden md:block">
+        <Footer />
+      </div>
 
       {/* Bottom Tab Bar - Mobile Only */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border shadow-lg md:hidden">

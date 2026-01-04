@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Building2, Search, Calendar, Home, Bed, Bath, Car, Heart, ArrowRight, MapPin, Users, Menu, X, Facebook, Twitter, Instagram, Linkedin, QrCode, Camera, Gavel, TrendingUp, Sparkles } from 'lucide-react';
+import { Building2, Search, Calendar, Home, Bed, Bath, Car, Heart, ArrowRight, MapPin, Users, Menu, X, QrCode, Camera, Gavel, TrendingUp, Sparkles } from 'lucide-react';
+import { Footer } from '@/components/layout/Footer';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import defaultHeroImage from '@/assets/logo.png';
 export default function Landing() {
@@ -813,131 +814,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer id="footer" className="bg-card border-t border-border py-12 md:py-16">
-        <div className="container px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                {config.logoUrl ? <img src={config.logoUrl} alt={config.agencyName} className="h-9 w-auto" /> : <div className="w-10 h-10 rounded-xl gradient-orange flex items-center justify-center">
-                    <Building2 className="w-5 h-5 text-accent-foreground" />
-                  </div>}
-                <span className="font-display text-xl font-bold text-foreground">
-                  {config.agencyName}
-                </span>
-              </div>
-              <p className="text-muted-foreground max-w-sm mb-4">
-                {config.metaDescription}
-              </p>
-              {/* Contact Info */}
-              {(config.phone || config.email || config.officeAddress) && (
-                <div className="space-y-2 mb-6 text-sm text-muted-foreground">
-                  {config.phone && (
-                    <p><a href={`tel:${config.phone}`} className="hover:text-accent transition-colors">{config.phone}</a></p>
-                  )}
-                  {config.email && (
-                    <p><a href={`mailto:${config.email}`} className="hover:text-accent transition-colors">{config.email}</a></p>
-                  )}
-                  {config.officeAddress && (
-                    <p>{config.officeAddress}</p>
-                  )}
-                </div>
-              )}
-              {/* Social Links */}
-              <div className="flex gap-3">
-                {config.socialFacebook && (
-                  <a href={config.socialFacebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
-                    <Facebook className="w-5 h-5" />
-                  </a>
-                )}
-                {config.socialTwitter && (
-                  <a href={config.socialTwitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
-                    <Twitter className="w-5 h-5" />
-                  </a>
-                )}
-                {config.socialInstagram && (
-                  <a href={config.socialInstagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
-                    <Instagram className="w-5 h-5" />
-                  </a>
-                )}
-                {config.socialLinkedIn && (
-                  <a href={config.socialLinkedIn} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
-                    <Linkedin className="w-5 h-5" />
-                  </a>
-                )}
-                {/* Show placeholder icons if no social links configured */}
-                {!config.socialFacebook && !config.socialTwitter && !config.socialInstagram && !config.socialLinkedIn && (
-                  <>
-                    <span className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/50">
-                      <Facebook className="w-5 h-5" />
-                    </span>
-                    <span className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/50">
-                      <Twitter className="w-5 h-5" />
-                    </span>
-                    <span className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/50">
-                      <Instagram className="w-5 h-5" />
-                    </span>
-                    <span className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/50">
-                      <Linkedin className="w-5 h-5" />
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-display font-bold text-foreground mb-4">
-                Quick Links
-              </h4>
-              <ul className="space-y-3">
-                <li>
-                  <Link to="/browse" className="text-muted-foreground hover:text-accent transition-colors">
-                    Browse Properties
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/agent" className="text-muted-foreground hover:text-accent transition-colors">
-                    For Agents
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/calculator" className="text-muted-foreground hover:text-accent transition-colors">
-                    Affordability Calculator
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-display font-bold text-foreground mb-4">
-                Legal
-              </h4>
-              <ul className="space-y-3">
-                <li>
-                  <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
-                    Terms of Service
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
-                    Cookie Policy
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-border pt-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} {config.agencyName}. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Floating Check-In Button */}
       {showFloatingCheckIn && <Link to="/checkin" className="fixed bottom-6 right-6 z-40">
