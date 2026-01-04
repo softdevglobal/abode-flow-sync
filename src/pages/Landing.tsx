@@ -322,13 +322,18 @@ export default function Landing() {
           }}>
               <Badge className="bg-accent/10 text-accent border-accent/20 mb-6 animate-fade-in backdrop-blur-sm">
                 <Sparkles className="w-3 h-3 mr-1" />
-                Australia's Modern Real Estate Platform
+                {config.agencyName}
               </Badge>
               
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold text-foreground mb-6 leading-tight">
-                Find Your{' '}
-                <span className="text-gradient">Dream Home</span>
-                {' '}Today
+                {config.tagline.includes(' ') ? (
+                  <>
+                    {config.tagline.split(' ').slice(0, -2).join(' ')}{' '}
+                    <span className="text-gradient">{config.tagline.split(' ').slice(-2).join(' ')}</span>
+                  </>
+                ) : (
+                  <span className="text-gradient">{config.tagline}</span>
+                )}
               </h1>
               
               <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-10 max-w-2xl">
@@ -339,7 +344,7 @@ export default function Landing() {
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
                 <Link to="/browse">
                   <Button variant="accent" size="xl">
-                    Browse Properties
+                    {config.heroCTAText}
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
@@ -820,22 +825,62 @@ export default function Landing() {
                   {config.agencyName}
                 </span>
               </div>
-              <p className="text-muted-foreground max-w-sm mb-6">
-                Your trusted platform for finding the perfect property. Connect with agents and discover your dream home today.
+              <p className="text-muted-foreground max-w-sm mb-4">
+                {config.metaDescription}
               </p>
+              {/* Contact Info */}
+              {(config.phone || config.email || config.officeAddress) && (
+                <div className="space-y-2 mb-6 text-sm text-muted-foreground">
+                  {config.phone && (
+                    <p><a href={`tel:${config.phone}`} className="hover:text-accent transition-colors">{config.phone}</a></p>
+                  )}
+                  {config.email && (
+                    <p><a href={`mailto:${config.email}`} className="hover:text-accent transition-colors">{config.email}</a></p>
+                  )}
+                  {config.officeAddress && (
+                    <p>{config.officeAddress}</p>
+                  )}
+                </div>
+              )}
+              {/* Social Links */}
               <div className="flex gap-3">
-                <a href="#" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
-                  <Facebook className="w-5 h-5" />
-                </a>
-                <a href="#" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
-                  <Twitter className="w-5 h-5" />
-                </a>
-                <a href="#" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
-                  <Instagram className="w-5 h-5" />
-                </a>
-                <a href="#" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
-                  <Linkedin className="w-5 h-5" />
-                </a>
+                {config.socialFacebook && (
+                  <a href={config.socialFacebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
+                    <Facebook className="w-5 h-5" />
+                  </a>
+                )}
+                {config.socialTwitter && (
+                  <a href={config.socialTwitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
+                    <Twitter className="w-5 h-5" />
+                  </a>
+                )}
+                {config.socialInstagram && (
+                  <a href={config.socialInstagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
+                    <Instagram className="w-5 h-5" />
+                  </a>
+                )}
+                {config.socialLinkedIn && (
+                  <a href={config.socialLinkedIn} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center hover:bg-accent/20 hover:text-accent transition-colors">
+                    <Linkedin className="w-5 h-5" />
+                  </a>
+                )}
+                {/* Show placeholder icons if no social links configured */}
+                {!config.socialFacebook && !config.socialTwitter && !config.socialInstagram && !config.socialLinkedIn && (
+                  <>
+                    <span className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/50">
+                      <Facebook className="w-5 h-5" />
+                    </span>
+                    <span className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/50">
+                      <Twitter className="w-5 h-5" />
+                    </span>
+                    <span className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/50">
+                      <Instagram className="w-5 h-5" />
+                    </span>
+                    <span className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/50">
+                      <Linkedin className="w-5 h-5" />
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 

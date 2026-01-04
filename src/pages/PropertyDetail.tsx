@@ -181,13 +181,13 @@ export default function PropertyDetail() {
     createdAt: new Date(i.created_at),
   }));
 
-  // Map agent to expected format
+  // Map agent to expected format - use real contact info from database
   const mappedAgent: import('@/types').Agent = agent ? {
     id: agent.id,
-    email: 'agent@example.com',
-    name: agent.theme_agency_name || 'Agent',
+    email: agent.email || 'agent@example.com',
+    name: agent.theme_agency_name || agent.agency_name || 'Agent',
     role: 'agent',
-    phone: '0400 000 000',
+    phone: agent.phone || '0400 000 000',
     avatar: agent.profile_image || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200',
     company: agent.agency_name || 'Real Estate Agency',
     license: agent.license_number || undefined,
