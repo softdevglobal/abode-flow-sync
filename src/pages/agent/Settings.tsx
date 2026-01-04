@@ -1,15 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
-import { AgentLayout } from '@/components/layout/AgentLayout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { useAgentThemeSettings, useUpdateAgentTheme, hexToHSL, hslToHex } from '@/hooks/useAgentThemeSettings';
-import { toast } from 'sonner';
-import { Palette, Building2, Save, RotateCcw, Loader2, Upload, X, Image, Handshake } from 'lucide-react';
-import agencyConfig from '@/config/agencyConfig';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from "react";
+import { AgentLayout } from "@/components/layout/AgentLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import { Loader2, Upload, Palette, User, Phone, Globe, Bell, Image, Share2, Search } from "lucide-react";
+import agencyConfig from "@/config/agencyConfig";
+import { useAgentThemeSettings, useUpdateAgentTheme, hexToHSL, hslToHex } from "@/hooks/useAgentThemeSettings";
+import { supabase } from "@/integrations/supabase/client";
 
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 
@@ -17,159 +20,151 @@ export default function Settings() {
   const { data: themeSettings, isLoading } = useAgentThemeSettings(DEMO_AGENT_ID);
   const updateTheme = useUpdateAgentTheme();
   
-  const [agencyName, setAgencyName] = useState('');
-  const [primaryColor, setPrimaryColor] = useState('#1e3a5f');
-  const [secondaryColor, setSecondaryColor] = useState('#f5f3f0');
-  const [accentColor, setAccentColor] = useState('#c9a227');
-  const [logoUrl, setLogoUrl] = useState('');
-  const [faviconUrl, setFaviconUrl] = useState('');
-  const [heroImageUrl, setHeroImageUrl] = useState('');
+  // Branding state
+  const [agencyName, setAgencyName] = useState(agencyConfig.agencyName);
+  const [primaryColor, setPrimaryColor] = useState(hslToHex(agencyConfig.primaryColor));
+  const [secondaryColor, setSecondaryColor] = useState(hslToHex(agencyConfig.secondaryColor));
+  const [accentColor, setAccentColor] = useState(hslToHex(agencyConfig.accentColor));
+  const [logoUrl, setLogoUrl] = useState(agencyConfig.logoUrl || '');
+  const [faviconUrl, setFaviconUrl] = useState(agencyConfig.faviconUrl || '');
+  const [heroImageUrl, setHeroImageUrl] = useState(agencyConfig.heroImageUrl || '');
+  
+  // Profile state
+  const [bio, setBio] = useState('');
+  const [licenseNumber, setLicenseNumber] = useState('');
+  const [profileImage, setProfileImage] = useState('');
+  
+  // Contact state
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [officeAddress, setOfficeAddress] = useState('');
+  
+  // Hero section state
+  const [tagline, setTagline] = useState(agencyConfig.tagline);
+  const [heroCTAText, setHeroCTAText] = useState(agencyConfig.heroCTAText);
+  
+  // Social media state
+  const [socialFacebook, setSocialFacebook] = useState('');
+  const [socialInstagram, setSocialInstagram] = useState('');
+  const [socialLinkedIn, setSocialLinkedIn] = useState('');
+  const [socialTwitter, setSocialTwitter] = useState('');
+  
+  // SEO state
+  const [metaDescription, setMetaDescription] = useState(agencyConfig.metaDescription);
+  
+  // Notification state
+  const [notificationEmail, setNotificationEmail] = useState(true);
+  const [notificationSound, setNotificationSound] = useState(true);
+  
+  // Mobile app state
+  const [splashScreenUrl, setSplashScreenUrl] = useState('');
+  const [appIconUrl, setAppIconUrl] = useState('');
+  
+  // Partner settings
   const [allowPartnerListings, setAllowPartnerListings] = useState(true);
+  
+  // Upload states
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
-  const [uploadingHeroImage, setUploadingHeroImage] = useState(false);
-  const [savingPartnerSetting, setSavingPartnerSetting] = useState(false);
-  
-  const logoInputRef = useRef<HTMLInputElement>(null);
-  const faviconInputRef = useRef<HTMLInputElement>(null);
-  const heroImageInputRef = useRef<HTMLInputElement>(null);
-  
-  // Initialize form with saved settings or defaults
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const [uploadingProfile, setUploadingProfile] = useState(false);
+  const [uploadingSplash, setUploadingSplash] = useState(false);
+  const [uploadingAppIcon, setUploadingAppIcon] = useState(false);
+
+  // Load settings from database
   useEffect(() => {
     if (themeSettings) {
-      setAgencyName(themeSettings.theme_agency_name || agencyConfig.agencyName);
-      setPrimaryColor(themeSettings.theme_primary_color ? hslToHex(themeSettings.theme_primary_color) : hslToHex(agencyConfig.primaryColor));
-      setSecondaryColor(themeSettings.theme_secondary_color ? hslToHex(themeSettings.theme_secondary_color) : hslToHex(agencyConfig.secondaryColor));
-      setAccentColor(themeSettings.theme_accent_color ? hslToHex(themeSettings.theme_accent_color) : hslToHex(agencyConfig.accentColor));
-      setLogoUrl(themeSettings.theme_logo_url || '');
-      setFaviconUrl(themeSettings.theme_favicon_url || '');
-      setHeroImageUrl(themeSettings.theme_hero_image_url || '');
-      setAllowPartnerListings(themeSettings.allow_partner_listings ?? true);
-    } else if (!isLoading) {
-      // Set defaults from config
-      setAgencyName(agencyConfig.agencyName);
-      setPrimaryColor(hslToHex(agencyConfig.primaryColor));
-      setSecondaryColor(hslToHex(agencyConfig.secondaryColor));
-      setAccentColor(hslToHex(agencyConfig.accentColor));
-      setAllowPartnerListings(true);
-      setHeroImageUrl('');
+      if (themeSettings.theme_agency_name) setAgencyName(themeSettings.theme_agency_name);
+      if (themeSettings.theme_primary_color) setPrimaryColor(hslToHex(themeSettings.theme_primary_color));
+      if (themeSettings.theme_secondary_color) setSecondaryColor(hslToHex(themeSettings.theme_secondary_color));
+      if (themeSettings.theme_accent_color) setAccentColor(hslToHex(themeSettings.theme_accent_color));
+      if (themeSettings.theme_logo_url) setLogoUrl(themeSettings.theme_logo_url);
+      if (themeSettings.theme_favicon_url) setFaviconUrl(themeSettings.theme_favicon_url);
+      if (themeSettings.theme_hero_image_url) setHeroImageUrl(themeSettings.theme_hero_image_url);
+      if (themeSettings.allow_partner_listings !== null) setAllowPartnerListings(themeSettings.allow_partner_listings);
+      
+      // Profile
+      if (themeSettings.bio) setBio(themeSettings.bio);
+      if (themeSettings.license_number) setLicenseNumber(themeSettings.license_number);
+      if (themeSettings.profile_image) setProfileImage(themeSettings.profile_image);
+      
+      // Contact
+      if (themeSettings.phone) setPhone(themeSettings.phone);
+      if (themeSettings.email) setEmail(themeSettings.email);
+      if (themeSettings.office_address) setOfficeAddress(themeSettings.office_address);
+      
+      // Hero
+      if (themeSettings.tagline) setTagline(themeSettings.tagline);
+      if (themeSettings.hero_cta_text) setHeroCTAText(themeSettings.hero_cta_text);
+      
+      // Social
+      if (themeSettings.social_facebook) setSocialFacebook(themeSettings.social_facebook);
+      if (themeSettings.social_instagram) setSocialInstagram(themeSettings.social_instagram);
+      if (themeSettings.social_linkedin) setSocialLinkedIn(themeSettings.social_linkedin);
+      if (themeSettings.social_twitter) setSocialTwitter(themeSettings.social_twitter);
+      
+      // SEO
+      if (themeSettings.meta_description) setMetaDescription(themeSettings.meta_description);
+      
+      // Notifications
+      if (themeSettings.notification_email_enabled !== null) setNotificationEmail(themeSettings.notification_email_enabled);
+      if (themeSettings.notification_sound_enabled !== null) setNotificationSound(themeSettings.notification_sound_enabled);
+      
+      // Mobile
+      if (themeSettings.splash_screen_url) setSplashScreenUrl(themeSettings.splash_screen_url);
+      if (themeSettings.app_icon_url) setAppIconUrl(themeSettings.app_icon_url);
     }
-  }, [themeSettings, isLoading]);
-  
-  const uploadFile = async (file: File, type: 'logo' | 'favicon' | 'hero'): Promise<string | null> => {
+  }, [themeSettings]);
+
+  const uploadFile = async (file: File, bucket: string, folder: string): Promise<string | null> => {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${DEMO_AGENT_ID}/${type}-${Date.now()}.${fileExt}`;
+    const fileName = `${folder}/${crypto.randomUUID()}.${fileExt}`;
     
-    const { data, error } = await supabase.storage
-      .from('agent-assets')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: true,
-      });
+    const { error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file, { upsert: true });
     
     if (error) {
       console.error('Upload error:', error);
-      toast.error(`Failed to upload ${type}`);
+      toast.error('Failed to upload file');
       return null;
     }
     
-    const { data: urlData } = supabase.storage
-      .from('agent-assets')
-      .getPublicUrl(data.path);
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
     
-    return urlData.publicUrl;
+    return publicUrl;
   };
-  
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    setUrl: (url: string) => void,
+    setUploading: (uploading: boolean) => void,
+    folder: string
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
+      toast.error('Please select an image file');
       return;
     }
     
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('File size must be less than 2MB');
-      return;
-    }
-    
-    setUploadingLogo(true);
-    const url = await uploadFile(file, 'logo');
-    if (url) {
-      setLogoUrl(url);
-      toast.success('Logo uploaded successfully');
-    }
-    setUploadingLogo(false);
-    
-    // Reset input
-    if (logoInputRef.current) {
-      logoInputRef.current.value = '';
-    }
-  };
-  
-  const handleFaviconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
-      return;
-    }
-    
-    // Validate file size (max 500KB for favicon)
-    if (file.size > 500 * 1024) {
-      toast.error('Favicon must be less than 500KB');
-      return;
-    }
-    
-    setUploadingFavicon(true);
-    const url = await uploadFile(file, 'favicon');
-    if (url) {
-      setFaviconUrl(url);
-      toast.success('Favicon uploaded successfully');
-    }
-    setUploadingFavicon(false);
-    
-    // Reset input
-    if (faviconInputRef.current) {
-      faviconInputRef.current.value = '';
-    }
-  };
-  
-  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
-      return;
-    }
-    
-    // Validate file size (max 5MB for hero images)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Hero image must be less than 5MB');
+      toast.error('File size must be less than 5MB');
       return;
     }
     
-    setUploadingHeroImage(true);
-    const url = await uploadFile(file, 'hero');
+    setUploading(true);
+    const url = await uploadFile(file, 'agent-assets', folder);
     if (url) {
-      setHeroImageUrl(url);
-      toast.success('Hero image uploaded successfully');
+      setUrl(url);
+      toast.success('Image uploaded successfully');
     }
-    setUploadingHeroImage(false);
-    
-    // Reset input
-    if (heroImageInputRef.current) {
-      heroImageInputRef.current.value = '';
-    }
+    setUploading(false);
   };
-  
+
   const handleSave = async () => {
     try {
       await updateTheme.mutateAsync({
@@ -182,469 +177,719 @@ export default function Settings() {
           theme_logo_url: logoUrl || null,
           theme_favicon_url: faviconUrl || null,
           theme_hero_image_url: heroImageUrl || null,
+          allow_partner_listings: allowPartnerListings,
+          bio: bio || null,
+          license_number: licenseNumber || null,
+          profile_image: profileImage || null,
+          phone: phone || null,
+          email: email || null,
+          office_address: officeAddress || null,
+          tagline: tagline || null,
+          hero_cta_text: heroCTAText || null,
+          social_facebook: socialFacebook || null,
+          social_instagram: socialInstagram || null,
+          social_linkedin: socialLinkedIn || null,
+          social_twitter: socialTwitter || null,
+          meta_description: metaDescription || null,
+          notification_email_enabled: notificationEmail,
+          notification_sound_enabled: notificationSound,
+          splash_screen_url: splashScreenUrl || null,
+          app_icon_url: appIconUrl || null,
         },
       });
-      toast.success('Theme settings saved! Refresh to see changes.');
+      toast.success('Settings saved successfully!');
     } catch (error) {
-      toast.error('Failed to save theme settings');
+      console.error('Error saving settings:', error);
+      toast.error('Failed to save settings');
     }
   };
-  
+
   const handleReset = () => {
     setAgencyName(agencyConfig.agencyName);
     setPrimaryColor(hslToHex(agencyConfig.primaryColor));
     setSecondaryColor(hslToHex(agencyConfig.secondaryColor));
     setAccentColor(hslToHex(agencyConfig.accentColor));
-    setLogoUrl('');
-    setFaviconUrl('');
-    setHeroImageUrl('');
+    setLogoUrl(agencyConfig.logoUrl || '');
+    setFaviconUrl(agencyConfig.faviconUrl || '');
+    setHeroImageUrl(agencyConfig.heroImageUrl || '');
+    setTagline(agencyConfig.tagline);
+    setHeroCTAText(agencyConfig.heroCTAText);
+    setMetaDescription(agencyConfig.metaDescription);
+    setBio('');
+    setLicenseNumber('');
+    setProfileImage('');
+    setPhone('');
+    setEmail('');
+    setOfficeAddress('');
+    setSocialFacebook('');
+    setSocialInstagram('');
+    setSocialLinkedIn('');
+    setSocialTwitter('');
+    setNotificationEmail(true);
+    setNotificationSound(true);
+    setSplashScreenUrl('');
+    setAppIconUrl('');
     setAllowPartnerListings(true);
+    toast.info('Settings reset to defaults');
   };
-  
-  const handlePartnerSettingChange = async (checked: boolean) => {
-    setAllowPartnerListings(checked);
-    setSavingPartnerSetting(true);
-    try {
-      const { error } = await supabase
-        .from('agents')
-        .update({ allow_partner_listings: checked })
-        .eq('id', DEMO_AGENT_ID);
-      
-      if (error) throw error;
-      toast.success(checked ? 'Partners can now display your listings' : 'Partners can no longer display your listings');
-    } catch (error) {
-      toast.error('Failed to update partner setting');
-      setAllowPartnerListings(!checked); // Revert on error
-    } finally {
-      setSavingPartnerSetting(false);
-    }
-  };
-  
+
   if (isLoading) {
     return (
       <AgentLayout>
-        <div className="container py-8 flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </AgentLayout>
     );
   }
-  
+
   return (
     <AgentLayout>
-      <div className="container py-8 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-foreground">Theme Settings</h1>
-          <p className="text-muted-foreground mt-1">
-            Customize the look and feel of your agency's branded experience
-          </p>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground">Customize your agency's white-label experience</p>
         </div>
-        
-        <div className="grid gap-6">
-          {/* Branding Section */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-accent" />
-                Agency Branding
-              </CardTitle>
-              <CardDescription>
-                Set your agency name and logos
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="agencyName">Agency Name</Label>
-                <Input
-                  id="agencyName"
-                  value={agencyName}
-                  onChange={(e) => setAgencyName(e.target.value)}
-                  placeholder="Enter your agency name"
-                  className="bg-background"
-                />
-              </div>
-              
-              {/* Logo Upload */}
-              <div className="space-y-3">
-                <Label>Logo</Label>
-                <div className="flex items-start gap-4">
-                  {/* Preview */}
-                  <div className="w-32 h-20 rounded-lg border border-border bg-background flex items-center justify-center overflow-hidden">
-                    {logoUrl ? (
-                      <img 
-                        src={logoUrl} 
-                        alt="Logo preview" 
-                        className="max-w-full max-h-full object-contain"
-                      />
-                    ) : (
-                      <Image className="w-8 h-8 text-muted-foreground/50" />
-                    )}
-                  </div>
-                  
-                  {/* Upload controls */}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => logoInputRef.current?.click()}
-                        disabled={uploadingLogo}
-                        className="gap-2"
-                      >
-                        {uploadingLogo ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Upload className="w-4 h-4" />
-                        )}
-                        Upload Logo
-                      </Button>
+
+        <Tabs defaultValue="branding" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 h-auto gap-2">
+            <TabsTrigger value="branding" className="flex items-center gap-2 text-xs sm:text-sm">
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline">Branding</span>
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="flex items-center gap-2 text-xs sm:text-sm">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">Profile</span>
+            </TabsTrigger>
+            <TabsTrigger value="content" className="flex items-center gap-2 text-xs sm:text-sm">
+              <Globe className="h-4 w-4" />
+              <span className="hidden sm:inline">Content</span>
+            </TabsTrigger>
+            <TabsTrigger value="preferences" className="flex items-center gap-2 text-xs sm:text-sm">
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">Preferences</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Branding Tab */}
+          <TabsContent value="branding" className="space-y-6">
+            {/* Agency Identity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Image className="h-5 w-5" />
+                  Agency Identity
+                </CardTitle>
+                <CardDescription>Upload your agency's visual assets</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="agencyName">Agency Name</Label>
+                  <Input
+                    id="agencyName"
+                    value={agencyName}
+                    onChange={(e) => setAgencyName(e.target.value)}
+                    placeholder="Your Agency Name"
+                  />
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Logo */}
+                  <div className="space-y-2">
+                    <Label>Logo</Label>
+                    <div className="flex items-center gap-4">
                       {logoUrl && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setLogoUrl('')}
-                          className="gap-2 text-destructive hover:text-destructive"
-                        >
-                          <X className="w-4 h-4" />
-                          Remove
-                        </Button>
+                        <img src={logoUrl} alt="Logo" className="h-12 w-12 object-contain rounded border bg-background" />
                       )}
+                      <div className="flex-1 space-y-2">
+                        <div className="relative">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload(e, setLogoUrl, setUploadingLogo, 'logos')}
+                            className="hidden"
+                            id="logo-upload"
+                          />
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => document.getElementById('logo-upload')?.click()}
+                            disabled={uploadingLogo}
+                          >
+                            {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                            Upload Logo
+                          </Button>
+                        </div>
+                        <Input
+                          placeholder="Or paste URL..."
+                          value={logoUrl}
+                          onChange={(e) => setLogoUrl(e.target.value)}
+                          className="text-xs"
+                        />
+                      </div>
                     </div>
-                    <input
-                      ref={logoInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="hidden"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Recommended: 200x50px, PNG or SVG (max 2MB)
-                    </p>
-                    {/* Manual URL input */}
-                    <Input
-                      value={logoUrl}
-                      onChange={(e) => setLogoUrl(e.target.value)}
-                      placeholder="Or enter logo URL..."
-                      className="bg-background text-sm"
-                    />
                   </div>
-                </div>
-              </div>
-              
-              {/* Favicon Upload */}
-              <div className="space-y-3">
-                <Label>Favicon</Label>
-                <div className="flex items-start gap-4">
-                  {/* Preview */}
-                  <div className="w-16 h-16 rounded-lg border border-border bg-background flex items-center justify-center overflow-hidden">
-                    {faviconUrl ? (
-                      <img 
-                        src={faviconUrl} 
-                        alt="Favicon preview" 
-                        className="max-w-full max-h-full object-contain"
-                      />
-                    ) : (
-                      <Image className="w-6 h-6 text-muted-foreground/50" />
-                    )}
-                  </div>
-                  
-                  {/* Upload controls */}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => faviconInputRef.current?.click()}
-                        disabled={uploadingFavicon}
-                        className="gap-2"
-                      >
-                        {uploadingFavicon ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Upload className="w-4 h-4" />
-                        )}
-                        Upload Favicon
-                      </Button>
+
+                  {/* Favicon */}
+                  <div className="space-y-2">
+                    <Label>Favicon</Label>
+                    <div className="flex items-center gap-4">
                       {faviconUrl && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setFaviconUrl('')}
-                          className="gap-2 text-destructive hover:text-destructive"
-                        >
-                          <X className="w-4 h-4" />
-                          Remove
-                        </Button>
+                        <img src={faviconUrl} alt="Favicon" className="h-12 w-12 object-contain rounded border bg-background" />
                       )}
+                      <div className="flex-1 space-y-2">
+                        <div className="relative">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload(e, setFaviconUrl, setUploadingFavicon, 'favicons')}
+                            className="hidden"
+                            id="favicon-upload"
+                          />
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => document.getElementById('favicon-upload')?.click()}
+                            disabled={uploadingFavicon}
+                          >
+                            {uploadingFavicon ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                            Upload Favicon
+                          </Button>
+                        </div>
+                        <Input
+                          placeholder="Or paste URL..."
+                          value={faviconUrl}
+                          onChange={(e) => setFaviconUrl(e.target.value)}
+                          className="text-xs"
+                        />
+                      </div>
                     </div>
-                    <input
-                      ref={faviconInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFaviconUpload}
-                      className="hidden"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Recommended: 32x32px, PNG or ICO (max 500KB)
-                    </p>
-                    {/* Manual URL input */}
-                    <Input
-                      value={faviconUrl}
-                      onChange={(e) => setFaviconUrl(e.target.value)}
-                      placeholder="Or enter favicon URL..."
-                      className="bg-background text-sm"
-                    />
                   </div>
                 </div>
-              </div>
-              
-              {/* Hero Image Upload */}
-              <div className="space-y-3">
-                <Label>Hero Background Image</Label>
-                <div className="flex items-start gap-4">
-                  {/* Preview */}
-                  <div className="w-40 h-24 rounded-lg border border-border bg-background flex items-center justify-center overflow-hidden">
-                    {heroImageUrl ? (
-                      <img 
-                        src={heroImageUrl} 
-                        alt="Hero image preview" 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <Image className="w-8 h-8 text-muted-foreground/50" />
+
+                {/* Hero Image */}
+                <div className="space-y-2">
+                  <Label>Hero Background Image</Label>
+                  <div className="flex items-start gap-4">
+                    {heroImageUrl && (
+                      <img src={heroImageUrl} alt="Hero" className="h-20 w-32 object-cover rounded border" />
                     )}
-                  </div>
-                  
-                  {/* Upload controls */}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => heroImageInputRef.current?.click()}
-                        disabled={uploadingHeroImage}
-                        className="gap-2"
-                      >
-                        {uploadingHeroImage ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Upload className="w-4 h-4" />
-                        )}
-                        Upload Hero Image
-                      </Button>
-                      {heroImageUrl && (
+                    <div className="flex-1 space-y-2">
+                      <div className="relative">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload(e, setHeroImageUrl, setUploadingHero, 'heroes')}
+                          className="hidden"
+                          id="hero-upload"
+                        />
                         <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setHeroImageUrl('')}
-                          className="gap-2 text-destructive hover:text-destructive"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => document.getElementById('hero-upload')?.click()}
+                          disabled={uploadingHero}
                         >
-                          <X className="w-4 h-4" />
-                          Remove
+                          {uploadingHero ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                          Upload Hero Image
                         </Button>
-                      )}
+                      </div>
+                      <Input
+                        placeholder="Or paste URL..."
+                        value={heroImageUrl}
+                        onChange={(e) => setHeroImageUrl(e.target.value)}
+                        className="text-xs"
+                      />
                     </div>
-                    <input
-                      ref={heroImageInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleHeroImageUpload}
-                      className="hidden"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Recommended: 1920x1080px, JPG or PNG (max 5MB). Used as background on landing page.
-                    </p>
-                    {/* Manual URL input */}
-                    <Input
-                      value={heroImageUrl}
-                      onChange={(e) => setHeroImageUrl(e.target.value)}
-                      placeholder="Or enter hero image URL..."
-                      className="bg-background text-sm"
-                    />
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Colors Section */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="w-5 h-5 text-accent" />
-                Brand Colors
-              </CardTitle>
-              <CardDescription>
-                Choose colors that reflect your agency's brand
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-6 sm:grid-cols-3">
+              </CardContent>
+            </Card>
+
+            {/* Brand Colors */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="h-5 w-5" />
+                  Brand Colors
+                </CardTitle>
+                <CardDescription>Choose colors that represent your brand</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-6 md:grid-cols-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="primaryColor">Primary Color</Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        id="primaryColor"
+                        value={primaryColor}
+                        onChange={(e) => setPrimaryColor(e.target.value)}
+                        className="h-10 w-14 rounded border cursor-pointer"
+                      />
+                      <Input
+                        value={primaryColor}
+                        onChange={(e) => setPrimaryColor(e.target.value)}
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="secondaryColor">Secondary Color</Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        id="secondaryColor"
+                        value={secondaryColor}
+                        onChange={(e) => setSecondaryColor(e.target.value)}
+                        className="h-10 w-14 rounded border cursor-pointer"
+                      />
+                      <Input
+                        value={secondaryColor}
+                        onChange={(e) => setSecondaryColor(e.target.value)}
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="accentColor">Accent Color</Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        id="accentColor"
+                        value={accentColor}
+                        onChange={(e) => setAccentColor(e.target.value)}
+                        className="h-10 w-14 rounded border cursor-pointer"
+                      />
+                      <Input
+                        value={accentColor}
+                        onChange={(e) => setAccentColor(e.target.value)}
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Color Preview */}
+                <div className="mt-6 p-4 rounded-lg border bg-muted/50">
+                  <p className="text-sm font-medium mb-3">Preview</p>
+                  <div className="flex flex-wrap gap-3">
+                    <div
+                      className="h-12 w-24 rounded-lg flex items-center justify-center text-xs font-medium shadow-sm"
+                      style={{ backgroundColor: primaryColor, color: '#fff' }}
+                    >
+                      Primary
+                    </div>
+                    <div
+                      className="h-12 w-24 rounded-lg flex items-center justify-center text-xs font-medium shadow-sm"
+                      style={{ backgroundColor: secondaryColor }}
+                    >
+                      Secondary
+                    </div>
+                    <div
+                      className="h-12 w-24 rounded-lg flex items-center justify-center text-xs font-medium shadow-sm"
+                      style={{ backgroundColor: accentColor, color: '#fff' }}
+                    >
+                      Accent
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Mobile App Assets */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Phone className="h-5 w-5" />
+                  Mobile App Assets
+                </CardTitle>
+                <CardDescription>Assets for mobile app installation (PWA)</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* App Icon */}
+                  <div className="space-y-2">
+                    <Label>App Icon (512x512)</Label>
+                    <div className="flex items-center gap-4">
+                      {appIconUrl && (
+                        <img src={appIconUrl} alt="App Icon" className="h-12 w-12 object-contain rounded-xl border bg-background" />
+                      )}
+                      <div className="flex-1 space-y-2">
+                        <div className="relative">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload(e, setAppIconUrl, setUploadingAppIcon, 'app-icons')}
+                            className="hidden"
+                            id="appicon-upload"
+                          />
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => document.getElementById('appicon-upload')?.click()}
+                            disabled={uploadingAppIcon}
+                          >
+                            {uploadingAppIcon ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                            Upload App Icon
+                          </Button>
+                        </div>
+                        <Input
+                          placeholder="Or paste URL..."
+                          value={appIconUrl}
+                          onChange={(e) => setAppIconUrl(e.target.value)}
+                          className="text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Splash Screen */}
+                  <div className="space-y-2">
+                    <Label>Splash Screen</Label>
+                    <div className="flex items-center gap-4">
+                      {splashScreenUrl && (
+                        <img src={splashScreenUrl} alt="Splash" className="h-12 w-12 object-contain rounded border bg-background" />
+                      )}
+                      <div className="flex-1 space-y-2">
+                        <div className="relative">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload(e, setSplashScreenUrl, setUploadingSplash, 'splash')}
+                            className="hidden"
+                            id="splash-upload"
+                          />
+                          <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => document.getElementById('splash-upload')?.click()}
+                            disabled={uploadingSplash}
+                          >
+                            {uploadingSplash ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                            Upload Splash Screen
+                          </Button>
+                        </div>
+                        <Input
+                          placeholder="Or paste URL..."
+                          value={splashScreenUrl}
+                          onChange={(e) => setSplashScreenUrl(e.target.value)}
+                          className="text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Profile Tab */}
+          <TabsContent value="profile" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Agent Profile
+                </CardTitle>
+                <CardDescription>Your public agent information</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Profile Image */}
                 <div className="space-y-2">
-                  <Label htmlFor="primaryColor">Primary Color</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      id="primaryColor"
-                      value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="w-12 h-10 rounded-lg border border-border cursor-pointer"
-                    />
-                    <Input
-                      value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="bg-background flex-1"
-                    />
+                  <Label>Profile Photo</Label>
+                  <div className="flex items-center gap-4">
+                    {profileImage ? (
+                      <img src={profileImage} alt="Profile" className="h-20 w-20 object-cover rounded-full border-2 border-primary" />
+                    ) : (
+                      <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
+                        <User className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="flex-1 space-y-2">
+                      <div className="relative">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload(e, setProfileImage, setUploadingProfile, 'profiles')}
+                          className="hidden"
+                          id="profile-upload"
+                        />
+                        <Button
+                          variant="outline"
+                          onClick={() => document.getElementById('profile-upload')?.click()}
+                          disabled={uploadingProfile}
+                        >
+                          {uploadingProfile ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
+                          Upload Photo
+                        </Button>
+                      </div>
+                      <Input
+                        placeholder="Or paste URL..."
+                        value={profileImage}
+                        onChange={(e) => setProfileImage(e.target.value)}
+                        className="text-xs"
+                      />
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Main brand color for navigation and buttons
-                  </p>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <Label htmlFor="secondaryColor">Secondary Color</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      id="secondaryColor"
-                      value={secondaryColor}
-                      onChange={(e) => setSecondaryColor(e.target.value)}
-                      className="w-12 h-10 rounded-lg border border-border cursor-pointer"
-                    />
-                    <Input
-                      value={secondaryColor}
-                      onChange={(e) => setSecondaryColor(e.target.value)}
-                      className="bg-background flex-1"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Background and secondary elements
-                  </p>
+                  <Label htmlFor="licenseNumber">License Number</Label>
+                  <Input
+                    id="licenseNumber"
+                    value={licenseNumber}
+                    onChange={(e) => setLicenseNumber(e.target.value)}
+                    placeholder="e.g., LIC-12345678"
+                  />
                 </div>
-                
+
                 <div className="space-y-2">
-                  <Label htmlFor="accentColor">Accent Color</Label>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      id="accentColor"
-                      value={accentColor}
-                      onChange={(e) => setAccentColor(e.target.value)}
-                      className="w-12 h-10 rounded-lg border border-border cursor-pointer"
-                    />
+                  <Label htmlFor="bio">Bio / About</Label>
+                  <Textarea
+                    id="bio"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tell potential clients about yourself and your experience..."
+                    rows={4}
+                  />
+                  <p className="text-xs text-muted-foreground">{bio.length}/500 characters</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Phone className="h-5 w-5" />
+                  Contact Information
+                </CardTitle>
+                <CardDescription>How clients can reach you</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
                     <Input
-                      value={accentColor}
-                      onChange={(e) => setAccentColor(e.target.value)}
-                      className="bg-background flex-1"
+                      id="phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="e.g., 0400 000 000"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Highlights and call-to-action elements
-                  </p>
-                </div>
-              </div>
-              
-              {/* Live Preview */}
-              <div className="mt-6 p-6 rounded-xl border border-border bg-background">
-                <h4 className="text-sm font-medium text-muted-foreground mb-4">Live Preview</h4>
-                <div className="flex flex-wrap items-center gap-4">
-                  <div 
-                    className="px-6 py-3 rounded-full font-medium text-white"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    Primary Button
-                  </div>
-                  <div 
-                    className="px-6 py-3 rounded-full font-medium border-2"
-                    style={{ borderColor: primaryColor, color: primaryColor }}
-                  >
-                    Outline Button
-                  </div>
-                  <div 
-                    className="px-6 py-3 rounded-full font-medium text-white"
-                    style={{ backgroundColor: accentColor }}
-                  >
-                    Accent Button
-                  </div>
-                  <div 
-                    className="w-12 h-12 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    <Building2 className="w-6 h-6 text-white" />
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="agent@agency.com"
+                    />
                   </div>
                 </div>
-                <div 
-                  className="mt-4 p-4 rounded-lg"
-                  style={{ backgroundColor: secondaryColor }}
-                >
-                  <p className="text-sm" style={{ color: primaryColor }}>
-                    <strong>{agencyName || 'Your Agency Name'}</strong> — This is how your secondary color will appear as a background
-                  </p>
+
+                <div className="space-y-2">
+                  <Label htmlFor="officeAddress">Office Address</Label>
+                  <Input
+                    id="officeAddress"
+                    value={officeAddress}
+                    onChange={(e) => setOfficeAddress(e.target.value)}
+                    placeholder="123 Main Street, Sydney NSW 2000"
+                  />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Partner Network Section */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Handshake className="w-5 h-5 text-accent" />
-                Partner Network
-              </CardTitle>
-              <CardDescription>
-                Control how your listings are shared with partner agents
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50">
-                <div className="space-y-1">
-                  <Label htmlFor="allow-partners" className="text-base font-medium">
-                    Allow partners to display my listings
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    When enabled, your partner agents can see and share your listings with their clients
-                  </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Content Tab */}
+          <TabsContent value="content" className="space-y-6">
+            {/* Hero Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Image className="h-5 w-5" />
+                  Hero Section
+                </CardTitle>
+                <CardDescription>Customize your landing page hero</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tagline">Tagline</Label>
+                  <Input
+                    id="tagline"
+                    value={tagline}
+                    onChange={(e) => setTagline(e.target.value)}
+                    placeholder="Find Your Dream Home"
+                  />
+                  <p className="text-xs text-muted-foreground">Displayed below your agency name on the landing page</p>
                 </div>
-                <Switch
-                  id="allow-partners"
-                  checked={allowPartnerListings}
-                  onCheckedChange={handlePartnerSettingChange}
-                  disabled={savingPartnerSetting}
-                />
-              </div>
-            </CardContent>
-          </Card>
-          
-          {/* Actions */}
-          <div className="flex gap-3 justify-end">
-            <Button
-              variant="outline"
-              onClick={handleReset}
-              className="gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              Reset to Defaults
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={updateTheme.isPending}
-              className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90"
-            >
-              {updateTheme.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4" />
-              )}
-              Save Changes
-            </Button>
-          </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="heroCTA">Call-to-Action Button</Label>
+                  <Input
+                    id="heroCTA"
+                    value={heroCTAText}
+                    onChange={(e) => setHeroCTAText(e.target.value)}
+                    placeholder="Browse Properties"
+                  />
+                  <p className="text-xs text-muted-foreground">The main button text on your landing page</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Social Media Links */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Share2 className="h-5 w-5" />
+                  Social Media Links
+                </CardTitle>
+                <CardDescription>Connect your social profiles</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="facebook">Facebook</Label>
+                    <Input
+                      id="facebook"
+                      value={socialFacebook}
+                      onChange={(e) => setSocialFacebook(e.target.value)}
+                      placeholder="https://facebook.com/youragency"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="instagram">Instagram</Label>
+                    <Input
+                      id="instagram"
+                      value={socialInstagram}
+                      onChange={(e) => setSocialInstagram(e.target.value)}
+                      placeholder="https://instagram.com/youragency"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedin">LinkedIn</Label>
+                    <Input
+                      id="linkedin"
+                      value={socialLinkedIn}
+                      onChange={(e) => setSocialLinkedIn(e.target.value)}
+                      placeholder="https://linkedin.com/company/youragency"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="twitter">Twitter / X</Label>
+                    <Input
+                      id="twitter"
+                      value={socialTwitter}
+                      onChange={(e) => setSocialTwitter(e.target.value)}
+                      placeholder="https://twitter.com/youragency"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* SEO Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="h-5 w-5" />
+                  SEO Settings
+                </CardTitle>
+                <CardDescription>Optimize for search engines</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="metaDescription">Meta Description</Label>
+                  <Textarea
+                    id="metaDescription"
+                    value={metaDescription}
+                    onChange={(e) => setMetaDescription(e.target.value)}
+                    placeholder="Your trusted real estate partner for buying, selling, and renting properties."
+                    rows={3}
+                  />
+                  <p className="text-xs text-muted-foreground">{metaDescription.length}/160 characters recommended</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Preferences Tab */}
+          <TabsContent value="preferences" className="space-y-6">
+            {/* Notification Preferences */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Notification Preferences
+                </CardTitle>
+                <CardDescription>Control how you receive alerts</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Email Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Receive important updates via email</p>
+                  </div>
+                  <Switch
+                    checked={notificationEmail}
+                    onCheckedChange={setNotificationEmail}
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Sound Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Play doorbell sound for new leads</p>
+                  </div>
+                  <Switch
+                    checked={notificationSound}
+                    onCheckedChange={setNotificationSound}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Partner Network */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Partner Network</CardTitle>
+                <CardDescription>Manage collaboration with partner agents</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Allow Partner Listings</Label>
+                    <p className="text-sm text-muted-foreground">Let partner agents display their listings in your app</p>
+                  </div>
+                  <Switch
+                    checked={allowPartnerListings}
+                    onCheckedChange={setAllowPartnerListings}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t">
+          <Button variant="outline" onClick={handleReset}>
+            Reset to Defaults
+          </Button>
+          <Button onClick={handleSave} disabled={updateTheme.isPending} className="sm:ml-auto">
+            {updateTheme.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+            Save Changes
+          </Button>
         </div>
       </div>
     </AgentLayout>
