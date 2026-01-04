@@ -17,6 +17,12 @@ export interface ThemeSettings {
   theme_base_font_size: string | null;
   theme_heading_scale: string | null;
   
+  // Button and Icon Colors
+  theme_button_color: string | null;
+  theme_button_text_color: string | null;
+  theme_icon_color: string | null;
+  theme_link_color: string | null;
+  
   bio: string | null;
   license_number: string | null;
   profile_image: string | null;
@@ -65,6 +71,10 @@ export function useAgentThemeSettings(agentId?: string) {
           theme_body_font,
           theme_base_font_size,
           theme_heading_scale,
+          theme_button_color,
+          theme_button_text_color,
+          theme_icon_color,
+          theme_link_color,
           bio,
           license_number,
           profile_image,

@@ -61,6 +61,10 @@ export function AgencyThemeProvider({ children, config, agentId }: AgencyThemePr
             theme_body_font,
             theme_base_font_size,
             theme_heading_scale,
+            theme_button_color,
+            theme_button_text_color,
+            theme_icon_color,
+            theme_link_color,
             phone,
             email,
             office_address,
@@ -90,6 +94,10 @@ export function AgencyThemeProvider({ children, config, agentId }: AgencyThemePr
           if (data.theme_body_font) themeFromDb.bodyFont = data.theme_body_font;
           if (data.theme_base_font_size) themeFromDb.baseFontSize = data.theme_base_font_size;
           if (data.theme_heading_scale) themeFromDb.headingScale = data.theme_heading_scale;
+          if (data.theme_button_color) themeFromDb.buttonColor = data.theme_button_color;
+          if (data.theme_button_text_color) themeFromDb.buttonTextColor = data.theme_button_text_color;
+          if (data.theme_icon_color) themeFromDb.iconColor = data.theme_icon_color;
+          if (data.theme_link_color) themeFromDb.linkColor = data.theme_link_color;
           if (data.phone) themeFromDb.phone = data.phone;
           if (data.email) themeFromDb.email = data.email;
           if (data.office_address) themeFromDb.officeAddress = data.office_address;
@@ -162,6 +170,12 @@ export function AgencyThemeProvider({ children, config, agentId }: AgencyThemePr
     root.style.setProperty('--heading-h4', headingScale.h4);
     root.style.setProperty('--heading-h5', headingScale.h5);
     root.style.setProperty('--heading-h6', headingScale.h6);
+
+    // Apply button and icon colors
+    root.style.setProperty('--button-bg', mergedConfig.buttonColor);
+    root.style.setProperty('--button-text', mergedConfig.buttonTextColor);
+    root.style.setProperty('--icon-color', mergedConfig.iconColor);
+    root.style.setProperty('--link-color', mergedConfig.linkColor);
 
     // Update favicon if provided
     if (mergedConfig.faviconUrl) {

@@ -10,29 +10,29 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-foreground text-background shadow-md hover:bg-foreground/90 hover:shadow-lg",
+          "bg-[hsl(var(--button-bg))] text-[hsl(var(--button-text))] shadow-md hover:opacity-90 hover:shadow-lg",
         destructive:
           "bg-destructive text-destructive-foreground shadow-md hover:bg-destructive/90",
         outline:
-          "border-2 border-border bg-transparent text-foreground hover:bg-muted hover:border-foreground/30",
+          "border-2 border-[hsl(var(--button-bg))] bg-transparent text-[hsl(var(--button-bg))] hover:bg-[hsl(var(--button-bg)/0.1)]",
         secondary:
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: 
           "text-foreground hover:bg-muted hover:text-foreground",
         link: 
-          "text-accent underline-offset-4 hover:underline",
+          "text-[hsl(var(--link-color))] underline-offset-4 hover:underline",
         accent:
-          "gradient-orange text-white shadow-lg hover:shadow-glow font-bold",
+          "bg-[hsl(var(--button-bg))] text-[hsl(var(--button-text))] shadow-lg hover:shadow-glow font-bold",
         hero:
-          "bg-foreground text-background shadow-lg hover:shadow-xl text-base font-bold tracking-wide",
+          "bg-[hsl(var(--button-bg))] text-[hsl(var(--button-text))] shadow-lg hover:shadow-xl text-base font-bold tracking-wide",
         heroOutline:
-          "border-2 border-foreground/30 bg-transparent text-foreground backdrop-blur-sm hover:bg-foreground/10 hover:border-foreground/50",
+          "border-2 border-[hsl(var(--button-bg)/0.3)] bg-transparent text-[hsl(var(--button-bg))] backdrop-blur-sm hover:bg-[hsl(var(--button-bg)/0.1)] hover:border-[hsl(var(--button-bg)/0.5)]",
         gold:
-          "gradient-orange text-white shadow-lg hover:shadow-glow font-bold",
+          "bg-[hsl(var(--button-bg))] text-[hsl(var(--button-text))] shadow-lg hover:shadow-glow font-bold",
         success:
           "bg-success text-success-foreground shadow-md hover:bg-success/90",
         glow:
-          "gradient-orange text-white shadow-glow animate-pulse-glow font-bold",
+          "bg-[hsl(var(--button-bg))] text-[hsl(var(--button-text))] shadow-glow animate-pulse-glow font-bold",
       },
       size: {
         default: "h-11 px-6 py-2.5",

@@ -17,6 +17,12 @@ export interface AgencyConfig {
   baseFontSize: string;
   headingScale: string;
   
+  // Button and Icon Colors
+  buttonColor: string;
+  buttonTextColor: string;
+  iconColor: string;
+  linkColor: string;
+  
   // Hero section
   tagline: string;
   heroCTAText: string;
@@ -54,6 +60,12 @@ const agencyConfig: AgencyConfig = {
   bodyFont: "Inter",
   baseFontSize: "medium",
   headingScale: "standard",
+  
+  // Button and Icon Color defaults
+  buttonColor: "20 90% 48%",
+  buttonTextColor: "0 0% 100%",
+  iconColor: "20 90% 48%",
+  linkColor: "20 90% 48%",
   
   // Hero section defaults
   tagline: "Find Your Dream Home",
