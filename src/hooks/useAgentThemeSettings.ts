@@ -10,6 +10,30 @@ export interface ThemeSettings {
   theme_favicon_url: string | null;
   theme_hero_image_url: string | null;
   allow_partner_listings: boolean | null;
+  
+  bio: string | null;
+  license_number: string | null;
+  profile_image: string | null;
+  
+  phone: string | null;
+  email: string | null;
+  office_address: string | null;
+  
+  tagline: string | null;
+  hero_cta_text: string | null;
+  
+  social_facebook: string | null;
+  social_instagram: string | null;
+  social_linkedin: string | null;
+  social_twitter: string | null;
+  
+  meta_description: string | null;
+  
+  notification_email_enabled: boolean | null;
+  notification_sound_enabled: boolean | null;
+  
+  splash_screen_url: string | null;
+  app_icon_url: string | null;
 }
 
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
@@ -22,7 +46,33 @@ export function useAgentThemeSettings(agentId?: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('agents')
-        .select('theme_agency_name, theme_primary_color, theme_secondary_color, theme_accent_color, theme_logo_url, theme_favicon_url, theme_hero_image_url, allow_partner_listings')
+        .select(`
+          theme_agency_name, 
+          theme_primary_color, 
+          theme_secondary_color, 
+          theme_accent_color, 
+          theme_logo_url, 
+          theme_favicon_url, 
+          theme_hero_image_url, 
+          allow_partner_listings,
+          bio,
+          license_number,
+          profile_image,
+          phone,
+          email,
+          office_address,
+          tagline,
+          hero_cta_text,
+          social_facebook,
+          social_instagram,
+          social_linkedin,
+          social_twitter,
+          meta_description,
+          notification_email_enabled,
+          notification_sound_enabled,
+          splash_screen_url,
+          app_icon_url
+        `)
         .eq('id', id)
         .maybeSingle();
       

@@ -60,11 +60,25 @@ export type Database = {
         Row: {
           agency_name: string | null
           allow_partner_listings: boolean
+          app_icon_url: string | null
           bio: string | null
           created_at: string
+          email: string | null
+          hero_cta_text: string | null
           id: string
           license_number: string | null
+          meta_description: string | null
+          notification_email_enabled: boolean | null
+          notification_sound_enabled: boolean | null
+          office_address: string | null
+          phone: string | null
           profile_image: string | null
+          social_facebook: string | null
+          social_instagram: string | null
+          social_linkedin: string | null
+          social_twitter: string | null
+          splash_screen_url: string | null
+          tagline: string | null
           theme_accent_color: string | null
           theme_agency_name: string | null
           theme_favicon_url: string | null
@@ -78,11 +92,25 @@ export type Database = {
         Insert: {
           agency_name?: string | null
           allow_partner_listings?: boolean
+          app_icon_url?: string | null
           bio?: string | null
           created_at?: string
+          email?: string | null
+          hero_cta_text?: string | null
           id?: string
           license_number?: string | null
+          meta_description?: string | null
+          notification_email_enabled?: boolean | null
+          notification_sound_enabled?: boolean | null
+          office_address?: string | null
+          phone?: string | null
           profile_image?: string | null
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_twitter?: string | null
+          splash_screen_url?: string | null
+          tagline?: string | null
           theme_accent_color?: string | null
           theme_agency_name?: string | null
           theme_favicon_url?: string | null
@@ -96,11 +124,25 @@ export type Database = {
         Update: {
           agency_name?: string | null
           allow_partner_listings?: boolean
+          app_icon_url?: string | null
           bio?: string | null
           created_at?: string
+          email?: string | null
+          hero_cta_text?: string | null
           id?: string
           license_number?: string | null
+          meta_description?: string | null
+          notification_email_enabled?: boolean | null
+          notification_sound_enabled?: boolean | null
+          office_address?: string | null
+          phone?: string | null
           profile_image?: string | null
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          social_twitter?: string | null
+          splash_screen_url?: string | null
+          tagline?: string | null
           theme_accent_color?: string | null
           theme_agency_name?: string | null
           theme_favicon_url?: string | null

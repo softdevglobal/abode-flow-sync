@@ -2,6 +2,7 @@
 // Modify these values to customize the branding for your agency
 
 export interface AgencyConfig {
+  // Core branding
   agencyName: string;
   primaryColor: string; // HSL format: "H S% L%"
   secondaryColor: string; // HSL format: "H S% L%"
@@ -9,6 +10,28 @@ export interface AgencyConfig {
   logoUrl: string | null;
   faviconUrl: string | null;
   heroImageUrl: string | null;
+  
+  // Hero section
+  tagline: string;
+  heroCTAText: string;
+  
+  // Contact info
+  phone: string | null;
+  email: string | null;
+  officeAddress: string | null;
+  
+  // Social media
+  socialFacebook: string | null;
+  socialInstagram: string | null;
+  socialLinkedIn: string | null;
+  socialTwitter: string | null;
+  
+  // SEO
+  metaDescription: string;
+  
+  // Mobile app
+  splashScreenUrl: string | null;
+  appIconUrl: string | null;
 }
 
 const agencyConfig: AgencyConfig = {
@@ -19,6 +42,28 @@ const agencyConfig: AgencyConfig = {
   logoUrl: "/favicon.png", // Custom logo
   faviconUrl: "/favicon.png", // Custom favicon
   heroImageUrl: null, // Hero background image
+  
+  // Hero section defaults
+  tagline: "Find Your Dream Home",
+  heroCTAText: "Browse Properties",
+  
+  // Contact info defaults
+  phone: null,
+  email: null,
+  officeAddress: null,
+  
+  // Social media defaults
+  socialFacebook: null,
+  socialInstagram: null,
+  socialLinkedIn: null,
+  socialTwitter: null,
+  
+  // SEO defaults
+  metaDescription: "Your trusted real estate partner for buying, selling, and renting properties.",
+  
+  // Mobile app defaults
+  splashScreenUrl: null,
+  appIconUrl: null,
 };
 
 export default agencyConfig;
