@@ -11,6 +11,12 @@ export interface ThemeSettings {
   theme_hero_image_url: string | null;
   allow_partner_listings: boolean | null;
   
+  // Typography
+  theme_heading_font: string | null;
+  theme_body_font: string | null;
+  theme_base_font_size: string | null;
+  theme_heading_scale: string | null;
+  
   bio: string | null;
   license_number: string | null;
   profile_image: string | null;
@@ -55,6 +61,10 @@ export function useAgentThemeSettings(agentId?: string) {
           theme_favicon_url, 
           theme_hero_image_url, 
           allow_partner_listings,
+          theme_heading_font,
+          theme_body_font,
+          theme_base_font_size,
+          theme_heading_scale,
           bio,
           license_number,
           profile_image,

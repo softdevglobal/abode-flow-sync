@@ -11,6 +11,12 @@ export interface AgencyConfig {
   faviconUrl: string | null;
   heroImageUrl: string | null;
   
+  // Typography
+  headingFont: string;
+  bodyFont: string;
+  baseFontSize: string;
+  headingScale: string;
+  
   // Hero section
   tagline: string;
   heroCTAText: string;
@@ -42,6 +48,12 @@ const agencyConfig: AgencyConfig = {
   logoUrl: "/favicon.png", // Custom logo
   faviconUrl: "/favicon.png", // Custom favicon
   heroImageUrl: null, // Hero background image
+  
+  // Typography defaults
+  headingFont: "Manrope",
+  bodyFont: "Inter",
+  baseFontSize: "medium",
+  headingScale: "standard",
   
   // Hero section defaults
   tagline: "Find Your Dream Home",

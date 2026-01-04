@@ -16,6 +16,28 @@ interface AgencyThemeProviderProps {
 
 const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 
+// Font mappings for CSS
+const FONT_MAP: Record<string, string> = {
+  'Manrope': '"Manrope", sans-serif',
+  'Inter': '"Inter", sans-serif',
+  'Roboto': '"Roboto", sans-serif',
+  'Libre Caslon Text': '"Libre Caslon Text", serif',
+};
+
+// Font size mappings
+const FONT_SIZE_MAP: Record<string, string> = {
+  'small': '14px',
+  'medium': '16px',
+  'large': '18px',
+};
+
+// Heading scale mappings
+const HEADING_SCALE_MAP: Record<string, { h1: string; h2: string; h3: string; h4: string; h5: string; h6: string }> = {
+  'compact': { h1: '1.75rem', h2: '1.5rem', h3: '1.25rem', h4: '1.125rem', h5: '1rem', h6: '0.875rem' },
+  'standard': { h1: '2.25rem', h2: '1.875rem', h3: '1.5rem', h4: '1.25rem', h5: '1.125rem', h6: '1rem' },
+  'large': { h1: '3rem', h2: '2.25rem', h3: '1.875rem', h4: '1.5rem', h5: '1.25rem', h6: '1.125rem' },
+};
+
 export function AgencyThemeProvider({ children, config, agentId }: AgencyThemeProviderProps) {
   const [dbConfig, setDbConfig] = useState<Partial<AgencyConfig> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,6 +57,10 @@ export function AgencyThemeProvider({ children, config, agentId }: AgencyThemePr
             theme_logo_url, 
             theme_favicon_url, 
             theme_hero_image_url,
+            theme_heading_font,
+            theme_body_font,
+            theme_base_font_size,
+            theme_heading_scale,
             phone,
             email,
             office_address,
@@ -60,6 +86,10 @@ export function AgencyThemeProvider({ children, config, agentId }: AgencyThemePr
           if (data.theme_logo_url) themeFromDb.logoUrl = data.theme_logo_url;
           if (data.theme_favicon_url) themeFromDb.faviconUrl = data.theme_favicon_url;
           if (data.theme_hero_image_url) themeFromDb.heroImageUrl = data.theme_hero_image_url;
+          if (data.theme_heading_font) themeFromDb.headingFont = data.theme_heading_font;
+          if (data.theme_body_font) themeFromDb.bodyFont = data.theme_body_font;
+          if (data.theme_base_font_size) themeFromDb.baseFontSize = data.theme_base_font_size;
+          if (data.theme_heading_scale) themeFromDb.headingScale = data.theme_heading_scale;
           if (data.phone) themeFromDb.phone = data.phone;
           if (data.email) themeFromDb.email = data.email;
           if (data.office_address) themeFromDb.officeAddress = data.office_address;
@@ -116,6 +146,22 @@ export function AgencyThemeProvider({ children, config, agentId }: AgencyThemePr
       '--gradient-hero',
       `linear-gradient(135deg, hsl(${mergedConfig.primaryColor}) 0%, hsl(${h} ${s} ${lighterL}%) 100%)`
     );
+
+    // Apply typography settings
+    const headingFontStack = FONT_MAP[mergedConfig.headingFont] || FONT_MAP['Manrope'];
+    const bodyFontStack = FONT_MAP[mergedConfig.bodyFont] || FONT_MAP['Inter'];
+    const baseFontSize = FONT_SIZE_MAP[mergedConfig.baseFontSize] || FONT_SIZE_MAP['medium'];
+    const headingScale = HEADING_SCALE_MAP[mergedConfig.headingScale] || HEADING_SCALE_MAP['standard'];
+
+    root.style.setProperty('--font-display', headingFontStack);
+    root.style.setProperty('--font-body', bodyFontStack);
+    root.style.setProperty('--base-font-size', baseFontSize);
+    root.style.setProperty('--heading-h1', headingScale.h1);
+    root.style.setProperty('--heading-h2', headingScale.h2);
+    root.style.setProperty('--heading-h3', headingScale.h3);
+    root.style.setProperty('--heading-h4', headingScale.h4);
+    root.style.setProperty('--heading-h5', headingScale.h5);
+    root.style.setProperty('--heading-h6', headingScale.h6);
 
     // Update favicon if provided
     if (mergedConfig.faviconUrl) {

@@ -9,7 +9,14 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Upload, Palette, User, Phone, Globe, Bell, Image, Share2, Search } from "lucide-react";
+import { Loader2, Upload, Palette, User, Phone, Globe, Bell, Image, Share2, Search, Type } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import agencyConfig from "@/config/agencyConfig";
 import { useAgentThemeSettings, useUpdateAgentTheme, hexToHSL, hslToHex } from "@/hooks/useAgentThemeSettings";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,6 +70,12 @@ export default function Settings() {
   // Partner settings
   const [allowPartnerListings, setAllowPartnerListings] = useState(true);
   
+  // Typography settings
+  const [headingFont, setHeadingFont] = useState('Manrope');
+  const [bodyFont, setBodyFont] = useState('Inter');
+  const [baseFontSize, setBaseFontSize] = useState('medium');
+  const [headingScale, setHeadingScale] = useState('standard');
+  
   // Upload states
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
@@ -113,6 +126,12 @@ export default function Settings() {
       // Mobile
       if (themeSettings.splash_screen_url) setSplashScreenUrl(themeSettings.splash_screen_url);
       if (themeSettings.app_icon_url) setAppIconUrl(themeSettings.app_icon_url);
+      
+      // Typography
+      if (themeSettings.theme_heading_font) setHeadingFont(themeSettings.theme_heading_font);
+      if (themeSettings.theme_body_font) setBodyFont(themeSettings.theme_body_font);
+      if (themeSettings.theme_base_font_size) setBaseFontSize(themeSettings.theme_base_font_size);
+      if (themeSettings.theme_heading_scale) setHeadingScale(themeSettings.theme_heading_scale);
     }
   }, [themeSettings]);
 
@@ -195,6 +214,10 @@ export default function Settings() {
           notification_sound_enabled: notificationSound,
           splash_screen_url: splashScreenUrl || null,
           app_icon_url: appIconUrl || null,
+          theme_heading_font: headingFont,
+          theme_body_font: bodyFont,
+          theme_base_font_size: baseFontSize,
+          theme_heading_scale: headingScale,
         },
       });
       toast.success('Settings saved successfully!');
@@ -230,6 +253,10 @@ export default function Settings() {
     setSplashScreenUrl('');
     setAppIconUrl('');
     setAllowPartnerListings(true);
+    setHeadingFont('Manrope');
+    setBodyFont('Inter');
+    setBaseFontSize('medium');
+    setHeadingScale('standard');
     toast.info('Settings reset to defaults');
   };
 
@@ -493,6 +520,133 @@ export default function Settings() {
                     >
                       Accent
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Typography */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Type className="h-5 w-5" />
+                  Typography
+                </CardTitle>
+                <CardDescription>Customize fonts and text sizing</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Heading Font */}
+                  <div className="space-y-2">
+                    <Label htmlFor="headingFont">Heading Font</Label>
+                    <Select value={headingFont} onValueChange={setHeadingFont}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select heading font" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Manrope">Manrope (Modern)</SelectItem>
+                        <SelectItem value="Inter">Inter (Clean)</SelectItem>
+                        <SelectItem value="Roboto">Roboto (Classic)</SelectItem>
+                        <SelectItem value="Libre Caslon Text">Libre Caslon (Elegant)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Body Font */}
+                  <div className="space-y-2">
+                    <Label htmlFor="bodyFont">Body Font</Label>
+                    <Select value={bodyFont} onValueChange={setBodyFont}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select body font" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Inter">Inter (Screen optimized)</SelectItem>
+                        <SelectItem value="Manrope">Manrope (Friendly)</SelectItem>
+                        <SelectItem value="Roboto">Roboto (Clear)</SelectItem>
+                        <SelectItem value="Libre Caslon Text">Libre Caslon (Traditional)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  {/* Base Font Size */}
+                  <div className="space-y-2">
+                    <Label>Base Font Size</Label>
+                    <div className="flex gap-2">
+                      {(['small', 'medium', 'large'] as const).map((size) => (
+                        <Button
+                          key={size}
+                          type="button"
+                          variant={baseFontSize === size ? 'default' : 'outline'}
+                          className="flex-1 capitalize"
+                          onClick={() => setBaseFontSize(size)}
+                        >
+                          {size}
+                        </Button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {baseFontSize === 'small' && '14px - Compact, more content visible'}
+                      {baseFontSize === 'medium' && '16px - Standard, balanced readability'}
+                      {baseFontSize === 'large' && '18px - Enhanced readability, spacious'}
+                    </p>
+                  </div>
+
+                  {/* Heading Scale */}
+                  <div className="space-y-2">
+                    <Label>Heading Scale</Label>
+                    <div className="flex gap-2">
+                      {(['compact', 'standard', 'large'] as const).map((scale) => (
+                        <Button
+                          key={scale}
+                          type="button"
+                          variant={headingScale === scale ? 'default' : 'outline'}
+                          className="flex-1 capitalize"
+                          onClick={() => setHeadingScale(scale)}
+                        >
+                          {scale}
+                        </Button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {headingScale === 'compact' && 'Smaller headings, good for dense content'}
+                      {headingScale === 'standard' && 'Balanced heading hierarchy'}
+                      {headingScale === 'large' && 'Bold, impactful headings'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Typography Preview */}
+                <div className="mt-6 p-4 rounded-lg border bg-muted/50">
+                  <p className="text-sm font-medium mb-4">Preview</p>
+                  <div className="space-y-3 p-4 bg-background rounded-lg border">
+                    <h1 
+                      className="font-bold"
+                      style={{ 
+                        fontFamily: headingFont === 'Libre Caslon Text' ? '"Libre Caslon Text", serif' : `"${headingFont}", sans-serif`,
+                        fontSize: headingScale === 'compact' ? '1.75rem' : headingScale === 'large' ? '3rem' : '2.25rem'
+                      }}
+                    >
+                      Heading Example
+                    </h1>
+                    <h2 
+                      className="font-semibold"
+                      style={{ 
+                        fontFamily: headingFont === 'Libre Caslon Text' ? '"Libre Caslon Text", serif' : `"${headingFont}", sans-serif`,
+                        fontSize: headingScale === 'compact' ? '1.5rem' : headingScale === 'large' ? '2.25rem' : '1.875rem'
+                      }}
+                    >
+                      Subheading Example
+                    </h2>
+                    <p 
+                      style={{ 
+                        fontFamily: bodyFont === 'Libre Caslon Text' ? '"Libre Caslon Text", serif' : `"${bodyFont}", sans-serif`,
+                        fontSize: baseFontSize === 'small' ? '14px' : baseFontSize === 'large' ? '18px' : '16px'
+                      }}
+                    >
+                      This is how your body text will appear across the website. The quick brown fox jumps over the lazy dog.
+                    </p>
                   </div>
                 </div>
               </CardContent>
