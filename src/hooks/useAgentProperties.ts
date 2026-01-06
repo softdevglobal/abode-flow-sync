@@ -2,13 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { useCurrentAgent } from '@/hooks/useCurrentAgent';
 
 type Property = Tables<'properties'>;
 type PropertyInsert = TablesInsert<'properties'>;
 type PropertyUpdate = TablesUpdate<'properties'>;
-
-// Demo agent ID for prototype - this is the agent with all the demo data
-const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
 
 // Fetch properties for agent
 async function fetchProperties(agentId: string): Promise<Property[]> {
@@ -27,12 +25,13 @@ async function fetchProperties(agentId: string): Promise<Property[]> {
 
 export function useAgentProperties() {
   const queryClient = useQueryClient();
-  const agentId = DEMO_AGENT_ID;
+  const { agentId } = useCurrentAgent();
 
   // Query for properties
   const { data: properties = [], isLoading: loading } = useQuery({
     queryKey: ['agent-properties', agentId],
     queryFn: () => fetchProperties(agentId),
+    enabled: !!agentId,
   });
 
   // Create property mutation
