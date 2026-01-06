@@ -19,13 +19,14 @@ import {
   ChevronLeft,
   ChevronRight,
   List,
-  Grid3X3
+  Grid3X3,
+  Gavel
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DiaryEvent {
   id: string;
-  type: 'inspection' | 'viewing' | 'invitation';
+  type: 'inspection' | 'viewing' | 'invitation' | 'auction';
   title: string;
   address: string;
   dateTime: Date;
@@ -43,9 +44,9 @@ export default function AgentDiary() {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
 
-  // Real-time subscription for inspections
+  // Real-time subscription for inspections and auctions
   useEffect(() => {
-    const channel = supabase
+    const inspectionsChannel = supabase
       .channel('diary-inspections-changes')
       .on(
         'postgres_changes',
@@ -60,8 +61,24 @@ export default function AgentDiary() {
       )
       .subscribe();
 
+    const auctionsChannel = supabase
+      .channel('diary-auctions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'auctions',
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['diary-auctions'] });
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(inspectionsChannel);
+      supabase.removeChannel(auctionsChannel);
     };
   }, [queryClient]);
 
@@ -200,6 +217,43 @@ export default function AgentDiary() {
     enabled: !!agentId,
   });
 
+  // Fetch auctions for agent's properties
+  const { data: auctions = [] } = useQuery({
+    queryKey: ['diary-auctions', agentId],
+    queryFn: async () => {
+      if (!agentId) return [];
+      
+      const { data: properties } = await supabase
+        .from('properties')
+        .select('id')
+        .eq('agent_id', agentId);
+      
+      if (!properties?.length) return [];
+      
+      const propertyIds = properties.map(p => p.id);
+      
+      const { data: auctionData } = await supabase
+        .from('auctions')
+        .select(`
+          id,
+          start_time,
+          end_time,
+          status,
+          property_id,
+          properties:property_id (
+            title,
+            address,
+            suburb
+          )
+        `)
+        .in('property_id', propertyIds)
+        .order('start_time', { ascending: true });
+      
+      return auctionData || [];
+    },
+    enabled: !!agentId,
+  });
+
   // Helper to safely parse date
   const safeParseDate = (dateStr: string | null | undefined): Date | null => {
     if (!dateStr) return null;
@@ -285,10 +339,27 @@ export default function AgentDiary() {
         customerName,
       });
     });
+
+    // Add auctions
+    auctions.forEach((auction: any) => {
+      const dateTime = safeParseDate(auction.start_time);
+      if (!dateTime) return; // Skip invalid dates
+      
+      events.push({
+        id: auction.id,
+        type: 'auction',
+        title: auction.properties?.title || 'Property Auction',
+        address: `${auction.properties?.address || ''}, ${auction.properties?.suburb || ''}`,
+        dateTime,
+        time: format(dateTime, 'h:mm a'),
+        status: auction.status,
+        propertyId: auction.property_id,
+      });
+    });
     
     // Sort by date
     return events.sort((a, b) => a.dateTime.getTime() - b.dateTime.getTime());
-  }, [inspections, viewingRequests, invitations]);
+  }, [inspections, viewingRequests, invitations, auctions]);
 
   // Get events for selected date
   const selectedDateEvents = useMemo(() => {
@@ -322,6 +393,8 @@ export default function AgentDiary() {
         return 'bg-blue-500/10 text-blue-600 border-blue-500/30';
       case 'invitation':
         return 'bg-green-500/10 text-green-600 border-green-500/30';
+      case 'auction':
+        return 'bg-amber-500/10 text-amber-600 border-amber-500/30';
     }
   };
 
@@ -333,6 +406,8 @@ export default function AgentDiary() {
         return <Eye className="w-4 h-4" />;
       case 'invitation':
         return <Users className="w-4 h-4" />;
+      case 'auction':
+        return <Gavel className="w-4 h-4" />;
     }
   };
 
@@ -344,6 +419,8 @@ export default function AgentDiary() {
         return 'Private Viewing';
       case 'invitation':
         return 'Pre-Market Inspection';
+      case 'auction':
+        return 'Auction';
     }
   };
 
@@ -390,7 +467,7 @@ export default function AgentDiary() {
         </div>
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <Card className="bg-card/50 backdrop-blur-sm border-border/50">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -448,6 +525,22 @@ export default function AgentDiary() {
                     {allEvents.filter(e => e.type === 'invitation').length}
                   </p>
                   <p className="text-xs text-muted-foreground">Pre-Market</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                  <Gavel className="w-5 h-5 text-amber-500" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">
+                    {allEvents.filter(e => e.type === 'auction').length}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Auctions</p>
                 </div>
               </div>
             </CardContent>
