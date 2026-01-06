@@ -34,15 +34,16 @@ type Property = Tables<'properties'>;
 type PropertyStatus = 'all' | 'active' | 'pending' | 'sold' | 'off_market';
 
 export default function AgentProperties() {
+  // Call all hooks in consistent order - data hooks first, then UI hooks
+  const { properties, loading, createProperty, updateProperty, deleteProperty: deletePropertyFn } = useAgentProperties();
+  const isMobile = useIsMobile();
+  
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<PropertyStatus>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [deleteProperty, setDeleteProperty] = useState<Property | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const isMobile = useIsMobile();
-
-  const { properties, loading, createProperty, updateProperty, deleteProperty: deletePropertyFn } = useAgentProperties();
 
   // Filter properties
   const filteredProperties = properties.filter((property) => {
