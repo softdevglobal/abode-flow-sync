@@ -108,6 +108,7 @@ export function useAgentInspections() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agent-inspections'] });
+      queryClient.invalidateQueries({ queryKey: ['diary-inspections'] });
       toast.success('Inspection scheduled successfully');
     },
     onError: (error) => {
@@ -130,6 +131,7 @@ export function useAgentInspections() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agent-inspections'] });
+      queryClient.invalidateQueries({ queryKey: ['diary-inspections'] });
       toast.success('Inspection updated');
     },
     onError: (error) => {
@@ -149,6 +151,7 @@ export function useAgentInspections() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['agent-inspections'] });
+      queryClient.invalidateQueries({ queryKey: ['diary-inspections'] });
       toast.success('Inspection cancelled');
     },
     onError: (error) => {

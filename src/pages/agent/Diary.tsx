@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useMemo, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AgentLayout } from '@/components/layout/AgentLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,9 +38,32 @@ interface DiaryEvent {
 
 export default function AgentDiary() {
   const { agentId } = useCurrentAgent();
+  const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+
+  // Real-time subscription for inspections
+  useEffect(() => {
+    const channel = supabase
+      .channel('diary-inspections-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'inspections',
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['diary-inspections'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   // Fetch all inspections
   const { data: inspections = [] } = useQuery({
