@@ -2,10 +2,11 @@ import { Property } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Bed, Bath, Car, Ruler, Pencil, Heart, Handshake } from 'lucide-react';
+import { Bed, Bath, Car, Ruler, Pencil, Heart, Handshake, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useAuth } from '@/hooks/useAuth';
+import { format } from 'date-fns';
 
 interface PropertyCardProps {
   property: Property;
@@ -13,9 +14,10 @@ interface PropertyCardProps {
   onEdit?: (property: Property) => void;
   showFavorite?: boolean;
   isPartner?: boolean;
+  upcomingInspection?: { date: Date; formatted: string } | null;
 }
 
-export function PropertyCard({ property, linkPrefix = '/property', onEdit, showFavorite = true, isPartner = false }: PropertyCardProps) {
+export function PropertyCard({ property, linkPrefix = '/property', onEdit, showFavorite = true, isPartner = false, upcomingInspection }: PropertyCardProps) {
   const { user } = useAuth();
   const { isFavorited, toggleFavorite, isToggling } = useFavorites();
   
@@ -110,6 +112,16 @@ export function PropertyCard({ property, linkPrefix = '/property', onEdit, showF
         <p className="text-sm text-muted-foreground mb-3">
           {property.address}, {property.suburb}
         </p>
+
+        {/* Upcoming Inspection */}
+        {upcomingInspection && (
+          <div className="flex items-center gap-2 mb-3 px-2.5 py-1.5 bg-primary/10 rounded-lg border border-primary/20">
+            <Calendar className="w-4 h-4 text-primary shrink-0" />
+            <span className="text-xs font-medium text-primary font-body truncate">
+              Open {upcomingInspection.formatted}
+            </span>
+          </div>
+        )}
 
         <div className="flex items-center gap-4 text-muted-foreground">
           <div className="flex items-center gap-1.5">
