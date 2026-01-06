@@ -3,12 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { useCurrentAgent } from '@/hooks/useCurrentAgent';
 
 type Inspection = Tables<'inspections'>;
 type Property = Tables<'properties'>;
 
-// Demo agent ID for prototype
-const DEMO_AGENT_ID = 'da39b948-790b-4a66-94b4-394445a98062';
+// Agent id now comes from useCurrentAgent (falls back to demo agent when needed)
 
 export interface InspectionWithProperty extends Inspection {
   property: Property | null;
@@ -17,11 +17,12 @@ export interface InspectionWithProperty extends Inspection {
 
 export function useAgentInspections() {
   const queryClient = useQueryClient();
+  const { agentId } = useCurrentAgent();
 
   const inspectionsQuery = useQuery({
-    queryKey: ['agent-inspections'],
+    queryKey: ['agent-inspections', agentId],
     queryFn: async (): Promise<InspectionWithProperty[]> => {
-      const agentId = DEMO_AGENT_ID;
+      if (!agentId) return [];
 
       // Get properties for this agent
       const { data: properties } = await supabase
@@ -85,7 +86,7 @@ export function useAgentInspections() {
         },
         () => {
           // Refetch inspections to get updated counts
-          queryClient.invalidateQueries({ queryKey: ['agent-inspections'] });
+          queryClient.invalidateQueries({ queryKey: ['agent-inspections', agentId] });
         }
       )
       .subscribe();
@@ -107,8 +108,8 @@ export function useAgentInspections() {
       return inspection;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agent-inspections'] });
-      queryClient.invalidateQueries({ queryKey: ['diary-inspections'] });
+      queryClient.invalidateQueries({ queryKey: ['agent-inspections', agentId] });
+      queryClient.invalidateQueries({ queryKey: ['diary-inspections', agentId] });
       toast.success('Inspection scheduled successfully');
     },
     onError: (error) => {
@@ -130,8 +131,8 @@ export function useAgentInspections() {
       return inspection;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agent-inspections'] });
-      queryClient.invalidateQueries({ queryKey: ['diary-inspections'] });
+      queryClient.invalidateQueries({ queryKey: ['agent-inspections', agentId] });
+      queryClient.invalidateQueries({ queryKey: ['diary-inspections', agentId] });
       toast.success('Inspection updated');
     },
     onError: (error) => {
@@ -150,8 +151,8 @@ export function useAgentInspections() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['agent-inspections'] });
-      queryClient.invalidateQueries({ queryKey: ['diary-inspections'] });
+      queryClient.invalidateQueries({ queryKey: ['agent-inspections', agentId] });
+      queryClient.invalidateQueries({ queryKey: ['diary-inspections', agentId] });
       toast.success('Inspection cancelled');
     },
     onError: (error) => {
