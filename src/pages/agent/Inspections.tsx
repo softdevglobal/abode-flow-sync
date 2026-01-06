@@ -12,6 +12,7 @@ import { InspectionCalendar } from '@/components/inspection/InspectionCalendar';
 import { InspectionDetailSheet } from '@/components/inspection/InspectionDetailSheet';
 import { InspectionQRDialog } from '@/components/inspection/InspectionQRDialog';
 import { ScheduleInspectionModal } from '@/components/inspection/ScheduleInspectionModal';
+import { EditInspectionModal } from '@/components/inspection/EditInspectionModal';
 import type { InspectionWithProperty } from '@/hooks/useAgentInspections';
 
 type ViewMode = 'list' | 'calendar';
@@ -26,8 +27,10 @@ export default function AgentInspections() {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isQROpen, setIsQROpen] = useState(false);
   const [qrInspection, setQrInspection] = useState<InspectionWithProperty | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editInspection, setEditInspection] = useState<InspectionWithProperty | null>(null);
 
-  const { inspections, isLoading, createInspection, cancelInspection } = useAgentInspections();
+  const { inspections, isLoading, createInspection, updateInspection, cancelInspection } = useAgentInspections();
   const { properties } = useAgentProperties();
 
   const filteredInspections = useMemo(() => {
@@ -104,6 +107,24 @@ export default function AgentInspections() {
       setQrInspection(selectedInspection);
       setIsQROpen(true);
     }
+  };
+
+  const handleEditInspection = () => {
+    if (selectedInspection) {
+      setEditInspection(selectedInspection);
+      setIsDetailOpen(false);
+      setIsEditOpen(true);
+    }
+  };
+
+  const handleEditSubmit = async (id: string, data: { date_time: string; duration: number; max_attendees: number; notes?: string }) => {
+    await updateInspection.mutateAsync({
+      id,
+      date_time: data.date_time,
+      duration: data.duration,
+      max_attendees: data.max_attendees,
+      notes: data.notes,
+    });
   };
 
   // Stats
@@ -246,6 +267,15 @@ export default function AgentInspections() {
           onOpenChange={setIsDetailOpen}
           onCancel={handleCancelInspection}
           onGenerateQR={handleDetailQR}
+          onEdit={handleEditInspection}
+        />
+
+        {/* Edit Modal */}
+        <EditInspectionModal
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          inspection={editInspection}
+          onSubmit={handleEditSubmit}
         />
 
         {/* QR Code Dialog */}

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Calendar, Clock, MapPin, Users, Bell, X, Mail, Phone, CheckCircle, Wifi, WifiOff, QrCode } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Bell, X, Mail, Phone, CheckCircle, Wifi, WifiOff, QrCode, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -32,6 +32,7 @@ interface InspectionDetailSheetProps {
   onOpenChange: (open: boolean) => void;
   onCancel: (id: string) => void;
   onGenerateQR?: () => void;
+  onEdit?: () => void;
 }
 
 export function InspectionDetailSheet({
@@ -40,6 +41,7 @@ export function InspectionDetailSheet({
   onOpenChange,
   onCancel,
   onGenerateQR,
+  onEdit,
 }: InspectionDetailSheetProps) {
   // Use realtime bookings hook
   const { 
@@ -263,17 +265,23 @@ export function InspectionDetailSheet({
           {!isCancelled && (
             <div className="space-y-2 pt-4">
               <div className="flex gap-2">
+                {onEdit && (
+                  <Button variant="outline" className="flex-1 font-body hover:border-primary/50" onClick={onEdit}>
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Edit
+                  </Button>
+                )}
                 {onGenerateQR && (
                   <Button variant="outline" className="flex-1 font-body hover:border-primary/50" onClick={onGenerateQR}>
                     <QrCode className="w-4 h-4 mr-2" />
-                    Show QR Code
+                    QR Code
                   </Button>
                 )}
-                <Button variant="outline" className="flex-1 font-body hover:border-primary/50" onClick={handleSendReminder}>
-                  <Bell className="w-4 h-4 mr-2" />
-                  Send Reminder
-                </Button>
               </div>
+              <Button variant="outline" className="w-full font-body hover:border-primary/50" onClick={handleSendReminder}>
+                <Bell className="w-4 h-4 mr-2" />
+                Send Reminder
+              </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" className="w-full font-body">
