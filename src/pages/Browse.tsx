@@ -26,6 +26,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { useAcceptedPartners } from '@/hooks/useAgentNetwork';
+import { format, isToday, isTomorrow, isThisWeek } from 'date-fns';
 
 type Property = Tables<'properties'>;
 type PropertyType = 'house' | 'apartment' | 'townhouse' | 'land' | 'commercial' | 'rural';
@@ -193,6 +194,50 @@ export default function Browse() {
       return data as Property[];
     },
   });
+
+  // Fetch upcoming inspections for all properties
+  const { data: inspectionsData = [] } = useQuery({
+    queryKey: ['browse-inspections'],
+    queryFn: async () => {
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from('inspections')
+        .select('id, property_id, date_time')
+        .eq('status', 'scheduled')
+        .gte('date_time', now)
+        .order('date_time', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // Create a map of property_id to next upcoming inspection
+  const propertyInspectionMap = useMemo(() => {
+    const map = new Map<string, { date: Date; formatted: string }>();
+    
+    inspectionsData.forEach((inspection) => {
+      // Only keep the first (earliest) inspection per property
+      if (!map.has(inspection.property_id)) {
+        const date = new Date(inspection.date_time);
+        let formatted: string;
+        
+        if (isToday(date)) {
+          formatted = `Today ${format(date, 'h:mm a')}`;
+        } else if (isTomorrow(date)) {
+          formatted = `Tomorrow ${format(date, 'h:mm a')}`;
+        } else if (isThisWeek(date)) {
+          formatted = format(date, 'EEE h:mm a');
+        } else {
+          formatted = format(date, 'EEE d MMM, h:mm a');
+        }
+        
+        map.set(inspection.property_id, { date, formatted });
+      }
+    });
+    
+    return map;
+  }, [inspectionsData]);
   
   // Create a set of partner agent IDs for quick lookup
   const partnerAgentIds = useMemo(() => new Set(partnerIds), [partnerIds]);
@@ -582,6 +627,7 @@ export default function Browse() {
                       property={mapPropertyForCard(property)} 
                       linkPrefix="/property"
                       isPartner={isPartnerProperty(property)}
+                      upcomingInspection={propertyInspectionMap.get(property.id) || null}
                     />
                   </div>
                 ))}
